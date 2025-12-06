@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { parseRSSFeed } from "@/hooks/usePodcasts";
@@ -9,7 +9,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Plus, Trash2, RefreshCw, Rss, ExternalLink, Upload, FileSpreadsheet } from "lucide-react";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Plus, Trash2, RefreshCw, Rss, ExternalLink, FileSpreadsheet, Search, Mic } from "lucide-react";
 import { toast } from "sonner";
 
 interface Podcast {
@@ -33,6 +35,9 @@ export const PodcastManager = () => {
   const [bulkRssUrls, setBulkRssUrls] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [selectedPodcastId, setSelectedPodcastId] = useState<string | null>(null);
 
   const { data: podcasts, isLoading: loadingPodcasts } = useQuery({
     queryKey: ["admin-podcasts"],
@@ -45,6 +50,35 @@ export const PodcastManager = () => {
       return data as Podcast[];
     },
   });
+
+  const filteredPodcasts = useMemo(() => {
+    if (!podcasts) return [];
+    if (!searchQuery.trim() && !selectedPodcastId) return podcasts;
+    
+    if (selectedPodcastId) {
+      return podcasts.filter((p) => p.id === selectedPodcastId);
+    }
+    
+    const query = searchQuery.toLowerCase();
+    return podcasts.filter(
+      (podcast) =>
+        podcast.title.toLowerCase().includes(query) ||
+        podcast.author?.toLowerCase().includes(query) ||
+        podcast.description?.toLowerCase().includes(query)
+    );
+  }, [podcasts, searchQuery, selectedPodcastId]);
+
+  const searchSuggestions = useMemo(() => {
+    if (!podcasts || !searchQuery.trim()) return [];
+    const query = searchQuery.toLowerCase();
+    return podcasts
+      .filter(
+        (podcast) =>
+          podcast.title.toLowerCase().includes(query) ||
+          podcast.author?.toLowerCase().includes(query)
+      )
+      .slice(0, 8);
+  }, [podcasts, searchQuery]);
 
   const addPodcast = useMutation({
     mutationFn: async (rssUrl: string) => {
@@ -202,30 +236,125 @@ export const PodcastManager = () => {
     }
   };
 
+  const clearSearch = () => {
+    setSearchQuery("");
+    setSelectedPodcastId(null);
+  };
+
   return (
     <div className="mt-12">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="font-serif text-xl font-bold text-foreground">Podcast Network</h2>
-        <div className="flex gap-2">
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileUpload}
-            accept=".csv,.txt,.tsv"
-            className="hidden"
-          />
-          <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
-            <FileSpreadsheet className="w-4 h-4 mr-2" />
-            Import Spreadsheet
-          </Button>
-          <Button variant="outline" onClick={() => setIsBulkDialogOpen(true)}>
-            <Rss className="w-4 h-4 mr-2" />
-            Bulk Import
-          </Button>
-          <Button onClick={() => setIsAddDialogOpen(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            Add Podcast
-          </Button>
+      <div className="flex flex-col gap-4 mb-6">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <h2 className="font-serif text-xl font-bold text-foreground">Podcast Network</h2>
+            <span className="text-sm text-muted-foreground bg-secondary px-2 py-1 rounded-full">
+              {podcasts?.length || 0} total
+            </span>
+          </div>
+          <div className="flex gap-2">
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileUpload}
+              accept=".csv,.txt,.tsv"
+              className="hidden"
+            />
+            <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
+              <FileSpreadsheet className="w-4 h-4 mr-2" />
+              Import Spreadsheet
+            </Button>
+            <Button variant="outline" onClick={() => setIsBulkDialogOpen(true)}>
+              <Rss className="w-4 h-4 mr-2" />
+              Bulk Import
+            </Button>
+            <Button onClick={() => setIsAddDialogOpen(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Podcast
+            </Button>
+          </div>
+        </div>
+
+        {/* Search with dropdown */}
+        <div className="flex items-center gap-2">
+          <Popover open={searchOpen} onOpenChange={setSearchOpen}>
+            <PopoverTrigger asChild>
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by title or host..."
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setSelectedPodcastId(null);
+                    if (e.target.value.trim()) {
+                      setSearchOpen(true);
+                    }
+                  }}
+                  onFocus={() => {
+                    if (searchQuery.trim()) setSearchOpen(true);
+                  }}
+                  className="pl-9 bg-secondary/30"
+                />
+              </div>
+            </PopoverTrigger>
+            <PopoverContent className="w-[400px] p-0" align="start" onOpenAutoFocus={(e) => e.preventDefault()}>
+              <Command>
+                <CommandList>
+                  <CommandEmpty>No podcasts found.</CommandEmpty>
+                  <CommandGroup heading="Suggestions">
+                    {searchSuggestions.map((podcast) => (
+                      <CommandItem
+                        key={podcast.id}
+                        value={podcast.id}
+                        onSelect={() => {
+                          setSelectedPodcastId(podcast.id);
+                          setSearchQuery(podcast.title);
+                          setSearchOpen(false);
+                        }}
+                        className="flex items-center gap-3 py-2"
+                      >
+                        {podcast.image_url ? (
+                          <img
+                            src={podcast.image_url}
+                            alt={podcast.title}
+                            className="w-8 h-8 object-cover rounded"
+                          />
+                        ) : (
+                          <div className="w-8 h-8 bg-secondary rounded flex items-center justify-center">
+                            <Mic className="w-4 h-4 text-muted-foreground" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{podcast.title}</p>
+                          {podcast.author && (
+                            <p className="text-xs text-muted-foreground truncate">by {podcast.author}</p>
+                          )}
+                        </div>
+                        {!podcast.is_active && (
+                          <span className="text-xs bg-secondary px-2 py-0.5 rounded">Inactive</span>
+                        )}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+          {(searchQuery || selectedPodcastId) && (
+            <Button variant="ghost" size="sm" onClick={clearSearch}>
+              Clear
+            </Button>
+          )}
+          {selectedPodcastId && (
+            <span className="text-sm text-muted-foreground">
+              Showing 1 of {podcasts?.length || 0}
+            </span>
+          )}
+          {!selectedPodcastId && searchQuery && (
+            <span className="text-sm text-muted-foreground">
+              Showing {filteredPodcasts.length} of {podcasts?.length || 0}
+            </span>
+          )}
         </div>
       </div>
 
@@ -242,7 +371,7 @@ export const PodcastManager = () => {
         </div>
       ) : (
         <div className="grid gap-4">
-          {podcasts.map((podcast) => (
+          {filteredPodcasts.map((podcast) => (
             <div
               key={podcast.id}
               className="flex items-center gap-4 p-4 bg-card border border-border rounded-lg"
