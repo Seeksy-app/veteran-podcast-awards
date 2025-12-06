@@ -1,14 +1,18 @@
 import { useState, useMemo } from "react";
 import { usePodcasts, Podcast } from "@/hooks/usePodcasts";
 import { PodcastEpisodesModal } from "./PodcastEpisodesModal";
+import { PodcastChatbot } from "./PodcastChatbot";
 import { Mic, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export const PodcastGrid = () => {
   const { data: podcasts, isLoading } = usePodcasts();
   const [selectedPodcast, setSelectedPodcast] = useState<Podcast | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const filteredPodcasts = useMemo(() => {
     if (!podcasts) return [];
@@ -23,9 +27,26 @@ export const PodcastGrid = () => {
     );
   }, [podcasts, searchQuery]);
 
+  const searchSuggestions = useMemo(() => {
+    if (!podcasts || !searchQuery.trim()) return [];
+    const query = searchQuery.toLowerCase();
+    return podcasts
+      .filter(
+        (podcast) =>
+          podcast.title.toLowerCase().includes(query) ||
+          podcast.author?.toLowerCase().includes(query)
+      )
+      .slice(0, 6);
+  }, [podcasts, searchQuery]);
+
   const handlePodcastClick = (podcast: Podcast) => {
     setSelectedPodcast(podcast);
     setIsModalOpen(true);
+  };
+
+  const handleSelectSuggestion = (podcast: Podcast) => {
+    setSearchQuery(podcast.title);
+    setSearchOpen(false);
   };
 
   if (isLoading) {
@@ -58,22 +79,79 @@ export const PodcastGrid = () => {
           The Veteran & Military Podcast Network is being curated. 
           Check back soon to discover amazing veteran podcasters.
         </p>
+        <PodcastChatbot />
       </div>
     );
   }
 
   return (
     <>
-      {/* Search Bar */}
+      {/* Search Bar with Autocomplete */}
       <div className="relative max-w-md mx-auto mb-10">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-        <Input
-          type="text"
-          placeholder="Search podcasts..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-12 h-12 rounded-xl bg-secondary/30 border-border focus:border-primary"
-        />
+        <Popover open={searchOpen && searchSuggestions.length > 0} onOpenChange={setSearchOpen}>
+          <PopoverTrigger asChild>
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search podcasts by title, host, or topic..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  if (e.target.value.trim()) {
+                    setSearchOpen(true);
+                  }
+                }}
+                onFocus={() => {
+                  if (searchQuery.trim() && searchSuggestions.length > 0) {
+                    setSearchOpen(true);
+                  }
+                }}
+                className="pl-12 h-12 rounded-xl bg-secondary/30 border-border focus:border-primary"
+              />
+            </div>
+          </PopoverTrigger>
+          <PopoverContent className="w-[400px] p-0" align="center" onOpenAutoFocus={(e) => e.preventDefault()}>
+            <Command>
+              <CommandList>
+                <CommandEmpty>No podcasts found.</CommandEmpty>
+                <CommandGroup heading="Suggestions">
+                  {searchSuggestions.map((podcast) => (
+                    <CommandItem
+                      key={podcast.id}
+                      value={podcast.id}
+                      onSelect={() => handleSelectSuggestion(podcast)}
+                      className="flex items-center gap-3 py-2 cursor-pointer"
+                    >
+                      {podcast.image_url ? (
+                        <img
+                          src={podcast.image_url}
+                          alt={podcast.title}
+                          className="w-10 h-10 object-cover rounded"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 bg-secondary rounded flex items-center justify-center">
+                          <Mic className="w-5 h-5 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{podcast.title}</p>
+                        {podcast.author && (
+                          <p className="text-xs text-muted-foreground truncate">by {podcast.author}</p>
+                        )}
+                      </div>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
+        {searchQuery && (
+          <p className="text-xs text-muted-foreground text-center mt-2">
+            Showing {filteredPodcasts.length} of {podcasts.length} podcasts
+          </p>
+        )}
       </div>
 
       {filteredPodcasts.length === 0 ? (
@@ -125,6 +203,9 @@ export const PodcastGrid = () => {
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
       />
+
+      {/* AI Chatbot */}
+      <PodcastChatbot />
     </>
   );
 };
