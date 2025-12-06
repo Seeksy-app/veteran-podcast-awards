@@ -137,6 +137,7 @@ export type Database = {
           full_name: string | null
           id: string
           updated_at: string
+          user_type: string | null
           website_url: string | null
         }
         Insert: {
@@ -147,6 +148,7 @@ export type Database = {
           full_name?: string | null
           id: string
           updated_at?: string
+          user_type?: string | null
           website_url?: string | null
         }
         Update: {
@@ -157,6 +159,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           updated_at?: string
+          user_type?: string | null
           website_url?: string | null
         }
         Relationships: []
