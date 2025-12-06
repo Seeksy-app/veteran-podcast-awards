@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, LogIn, LogOut, User } from "lucide-react";
+import { Menu, X, LogIn, LogOut, User, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ContactFormDialog } from "@/components/contact/ContactFormDialog";
+import { ContactFormDialog, useContactForm } from "@/components/contact/ContactFormDialog";
 import { useAuth } from "@/hooks/useAuth";
 import logo from "@/assets/vpa-logo.png";
 import {
@@ -22,7 +22,7 @@ const navItems = [
 
 export const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isContactOpen, setIsContactOpen] = useState(false);
+  const contactForm = useContactForm();
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut, isAdmin } = useAuth();
@@ -61,6 +61,15 @@ export const Header = () => {
             </nav>
 
             <div className="hidden lg:flex items-center gap-3">
+              <Button 
+                variant="goldOutline" 
+                size="sm" 
+                onClick={() => contactForm.openForm("nomination")}
+                className="gap-2"
+              >
+                <Award className="w-4 h-4" />
+                Nominate
+              </Button>
               {user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -184,9 +193,9 @@ export const Header = () => {
       </header>
 
       <ContactFormDialog
-        open={isContactOpen}
-        onOpenChange={setIsContactOpen}
-        type="general"
+        open={contactForm.isOpen}
+        onOpenChange={contactForm.setIsOpen}
+        type={contactForm.formType}
       />
     </>
   );
