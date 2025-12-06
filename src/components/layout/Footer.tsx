@@ -29,12 +29,17 @@ export const Footer = () => {
                 </Link>
               </li>
               <li>
+                <Link to="/network" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  Podcast Network
+                </Link>
+              </li>
+              <li>
                 <Link to="/about" className="text-sm text-muted-foreground hover:text-primary transition-colors">
                   About VPA
                 </Link>
               </li>
               <li>
-                <Link to="/" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                <Link to="/#pre-register" className="text-sm text-muted-foreground hover:text-primary transition-colors">
                   Get Notified
                 </Link>
               </li>
@@ -45,14 +50,14 @@ export const Footer = () => {
             <h4 className="font-serif text-primary mb-4">Connect</h4>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Contact Us
-                </a>
+                <Link to="/sponsors" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  Sponsors
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Sponsors
-                </a>
+                <Link to="/livestream" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  Livestream
+                </Link>
               </li>
             </ul>
           </div>
@@ -62,6 +67,14 @@ export const Footer = () => {
           <p className="text-xs text-muted-foreground">
             © 2026 Veteran Podcast Awards. All rights reserved.
           </p>
+          <div className="flex items-center gap-4">
+            <Link to="/privacy" className="text-xs text-muted-foreground hover:text-primary transition-colors">
+              Privacy Policy
+            </Link>
+            <Link to="/terms" className="text-xs text-muted-foreground hover:text-primary transition-colors">
+              Terms & Conditions
+            </Link>
+          </div>
           <p className="text-xs text-muted-foreground">
             A property of National Military Podcast Day
           </p>

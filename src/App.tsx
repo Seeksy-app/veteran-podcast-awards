@@ -11,6 +11,8 @@ import Admin from "./pages/Admin";
 import Network from "./pages/Network";
 import Auth from "./pages/Auth";
 import Sponsors from "./pages/Sponsors";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +30,8 @@ const App = () => (
           <Route path="/network" element={<Network />} />
           <Route path="/sponsors" element={<Sponsors />} />
           <Route path="/about" element={<About />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<NotFound />} />
