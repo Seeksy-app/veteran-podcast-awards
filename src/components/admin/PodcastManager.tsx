@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { parseRSSFeed } from "@/hooks/usePodcasts";
@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Plus, Trash2, RefreshCw, Rss, ExternalLink } from "lucide-react";
+import { Plus, Trash2, RefreshCw, Rss, ExternalLink, Upload, FileSpreadsheet } from "lucide-react";
 import { toast } from "sonner";
 
 interface Podcast {
@@ -32,6 +32,7 @@ export const PodcastManager = () => {
   const [newRssUrl, setNewRssUrl] = useState("");
   const [bulkRssUrls, setBulkRssUrls] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: podcasts, isLoading: loadingPodcasts } = useQuery({
     queryKey: ["admin-podcasts"],
@@ -127,7 +128,7 @@ export const PodcastManager = () => {
     const urls = bulkRssUrls
       .split("\n")
       .map((url) => url.trim())
-      .filter((url) => url.length > 0);
+      .filter((url) => url.length > 0 && url.startsWith("http"));
 
     if (urls.length === 0) return;
 
@@ -150,11 +151,62 @@ export const PodcastManager = () => {
     setIsLoading(false);
   };
 
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = event.target?.result as string;
+      if (!text) return;
+
+      // Parse CSV - look for URLs in any column
+      const lines = text.split(/\r?\n/);
+      const urls: string[] = [];
+      
+      for (const line of lines) {
+        // Split by comma, tab, or semicolon
+        const cells = line.split(/[,;\t]/);
+        for (const cell of cells) {
+          const trimmed = cell.trim().replace(/^["']|["']$/g, ''); // Remove quotes
+          if (trimmed.startsWith('http') && (trimmed.includes('rss') || trimmed.includes('feed') || trimmed.includes('.xml') || trimmed.includes('podcast'))) {
+            urls.push(trimmed);
+          }
+        }
+      }
+
+      if (urls.length > 0) {
+        setBulkRssUrls(urls.join('\n'));
+        setIsBulkDialogOpen(true);
+        toast.success(`Found ${urls.length} RSS URLs in spreadsheet`);
+      } else {
+        toast.error("No RSS URLs found in file. Make sure URLs contain 'rss', 'feed', '.xml', or 'podcast'");
+      }
+    };
+
+    reader.readAsText(file);
+    // Reset input so same file can be selected again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   return (
     <div className="mt-12">
       <div className="flex justify-between items-center mb-6">
         <h2 className="font-serif text-xl font-bold text-foreground">Podcast Network</h2>
         <div className="flex gap-2">
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileUpload}
+            accept=".csv,.txt,.tsv"
+            className="hidden"
+          />
+          <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
+            <FileSpreadsheet className="w-4 h-4 mr-2" />
+            Import Spreadsheet
+          </Button>
           <Button variant="outline" onClick={() => setIsBulkDialogOpen(true)}>
             <Rss className="w-4 h-4 mr-2" />
             Bulk Import
