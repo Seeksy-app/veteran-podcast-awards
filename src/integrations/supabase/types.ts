@@ -715,6 +715,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_campaign_clicked: {
+        Args: { campaign_id: string }
+        Returns: undefined
+      }
+      increment_campaign_opened: {
+        Args: { campaign_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"

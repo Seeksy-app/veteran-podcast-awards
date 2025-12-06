@@ -15,6 +15,32 @@ interface CampaignRequest {
   fromEmail?: string;
 }
 
+// Function to wrap links in content for click tracking
+function wrapLinksForTracking(content: string, sendId: string, trackingBaseUrl: string): string {
+  // Match href attributes in anchor tags
+  const linkRegex = /href=["']([^"']+)["']/gi;
+  return content.replace(linkRegex, (match, url) => {
+    // Don't wrap mailto: or tel: links
+    if (url.startsWith('mailto:') || url.startsWith('tel:') || url.startsWith('#')) {
+      return match;
+    }
+    const trackedUrl = `${trackingBaseUrl}?id=${sendId}&type=click&url=${encodeURIComponent(url)}`;
+    return `href="${trackedUrl}"`;
+  });
+}
+
+// Function to add tracking pixel to email content
+function addTrackingPixel(content: string, sendId: string, trackingBaseUrl: string): string {
+  const pixelUrl = `${trackingBaseUrl}?id=${sendId}&type=open`;
+  const trackingPixel = `<img src="${pixelUrl}" width="1" height="1" style="display:none;" alt="" />`;
+  
+  // Add before closing body tag if exists, otherwise append
+  if (content.includes('</body>')) {
+    return content.replace('</body>', `${trackingPixel}</body>`);
+  }
+  return content + trackingPixel;
+}
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -54,17 +80,42 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Found ${contacts.length} contacts for list ${targetList}`);
 
+    // Build tracking URL base
+    const trackingBaseUrl = `${supabaseUrl}/functions/v1/track-email`;
+
     let successCount = 0;
     let failCount = 0;
     const sendResults: Array<{ email: string; resendId?: string; error?: string }> = [];
 
     for (const contact of contacts) {
       try {
+        // Create the email_sends record first to get the ID for tracking
+        const { data: sendRecord, error: insertError } = await supabase
+          .from("email_sends")
+          .insert({
+            campaign_id: campaignId,
+            contact_id: contact.id,
+            email: contact.email,
+            status: "pending",
+          })
+          .select("id")
+          .single();
+
+        if (insertError || !sendRecord) {
+          throw new Error("Failed to create send record");
+        }
+
+        const sendId = sendRecord.id;
+
         // Personalize content
-        const personalizedContent = content
+        let personalizedContent = content
           .replace(/{{name}}/g, contact.host_name || contact.name || "Friend")
           .replace(/{{podcast_name}}/g, contact.podcast_name || "your podcast")
           .replace(/{{email}}/g, contact.email);
+
+        // Add tracking pixel and wrap links
+        personalizedContent = wrapLinksForTracking(personalizedContent, sendId, trackingBaseUrl);
+        personalizedContent = addTrackingPixel(personalizedContent, sendId, trackingBaseUrl);
 
         const personalizedSubject = subject.replace(/{{name}}/g, contact.host_name || contact.name || "Friend");
 
@@ -89,14 +140,14 @@ const handler = async (req: Request): Promise<Response> => {
           throw new Error(resendData.message || "Failed to send email");
         }
 
-        // Log the send
-        await supabase.from("email_sends").insert({
-          campaign_id: campaignId,
-          contact_id: contact.id,
-          email: contact.email,
-          resend_id: resendData.id || null,
-          status: "sent",
-        });
+        // Update the send record with success
+        await supabase
+          .from("email_sends")
+          .update({
+            resend_id: resendData.id || null,
+            status: "sent",
+          })
+          .eq("id", sendId);
 
         sendResults.push({ email: contact.email, resendId: resendData.id });
         successCount++;
@@ -106,13 +157,15 @@ const handler = async (req: Request): Promise<Response> => {
         sendResults.push({ email: contact.email, error: error.message });
         failCount++;
 
-        // Log failed send
-        await supabase.from("email_sends").insert({
-          campaign_id: campaignId,
-          contact_id: contact.id,
-          email: contact.email,
-          status: "failed",
-        });
+        // Update or insert failed send record
+        await supabase
+          .from("email_sends")
+          .upsert({
+            campaign_id: campaignId,
+            contact_id: contact.id,
+            email: contact.email,
+            status: "failed",
+          }, { onConflict: "id" });
       }
     }
 
