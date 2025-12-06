@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Award, Radio } from "lucide-react";
 import logo from "@/assets/vpa-logo.png";
-import heroBg from "@/assets/hero-bg.jpg";
 import { CountdownTimer } from "./CountdownTimer";
 import { PreRegistrationForm } from "./PreRegistrationForm";
 import { useState } from "react";
@@ -32,10 +31,9 @@ export const Hero = () => {
       )}
 
       <div
-        className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ${
+        className={`absolute inset-0 bg-background transition-opacity duration-1000 ${
           videoLoaded && !videoError ? "opacity-0" : "opacity-100"
         }`}
-        style={{ backgroundImage: `url(${heroBg})` }}
       />
 
       <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background" />
