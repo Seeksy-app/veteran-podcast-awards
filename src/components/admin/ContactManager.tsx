@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Trash2, FileSpreadsheet, Search, Mail, Edit, Download, CheckCircle2, XCircle, Send, Tag, X } from "lucide-react";
+import { Plus, Trash2, FileSpreadsheet, Search, Mail, Edit, Download, CheckCircle2, XCircle, Send, Tag, X, Sparkles, Filter, Save } from "lucide-react";
 import { toast } from "sonner";
 
 interface Contact {
@@ -39,6 +39,20 @@ interface MailingList {
   description: string | null;
 }
 
+interface SmartList {
+  id: string;
+  name: string;
+  description: string | null;
+  filters: {
+    status?: string;
+    is_on_vpn?: boolean;
+    contact_type?: string;
+    tags?: string[];
+    lists?: string[];
+    source?: string;
+  };
+}
+
 interface Podcast {
   id: string;
   title: string;
@@ -63,13 +77,42 @@ export const ContactManager = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isCampaignDialogOpen, setIsCampaignDialogOpen] = useState(false);
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [isSmartListDialogOpen, setIsSmartListDialogOpen] = useState(false);
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [vpnFilter, setVpnFilter] = useState<string>("all");
   const [listFilter, setListFilter] = useState<string>("all");
+  const [smartListFilter, setSmartListFilter] = useState<string>("all");
   const [newTag, setNewTag] = useState("");
+  const [newSmartListTag, setNewSmartListTag] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [pendingImportData, setPendingImportData] = useState<Array<{
+    name: string;
+    email: string;
+    podcast_name?: string;
+    rss_url?: string;
+    podcast_url?: string;
+    host_name?: string;
+    contact_type?: string;
+  }> | null>(null);
+
+  const [importOptions, setImportOptions] = useState({
+    source: "CSV Import",
+    lists: [] as string[],
+    tags: [] as string[],
+  });
+
+  const [smartListForm, setSmartListForm] = useState({
+    name: "",
+    description: "",
+    status: "all",
+    is_on_vpn: "all",
+    contact_type: "all",
+    source: "all",
+    tags: [] as string[],
+  });
 
   const [formData, setFormData] = useState({
     name: "",
@@ -123,6 +166,15 @@ export const ContactManager = () => {
     },
   });
 
+  const { data: smartLists } = useQuery({
+    queryKey: ["smart-lists"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("smart_lists").select("*").order("name");
+      if (error) throw error;
+      return data as SmartList[];
+    },
+  });
+
   const { data: podcasts } = useQuery({
     queryKey: ["all-podcasts-for-matching"],
     queryFn: async () => {
@@ -131,6 +183,18 @@ export const ContactManager = () => {
       return data as Podcast[];
     },
   });
+
+  // Apply smart list filter
+  const applySmartListFilter = (contact: Contact, smartList: SmartList): boolean => {
+    const filters = smartList.filters;
+    if (filters.status && contact.status !== filters.status) return false;
+    if (filters.is_on_vpn !== undefined && contact.is_on_vpn !== filters.is_on_vpn) return false;
+    if (filters.contact_type && contact.contact_type !== filters.contact_type) return false;
+    if (filters.source && contact.source !== filters.source) return false;
+    if (filters.tags?.length && !filters.tags.some(t => contact.tags?.includes(t))) return false;
+    if (filters.lists?.length && !filters.lists.some(l => contact.lists?.includes(l))) return false;
+    return true;
+  };
 
   const filteredContacts = useMemo(() => {
     if (!contacts) return [];
@@ -145,9 +209,19 @@ export const ContactManager = () => {
       const matchesStatus = statusFilter === "all" || contact.status === statusFilter;
       const matchesVpn = vpnFilter === "all" || (vpnFilter === "on_vpn" && contact.is_on_vpn) || (vpnFilter === "not_on_vpn" && !contact.is_on_vpn);
       const matchesList = listFilter === "all" || contact.lists?.includes(listFilter);
-      return matchesSearch && matchesStatus && matchesVpn && matchesList;
+      
+      // Smart list filter
+      let matchesSmartList = true;
+      if (smartListFilter !== "all" && smartLists) {
+        const smartList = smartLists.find(sl => sl.id === smartListFilter);
+        if (smartList) {
+          matchesSmartList = applySmartListFilter(contact, smartList);
+        }
+      }
+      
+      return matchesSearch && matchesStatus && matchesVpn && matchesList && matchesSmartList;
     });
-  }, [contacts, searchQuery, statusFilter, vpnFilter, listFilter]);
+  }, [contacts, searchQuery, statusFilter, vpnFilter, listFilter, smartListFilter, smartLists]);
 
   const findMatchingPodcast = (rssUrl: string | null | undefined): Podcast | undefined => {
     if (!rssUrl || !podcasts) return undefined;
@@ -235,7 +309,10 @@ export const ContactManager = () => {
   });
 
   const bulkImport = useMutation({
-    mutationFn: async (
+    mutationFn: async ({
+      importContacts,
+      options,
+    }: {
       importContacts: Array<{
         name: string;
         email: string;
@@ -244,8 +321,9 @@ export const ContactManager = () => {
         podcast_url?: string;
         host_name?: string;
         contact_type?: string;
-      }>
-    ) => {
+      }>;
+      options: typeof importOptions;
+    }) => {
       let matchedCount = 0;
       const contactsToInsert = importContacts.map((c) => {
         const matchingPodcast = findMatchingPodcast(c.rss_url);
@@ -261,9 +339,9 @@ export const ContactManager = () => {
           status: "uncontacted",
           is_on_vpn: !!matchingPodcast,
           linked_podcast_id: matchingPodcast?.id || null,
-          source: "CSV Import",
-          tags: [],
-          lists: [],
+          source: options.source,
+          tags: options.tags,
+          lists: options.lists,
         };
       });
 
@@ -274,6 +352,51 @@ export const ContactManager = () => {
     onSuccess: ({ total, matched }) => {
       queryClient.invalidateQueries({ queryKey: ["podcast-contacts"] });
       toast.success(`Imported ${total} contacts. ${matched} matched to VPN podcasts.`);
+      setIsImportDialogOpen(false);
+      setPendingImportData(null);
+      setImportOptions({ source: "CSV Import", lists: [], tags: [] });
+    },
+  });
+
+  const createSmartList = useMutation({
+    mutationFn: async (data: typeof smartListForm) => {
+      const filters: SmartList["filters"] = {};
+      if (data.status !== "all") filters.status = data.status;
+      if (data.is_on_vpn !== "all") filters.is_on_vpn = data.is_on_vpn === "true";
+      if (data.contact_type !== "all") filters.contact_type = data.contact_type;
+      if (data.source !== "all") filters.source = data.source;
+      if (data.tags.length > 0) filters.tags = data.tags;
+
+      const { error } = await supabase.from("smart_lists").insert({
+        name: data.name,
+        description: data.description || null,
+        filters,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["smart-lists"] });
+      toast.success("Smart list created");
+      setIsSmartListDialogOpen(false);
+      setSmartListForm({ name: "", description: "", status: "all", is_on_vpn: "all", contact_type: "all", source: "all", tags: [] });
+    },
+    onError: (error: Error) => {
+      if (error.message.includes("duplicate")) {
+        toast.error("A smart list with this name already exists");
+      } else {
+        toast.error(error.message);
+      }
+    },
+  });
+
+  const deleteSmartList = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("smart_lists").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["smart-lists"] });
+      toast.success("Smart list deleted");
     },
   });
 
@@ -386,7 +509,10 @@ export const ContactManager = () => {
       }
 
       if (importContacts.length > 0) {
-        bulkImport.mutate(importContacts);
+        // Open import dialog with parsed data
+        setPendingImportData(importContacts);
+        setIsImportDialogOpen(true);
+        toast.success(`Found ${importContacts.length} contacts. Configure import options.`);
       } else {
         toast.error("No valid contacts found in file. Make sure there's an Email column.");
       }
@@ -497,6 +623,46 @@ export const ContactManager = () => {
     );
   }, [contacts, mailingLists]);
 
+  const smartListCounts = useMemo(() => {
+    if (!contacts || !smartLists) return {};
+    return smartLists.reduce(
+      (acc, smartList) => {
+        acc[smartList.id] = contacts.filter((c) => applySmartListFilter(c, smartList)).length;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
+  }, [contacts, smartLists]);
+
+  const toggleImportList = (listName: string) => {
+    if (importOptions.lists.includes(listName)) {
+      setImportOptions({ ...importOptions, lists: importOptions.lists.filter((l) => l !== listName) });
+    } else {
+      setImportOptions({ ...importOptions, lists: [...importOptions.lists, listName] });
+    }
+  };
+
+  const addImportTag = (tag: string) => {
+    if (tag.trim() && !importOptions.tags.includes(tag.trim())) {
+      setImportOptions({ ...importOptions, tags: [...importOptions.tags, tag.trim()] });
+    }
+  };
+
+  const removeImportTag = (tag: string) => {
+    setImportOptions({ ...importOptions, tags: importOptions.tags.filter((t) => t !== tag) });
+  };
+
+  const addSmartListTag = () => {
+    if (newSmartListTag.trim() && !smartListForm.tags.includes(newSmartListTag.trim())) {
+      setSmartListForm({ ...smartListForm, tags: [...smartListForm.tags, newSmartListTag.trim()] });
+      setNewSmartListTag("");
+    }
+  };
+
+  const removeSmartListTag = (tag: string) => {
+    setSmartListForm({ ...smartListForm, tags: smartListForm.tags.filter((t) => t !== tag) });
+  };
+
   return (
     <div className="mt-6">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -583,7 +749,23 @@ export const ContactManager = () => {
                   <SelectItem value="not_on_vpn">Not on VPN</SelectItem>
                 </SelectContent>
               </Select>
-              {(searchQuery || statusFilter !== "all" || vpnFilter !== "all" || listFilter !== "all") && (
+              <Select value={smartListFilter} onValueChange={setSmartListFilter}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Smart List" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Smart Lists</SelectItem>
+                  {smartLists?.map((sl) => (
+                    <SelectItem key={sl.id} value={sl.id}>
+                      <span className="flex items-center gap-1">
+                        <Sparkles className="w-3 h-3" />
+                        {sl.name} ({smartListCounts[sl.id] || 0})
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {(searchQuery || statusFilter !== "all" || vpnFilter !== "all" || listFilter !== "all" || smartListFilter !== "all") && (
                 <span className="text-sm text-muted-foreground">
                   {filteredContacts.length} of {contacts?.length || 0}
                 </span>
@@ -661,22 +843,98 @@ export const ContactManager = () => {
         </TabsContent>
 
         <TabsContent value="lists" className="mt-0">
-          <div className="grid gap-3">
-            {mailingLists?.map((list) => (
-              <div key={list.id} className="flex items-center justify-between p-4 bg-card border border-border rounded-lg">
-                <div>
-                  <h3 className="font-semibold text-foreground">{list.name}</h3>
-                  {list.description && <p className="text-sm text-muted-foreground">{list.description}</p>}
-                </div>
-                <div className="flex items-center gap-4">
-                  <span className="text-sm text-muted-foreground">{listCounts[list.name] || 0} contacts</span>
-                  <Button variant="outline" size="sm" onClick={() => { setCampaignData({ ...campaignData, targetList: list.name }); setIsCampaignDialogOpen(true); }}>
-                    <Send className="w-4 h-4 mr-2" />
-                    Send Email
-                  </Button>
-                </div>
+          <div className="space-y-6">
+            {/* Regular Mailing Lists */}
+            <div>
+              <h3 className="font-semibold text-foreground mb-3">Mailing Lists</h3>
+              <div className="grid gap-2">
+                {mailingLists?.map((list) => (
+                  <div key={list.id} className="flex items-center justify-between p-3 bg-card border border-border rounded-lg">
+                    <div>
+                      <h4 className="font-medium text-foreground">{list.name}</h4>
+                      {list.description && <p className="text-xs text-muted-foreground">{list.description}</p>}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm text-muted-foreground">{listCounts[list.name] || 0} contacts</span>
+                      <Button variant="outline" size="sm" onClick={() => { setCampaignData({ ...campaignData, targetList: list.name }); setIsCampaignDialogOpen(true); }}>
+                        <Send className="w-4 h-4 mr-1" />
+                        Email
+                      </Button>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
+
+            {/* Smart Lists */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold text-foreground flex items-center gap-2">
+                  <Sparkles className="w-4 h-4" />
+                  Smart Lists
+                </h3>
+                <Button size="sm" onClick={() => setIsSmartListDialogOpen(true)}>
+                  <Plus className="w-4 h-4 mr-1" />
+                  Create Smart List
+                </Button>
+              </div>
+              <div className="grid gap-2">
+                {smartLists?.map((smartList) => (
+                  <div key={smartList.id} className="flex items-center justify-between p-3 bg-card border border-border rounded-lg">
+                    <div>
+                      <h4 className="font-medium text-foreground flex items-center gap-2">
+                        <Sparkles className="w-3 h-3 text-primary" />
+                        {smartList.name}
+                      </h4>
+                      {smartList.description && <p className="text-xs text-muted-foreground">{smartList.description}</p>}
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {smartList.filters.status && (
+                          <Badge variant="secondary" className="text-xs">Status: {smartList.filters.status}</Badge>
+                        )}
+                        {smartList.filters.is_on_vpn !== undefined && (
+                          <Badge variant="secondary" className="text-xs">VPN: {smartList.filters.is_on_vpn ? "Yes" : "No"}</Badge>
+                        )}
+                        {smartList.filters.contact_type && (
+                          <Badge variant="secondary" className="text-xs">{smartList.filters.contact_type}</Badge>
+                        )}
+                        {smartList.filters.tags?.map((tag) => (
+                          <Badge key={tag} variant="outline" className="text-xs">Tag: {tag}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm text-muted-foreground">{smartListCounts[smartList.id] || 0} contacts</span>
+                      <Button variant="outline" size="sm" onClick={() => { setSmartListFilter(smartList.id); setActiveTab("contacts"); }}>
+                        <Filter className="w-4 h-4 mr-1" />
+                        View
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="outline" size="icon" className="text-destructive h-8 w-8">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Smart List</AlertDialogTitle>
+                            <AlertDialogDescription>Are you sure you want to delete "{smartList.name}"?</AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => deleteSmartList.mutate(smartList.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </div>
+                ))}
+                {!smartLists?.length && (
+                  <p className="text-sm text-muted-foreground text-center py-4">No smart lists yet. Create one to filter contacts dynamically.</p>
+                )}
+              </div>
+            </div>
           </div>
         </TabsContent>
       </Tabs>
@@ -916,6 +1174,202 @@ export const ContactManager = () => {
               className="w-full"
             >
               {sendCampaign.isPending ? "Sending..." : `Send to ${listCounts[campaignData.targetList] || 0} contacts`}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Import Options Dialog */}
+      <Dialog open={isImportDialogOpen} onOpenChange={(open) => { if (!open) { setIsImportDialogOpen(false); setPendingImportData(null); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Import {pendingImportData?.length || 0} Contacts</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Source</Label>
+              <Select value={importOptions.source} onValueChange={(v) => setImportOptions({ ...importOptions, source: v })}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {SOURCE_OPTIONS.map((opt) => (
+                    <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Add to Lists</Label>
+              <div className="flex flex-wrap gap-2">
+                {mailingLists?.map((list) => (
+                  <Badge
+                    key={list.id}
+                    variant={importOptions.lists.includes(list.name) ? "default" : "outline"}
+                    className="cursor-pointer"
+                    onClick={() => toggleImportList(list.name)}
+                  >
+                    {list.name}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Add Tags</Label>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Add tag..."
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      addImportTag((e.target as HTMLInputElement).value);
+                      (e.target as HTMLInputElement).value = "";
+                    }
+                  }}
+                />
+              </div>
+              {importOptions.tags.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {importOptions.tags.map((tag) => (
+                    <Badge key={tag} variant="secondary" className="gap-1">
+                      {tag}
+                      <X className="w-3 h-3 cursor-pointer" onClick={() => removeImportTag(tag)} />
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <Button
+              onClick={() => {
+                if (pendingImportData) {
+                  bulkImport.mutate({ importContacts: pendingImportData, options: importOptions });
+                }
+              }}
+              disabled={bulkImport.isPending}
+              className="w-full"
+            >
+              {bulkImport.isPending ? "Importing..." : `Import ${pendingImportData?.length || 0} Contacts`}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Smart List Dialog */}
+      <Dialog open={isSmartListDialogOpen} onOpenChange={setIsSmartListDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5" />
+              Create Smart List
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Name *</Label>
+              <Input value={smartListForm.name} onChange={(e) => setSmartListForm({ ...smartListForm, name: e.target.value })} placeholder="My Smart List" />
+            </div>
+            <div className="space-y-2">
+              <Label>Description</Label>
+              <Input value={smartListForm.description} onChange={(e) => setSmartListForm({ ...smartListForm, description: e.target.value })} placeholder="Optional description..." />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Status</Label>
+                <Select value={smartListForm.status} onValueChange={(v) => setSmartListForm({ ...smartListForm, status: v })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Any</SelectItem>
+                    {STATUS_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>On VPN</Label>
+                <Select value={smartListForm.is_on_vpn} onValueChange={(v) => setSmartListForm({ ...smartListForm, is_on_vpn: v })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Any</SelectItem>
+                    <SelectItem value="true">Yes</SelectItem>
+                    <SelectItem value="false">No</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Type</Label>
+                <Select value={smartListForm.contact_type} onValueChange={(v) => setSmartListForm({ ...smartListForm, contact_type: v })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Any</SelectItem>
+                    {TYPE_OPTIONS.map((opt) => (
+                      <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Source</Label>
+                <Select value={smartListForm.source} onValueChange={(v) => setSmartListForm({ ...smartListForm, source: v })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Any</SelectItem>
+                    {SOURCE_OPTIONS.map((opt) => (
+                      <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Must have tags</Label>
+              <div className="flex gap-2">
+                <Input value={newSmartListTag} onChange={(e) => setNewSmartListTag(e.target.value)} placeholder="Add tag filter..." onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addSmartListTag())} />
+                <Button type="button" variant="outline" onClick={addSmartListTag}>
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </div>
+              {smartListForm.tags.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {smartListForm.tags.map((tag) => (
+                    <Badge key={tag} variant="secondary" className="gap-1">
+                      {tag}
+                      <X className="w-3 h-3 cursor-pointer" onClick={() => removeSmartListTag(tag)} />
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <Button
+              onClick={() => {
+                if (!smartListForm.name) {
+                  toast.error("Name is required");
+                  return;
+                }
+                createSmartList.mutate(smartListForm);
+              }}
+              disabled={createSmartList.isPending}
+              className="w-full"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              Create Smart List
             </Button>
           </div>
         </DialogContent>
