@@ -8,6 +8,7 @@ import logo from "@/assets/vpa-logo.png";
 const navItems = [
   { label: "Home", href: "/" },
   { label: "Livestream", href: "/livestream" },
+  { label: "Network", href: "/network" },
   { label: "Categories", href: "/categories" },
   { label: "About", href: "/about" },
 ];

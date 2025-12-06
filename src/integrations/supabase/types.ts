@@ -56,6 +56,54 @@ export type Database = {
         }
         Relationships: []
       }
+      podcasts: {
+        Row: {
+          author: string | null
+          created_at: string
+          description: string | null
+          display_order: number
+          episodes: Json | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          last_fetched_at: string | null
+          rss_url: string
+          title: string
+          updated_at: string
+          website_url: string | null
+        }
+        Insert: {
+          author?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          episodes?: Json | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          last_fetched_at?: string | null
+          rss_url: string
+          title: string
+          updated_at?: string
+          website_url?: string | null
+        }
+        Update: {
+          author?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          episodes?: Json | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          last_fetched_at?: string | null
+          rss_url?: string
+          title?: string
+          updated_at?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
       pre_registrations: {
         Row: {
           created_at: string
