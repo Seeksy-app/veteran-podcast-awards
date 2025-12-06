@@ -47,21 +47,6 @@ const NetworkPage = () => {
             </p>
           </div>
 
-          {/* Stats */}
-          <div className="flex justify-center gap-12 mb-12">
-            <div className="text-center">
-              <p className="font-serif text-3xl md:text-4xl text-primary font-bold">800+</p>
-              <p className="text-sm text-muted-foreground">Podcasts</p>
-            </div>
-            <div className="text-center">
-              <p className="font-serif text-3xl md:text-4xl text-primary font-bold">10,000+</p>
-              <p className="text-sm text-muted-foreground">Episodes</p>
-            </div>
-            <div className="text-center">
-              <Headphones className="w-8 h-8 text-primary mx-auto mb-1" />
-              <p className="text-sm text-muted-foreground">Millions of Listeners</p>
-            </div>
-          </div>
 
           {/* Action Buttons */}
           <div className="flex justify-center gap-4">
