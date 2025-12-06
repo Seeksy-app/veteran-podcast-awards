@@ -30,7 +30,13 @@ import {
   Settings,
   Sun,
   Moon,
-  Monitor
+  Monitor,
+  Mail,
+  Inbox,
+  Eye,
+  EyeOff,
+  ExternalLink,
+  Trash2
 } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 
@@ -46,6 +52,20 @@ interface Profile {
   social_twitter: string | null;
   social_instagram: string | null;
   social_linkedin: string | null;
+  username_slug: string | null;
+  is_public: boolean;
+  allow_contact: boolean;
+  podcast_id: string | null;
+}
+
+interface PodcasterMessage {
+  id: string;
+  sender_name: string;
+  sender_email: string;
+  subject: string;
+  message: string;
+  is_read: boolean;
+  created_at: string;
 }
 
 interface UserVote {
@@ -67,8 +87,10 @@ const Dashboard = () => {
   const { theme, setTheme } = useTheme();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [votes, setVotes] = useState<UserVote[]>([]);
+  const [messages, setMessages] = useState<PodcasterMessage[]>([]);
   const [isUpdating, setIsUpdating] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [profileLinkCopied, setProfileLinkCopied] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -80,8 +102,21 @@ const Dashboard = () => {
     if (user) {
       fetchProfile();
       fetchVotes();
+      fetchMessages();
     }
   }, [user]);
+
+  const fetchMessages = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("podcaster_messages")
+      .select("*")
+      .eq("recipient_id", user.id)
+      .order("created_at", { ascending: false });
+    
+    if (data) setMessages(data as PodcasterMessage[]);
+  };
+
 
   const fetchProfile = async () => {
     if (!user) return;
@@ -138,6 +173,9 @@ const Dashboard = () => {
         social_twitter: profile.social_twitter,
         social_instagram: profile.social_instagram,
         social_linkedin: profile.social_linkedin,
+        username_slug: profile.username_slug,
+        is_public: profile.is_public,
+        allow_contact: profile.allow_contact,
       })
       .eq("id", user.id);
 
@@ -291,10 +329,19 @@ const Dashboard = () => {
 
           {/* Dashboard Tabs */}
           <Tabs defaultValue="profile" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4 md:w-auto md:inline-grid">
+            <TabsList className="grid w-full grid-cols-5 md:w-auto md:inline-grid">
               <TabsTrigger value="profile" className="gap-2">
                 <User className="w-4 h-4" />
                 <span className="hidden sm:inline">Profile</span>
+              </TabsTrigger>
+              <TabsTrigger value="inbox" className="gap-2 relative">
+                <Inbox className="w-4 h-4" />
+                <span className="hidden sm:inline">Inbox</span>
+                {messages.filter(m => !m.is_read).length > 0 && (
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center">
+                    {messages.filter(m => !m.is_read).length}
+                  </span>
+                )}
               </TabsTrigger>
               <TabsTrigger value="votes" className="gap-2">
                 <Vote className="w-4 h-4" />
@@ -402,6 +449,50 @@ const Dashboard = () => {
                       {isUpdating ? "Saving..." : "Save Changes"}
                     </Button>
                   </form>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Inbox Tab */}
+            <TabsContent value="inbox">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Mail className="w-5 h-5 text-primary" />
+                    Messages
+                  </CardTitle>
+                  <CardDescription>
+                    Messages from your public profile visitors
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {messages.length === 0 ? (
+                    <div className="text-center py-12">
+                      <Inbox className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="font-semibold text-foreground mb-2">No Messages Yet</h3>
+                      <p className="text-muted-foreground text-sm">
+                        Messages from your profile visitors will appear here.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {messages.map((msg) => (
+                        <div key={msg.id} className={`p-4 rounded-lg border ${msg.is_read ? 'bg-muted/30' : 'bg-primary/5 border-primary/20'}`}>
+                          <div className="flex justify-between items-start mb-2">
+                            <div>
+                              <p className="font-medium">{msg.sender_name}</p>
+                              <p className="text-xs text-muted-foreground">{msg.sender_email}</p>
+                            </div>
+                            <span className="text-xs text-muted-foreground">
+                              {new Date(msg.created_at).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <p className="font-semibold text-sm mb-1">{msg.subject}</p>
+                          <p className="text-sm text-muted-foreground">{msg.message}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
