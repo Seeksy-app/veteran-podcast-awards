@@ -1,8 +1,9 @@
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { Video, Calendar, Bell, Users } from "lucide-react";
+import { Calendar, Bell, Users } from "lucide-react";
 import { PreRegistrationForm } from "@/components/home/PreRegistrationForm";
 import { SponsorDisplay } from "@/components/sponsors/SponsorDisplay";
+import { SponsorshipBenefits } from "@/components/sponsors/SponsorshipBenefits";
 import logo from "@/assets/vpa-logo.png";
 
 const VIDEO_URL = "https://snhrqbtwahgarxxbizsz.supabase.co/storage/v1/object/public/videos/hero-video.mp4";
@@ -13,11 +14,14 @@ const LivestreamPage = () => {
       <Header />
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4">
-          {/* Header */}
+          {/* Live Badge Header */}
           <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 bg-primary/20 border border-primary/50 rounded-full px-4 py-2 mb-4">
-              <Video className="w-4 h-4 text-primary" />
-              <span className="text-sm text-primary font-medium">Livestream Event</span>
+            <div className="inline-flex items-center gap-2 bg-red-500/20 border border-red-500/50 rounded-full px-4 py-2 mb-6">
+              <span className="relative flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+              </span>
+              <span className="text-sm text-red-400 font-medium uppercase tracking-wider">Live Streaming Event</span>
             </div>
             <h1 className="font-serif text-4xl md:text-5xl font-bold mb-4">
               <span className="text-gold-gradient">Watch Live</span>
@@ -102,12 +106,15 @@ const LivestreamPage = () => {
                 <Users className="w-5 h-5 text-primary" />
                 <div className="text-left">
                   <p className="font-medium text-foreground">Interested in sponsoring?</p>
-                  <p className="text-sm text-muted-foreground">Contact us for sponsorship opportunities.</p>
+                  <p className="text-sm text-muted-foreground">Scroll down to learn about our sponsorship opportunities.</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Sponsorship Benefits Section */}
+        <SponsorshipBenefits />
       </main>
       <Footer />
     </div>
