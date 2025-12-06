@@ -1,20 +1,14 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Award, ChevronRight } from "lucide-react";
+import { Award, ChevronRight, Clock } from "lucide-react";
 
-const categories = [
-  "Best Overall Veteran Podcast 2025",
+const previewCategories = [
+  "Best Overall Veteran Podcast",
   "Best Army Veteran Podcast",
   "Best Navy Veteran Podcast",
   "Best Marine Corps Veteran Podcast",
   "Best Air Force Veteran Podcast",
-  "Best Coast Guard Veteran Podcast",
-  "Best Space Force Veteran Podcast",
-  "Best VSO Podcast",
-  "Best MilVet Advocate Podcast",
-  "Best Spouse Podcast",
   "Best Military Transition Podcast",
-  "Best Business/Entrepreneur Podcast",
 ];
 
 export const CategoriesPreview = () => {
@@ -27,20 +21,20 @@ export const CategoriesPreview = () => {
             <span className="text-sm text-muted-foreground">Award Categories</span>
           </div>
           <h2 className="font-serif text-3xl md:text-4xl font-bold mb-4">
-            <span className="text-gold-gradient">25+ Categories</span>
-            <span className="text-foreground"> to Honor Excellence</span>
+            <span className="text-gold-gradient">Categories</span>
+            <span className="text-foreground"> Coming Soon</span>
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            From branch-specific awards to content-focused recognition, we celebrate
-            veteran podcasters across every dimension of their craft.
+            We're finalizing the official category list for 2026. Here's a preview of 
+            some categories we're planning. Sign up to be notified when the full list is announced.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
-          {categories.map((category, index) => (
+          {previewCategories.map((category, index) => (
             <div
               key={category}
-              className="group flex items-center gap-3 bg-background border border-border rounded-lg p-4 hover:border-primary hover:glow-gold-sm transition-all duration-300 cursor-pointer"
+              className="group flex items-center gap-3 bg-background border border-border rounded-lg p-4 hover:border-primary/50 transition-all duration-300"
               style={{ animationDelay: `${index * 0.05}s` }}
             >
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary/20 transition-colors">
@@ -49,9 +43,18 @@ export const CategoriesPreview = () => {
               <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
                 {category}
               </span>
-              <ChevronRight className="w-4 h-4 text-muted-foreground ml-auto group-hover:text-primary transition-colors" />
             </div>
           ))}
+          
+          {/* Coming Soon Card */}
+          <div className="flex items-center gap-3 bg-secondary/30 border border-dashed border-border rounded-lg p-4">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
+              <Clock className="w-4 h-4 text-muted-foreground" />
+            </div>
+            <span className="text-sm font-medium text-muted-foreground">
+              More categories coming soon...
+            </span>
+          </div>
         </div>
 
         <div className="text-center">

@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      featured_nominees: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          display_order: number
+          host_name: string
+          id: string
+          image_url: string | null
+          is_active: boolean
+          podcast_name: string
+          podcast_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          host_name: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          podcast_name: string
+          podcast_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          host_name?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          podcast_name?: string
+          podcast_url?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       pre_registrations: {
         Row: {
           created_at: string

@@ -3,7 +3,6 @@ import { Footer } from "@/components/layout/Footer";
 import { Hero } from "@/components/home/Hero";
 import { CategoriesPreview } from "@/components/home/CategoriesPreview";
 import { HowItWorks } from "@/components/home/HowItWorks";
-import { FeaturedNominees } from "@/components/home/FeaturedNominees";
 import { CallToAction } from "@/components/home/CallToAction";
 
 const Index = () => {
@@ -14,7 +13,6 @@ const Index = () => {
         <Hero />
         <HowItWorks />
         <CategoriesPreview />
-        <FeaturedNominees />
         <CallToAction />
       </main>
       <Footer />

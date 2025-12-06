@@ -6,10 +6,7 @@ import logo from "@/assets/vpa-logo.png";
 
 const navItems = [
   { label: "Home", href: "/" },
-  { label: "Nominees", href: "/nominees" },
   { label: "Categories", href: "/categories" },
-  { label: "Register", href: "/register" },
-  { label: "Vote", href: "/vote" },
   { label: "About", href: "/about" },
 ];
 
@@ -24,7 +21,7 @@ export const Header = () => {
           <Link to="/" className="flex items-center gap-3">
             <img src={logo} alt="Veteran Podcast Awards" className="h-14 w-14" />
             <span className="hidden sm:block font-serif text-lg text-gold-gradient font-semibold">
-              VPA 2025
+              VPA 2026
             </span>
           </Link>
 
@@ -46,12 +43,11 @@ export const Header = () => {
           </nav>
 
           <div className="hidden lg:flex items-center gap-4">
-            <Button variant="goldOutline" size="sm">
-              Judge Login
-            </Button>
-            <Button variant="gold" size="sm">
-              Register Your Podcast
-            </Button>
+            <Link to="/">
+              <Button variant="gold" size="sm">
+                Get Notified
+              </Button>
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -82,12 +78,11 @@ export const Header = () => {
                 </Link>
               ))}
               <div className="flex flex-col gap-2 pt-4 border-t border-border">
-                <Button variant="goldOutline" size="sm">
-                  Judge Login
-                </Button>
-                <Button variant="gold" size="sm">
-                  Register Your Podcast
-                </Button>
+                <Link to="/">
+                  <Button variant="gold" size="sm" className="w-full">
+                    Get Notified
+                  </Button>
+                </Link>
               </div>
             </nav>
           </div>

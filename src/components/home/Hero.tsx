@@ -1,13 +1,13 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Award, Users, Play } from "lucide-react";
+import { Award, Users, Radio, Video } from "lucide-react";
 import logo from "@/assets/vpa-logo.png";
 import heroBg from "@/assets/hero-bg.jpg";
 import { CountdownTimer } from "./CountdownTimer";
 import { PreRegistrationForm } from "./PreRegistrationForm";
 import { useState } from "react";
 
-// Video URL from Supabase storage - update this when video is uploaded
+// Video URL from Supabase storage
 const VIDEO_URL = "https://snhrqbtwahgarxxbizsz.supabase.co/storage/v1/object/public/videos/hero-video.mp4";
 
 export const Hero = () => {
@@ -54,6 +54,14 @@ export const Hero = () => {
             />
           </div>
 
+          {/* Livestream Badge */}
+          <div className="inline-flex items-center gap-2 bg-destructive/20 border border-destructive/50 rounded-full px-4 py-2 mb-4 animate-fade-in">
+            <Video className="w-4 h-4 text-destructive animate-pulse" />
+            <span className="text-sm text-destructive font-medium">
+              Live Streaming Event
+            </span>
+          </div>
+
           <div className="inline-flex items-center gap-2 bg-secondary/50 border border-border rounded-full px-4 py-2 mb-6 animate-fade-in">
             <Award className="w-4 h-4 text-primary" />
             <span className="text-sm text-muted-foreground">
@@ -68,8 +76,8 @@ export const Hero = () => {
           </h1>
 
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-8 animate-slide-up" style={{ animationDelay: "0.1s" }}>
-            Celebrating the impactful voices of veteran podcasters. Help us honor
-            those who share their stories, inspire others, and strengthen our community.
+            Join us for a live celebration of the impactful voices in veteran podcasting. 
+            Streaming worldwide on October 5th, 2026.
           </p>
 
           <div className="mb-10 animate-slide-up" style={{ animationDelay: "0.2s" }}>
@@ -82,15 +90,15 @@ export const Hero = () => {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 animate-slide-up" style={{ animationDelay: "0.4s" }}>
-            <Link to="/nominees">
+            <Link to="/categories">
               <Button variant="goldOutline" size="lg">
-                <Users className="w-5 h-5" />
-                View 2025 Winners
+                <Award className="w-5 h-5" />
+                View Categories
               </Button>
             </Link>
             <Link to="/about">
               <Button variant="outline" size="lg">
-                <Play className="w-5 h-5" />
+                <Radio className="w-5 h-5" />
                 Learn More
               </Button>
             </Link>
@@ -98,16 +106,16 @@ export const Hero = () => {
 
           <div className="grid grid-cols-3 gap-8 mt-16 animate-fade-in" style={{ animationDelay: "0.5s" }}>
             <div className="text-center">
-              <p className="font-serif text-3xl md:text-4xl text-primary font-bold">25+</p>
+              <p className="font-serif text-3xl md:text-4xl text-primary font-bold">20+</p>
               <p className="text-sm text-muted-foreground">Categories</p>
             </div>
             <div className="text-center">
-              <p className="font-serif text-3xl md:text-4xl text-primary font-bold">100+</p>
-              <p className="text-sm text-muted-foreground">Past Nominees</p>
+              <p className="font-serif text-3xl md:text-4xl text-primary font-bold">LIVE</p>
+              <p className="text-sm text-muted-foreground">Streaming</p>
             </div>
             <div className="text-center">
-              <p className="font-serif text-3xl md:text-4xl text-primary font-bold">5K+</p>
-              <p className="text-sm text-muted-foreground">Community Votes</p>
+              <p className="font-serif text-3xl md:text-4xl text-primary font-bold">Oct 5</p>
+              <p className="text-sm text-muted-foreground">Save the Date</p>
             </div>
           </div>
         </div>
