@@ -6,6 +6,7 @@ import logo from "@/assets/vpa-logo.png";
 
 const navItems = [
   { label: "Home", href: "/" },
+  { label: "Livestream", href: "/livestream" },
   { label: "Categories", href: "/categories" },
   { label: "About", href: "/about" },
 ];
@@ -25,7 +26,6 @@ export const Header = () => {
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-8">
             {navItems.map((item) => (
               <Link
@@ -50,7 +50,6 @@ export const Header = () => {
             </Link>
           </div>
 
-          {/* Mobile Menu Button */}
           <button
             className="lg:hidden text-foreground"
             onClick={() => setIsOpen(!isOpen)}
@@ -59,7 +58,6 @@ export const Header = () => {
           </button>
         </div>
 
-        {/* Mobile Navigation */}
         {isOpen && (
           <div className="lg:hidden py-4 border-t border-border animate-fade-in">
             <nav className="flex flex-col gap-4">
