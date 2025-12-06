@@ -2,6 +2,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Video, Calendar, Bell, Users } from "lucide-react";
 import { PreRegistrationForm } from "@/components/home/PreRegistrationForm";
+import { SponsorDisplay } from "@/components/sponsors/SponsorDisplay";
 import logo from "@/assets/vpa-logo.png";
 
 const VIDEO_URL = "https://snhrqbtwahgarxxbizsz.supabase.co/storage/v1/object/public/videos/hero-video.mp4";
@@ -92,62 +93,8 @@ const LivestreamPage = () => {
               </p>
             </div>
 
-            {/* Sponsor Tiers */}
-            <div className="space-y-12">
-              {/* Platinum Sponsors */}
-              <div>
-                <h3 className="text-center text-sm font-semibold text-primary uppercase tracking-wider mb-6">
-                  Platinum Sponsors
-                </h3>
-                <div className="flex flex-wrap justify-center gap-8">
-                  <div className="w-48 h-24 bg-card border border-dashed border-border rounded-lg flex items-center justify-center">
-                    <span className="text-muted-foreground text-sm">Your Logo Here</span>
-                  </div>
-                  <div className="w-48 h-24 bg-card border border-dashed border-border rounded-lg flex items-center justify-center">
-                    <span className="text-muted-foreground text-sm">Your Logo Here</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Gold Sponsors */}
-              <div>
-                <h3 className="text-center text-sm font-semibold text-primary/80 uppercase tracking-wider mb-6">
-                  Gold Sponsors
-                </h3>
-                <div className="flex flex-wrap justify-center gap-6">
-                  <div className="w-40 h-20 bg-card border border-dashed border-border rounded-lg flex items-center justify-center">
-                    <span className="text-muted-foreground text-xs">Your Logo Here</span>
-                  </div>
-                  <div className="w-40 h-20 bg-card border border-dashed border-border rounded-lg flex items-center justify-center">
-                    <span className="text-muted-foreground text-xs">Your Logo Here</span>
-                  </div>
-                  <div className="w-40 h-20 bg-card border border-dashed border-border rounded-lg flex items-center justify-center">
-                    <span className="text-muted-foreground text-xs">Your Logo Here</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Silver Sponsors */}
-              <div>
-                <h3 className="text-center text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-6">
-                  Silver Sponsors
-                </h3>
-                <div className="flex flex-wrap justify-center gap-4">
-                  <div className="w-32 h-16 bg-card border border-dashed border-border rounded-lg flex items-center justify-center">
-                    <span className="text-muted-foreground text-xs">Logo</span>
-                  </div>
-                  <div className="w-32 h-16 bg-card border border-dashed border-border rounded-lg flex items-center justify-center">
-                    <span className="text-muted-foreground text-xs">Logo</span>
-                  </div>
-                  <div className="w-32 h-16 bg-card border border-dashed border-border rounded-lg flex items-center justify-center">
-                    <span className="text-muted-foreground text-xs">Logo</span>
-                  </div>
-                  <div className="w-32 h-16 bg-card border border-dashed border-border rounded-lg flex items-center justify-center">
-                    <span className="text-muted-foreground text-xs">Logo</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            {/* Sponsor Tiers - Dynamic from Database */}
+            <SponsorDisplay />
 
             {/* Become a Sponsor CTA */}
             <div className="mt-16 text-center">
