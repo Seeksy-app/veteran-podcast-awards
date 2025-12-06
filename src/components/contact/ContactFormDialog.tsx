@@ -48,6 +48,7 @@ export const ContactFormDialog = ({ open, onOpenChange, type }: ContactFormDialo
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [organization, setOrganization] = useState("");
+  const [podcastUrl, setPodcastUrl] = useState("");
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -59,10 +60,13 @@ export const ContactFormDialog = ({ open, onOpenChange, type }: ContactFormDialo
 
     try {
       // Store the inquiry in pre_registrations table with interested_in field
+      const interestedIn = [type, organization, message];
+      if (podcastUrl) interestedIn.push(`RSS/URL: ${podcastUrl}`);
+      
       const { error } = await supabase.from("pre_registrations").insert({
         email,
         name,
-        interested_in: [type, organization, message].filter(Boolean),
+        interested_in: interestedIn.filter(Boolean),
       });
 
       if (error) throw error;
@@ -72,6 +76,7 @@ export const ContactFormDialog = ({ open, onOpenChange, type }: ContactFormDialo
       setName("");
       setEmail("");
       setOrganization("");
+      setPodcastUrl("");
       setMessage("");
     } catch (error) {
       toast.error("Something went wrong. Please try again.");
@@ -127,16 +132,27 @@ export const ContactFormDialog = ({ open, onOpenChange, type }: ContactFormDialo
           )}
 
           {type === "nomination" && (
-            <div className="space-y-2">
-              <Label htmlFor="podcast">Podcast Name</Label>
-              <Input
-                id="podcast"
-                value={organization}
-                onChange={(e) => setOrganization(e.target.value)}
-                placeholder="Name of the podcast"
-                required
-              />
-            </div>
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="podcast">Podcast Name</Label>
+                <Input
+                  id="podcast"
+                  value={organization}
+                  onChange={(e) => setOrganization(e.target.value)}
+                  placeholder="Name of the podcast"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="podcastUrl">RSS or Podcast URL (optional)</Label>
+                <Input
+                  id="podcastUrl"
+                  value={podcastUrl}
+                  onChange={(e) => setPodcastUrl(e.target.value)}
+                  placeholder="https://..."
+                />
+              </div>
+            </>
           )}
 
           <div className="space-y-2">
