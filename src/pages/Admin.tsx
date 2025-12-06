@@ -3,8 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { SponsorList } from '@/components/admin/SponsorList';
 import { PodcastManager } from '@/components/admin/PodcastManager';
+import { UserManager } from '@/components/admin/UserManager';
+import { SubmissionManager } from '@/components/admin/SubmissionManager';
 import { Button } from '@/components/ui/button';
-import { LogOut, Shield, Home } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { LogOut, Shield, Home, Users, Mic, Handshake, Rss } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import logo from '@/assets/vpa-logo.png';
 
@@ -59,7 +62,7 @@ const AdminPage = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border bg-card">
+      <header className="border-b border-border bg-card sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link to="/">
@@ -71,7 +74,13 @@ const AdminPage = () => {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">{user.email}</span>
+            <span className="text-sm text-muted-foreground hidden md:block">{user.email}</span>
+            <Link to="/dashboard">
+              <Button variant="outline" size="sm">
+                <Users className="w-4 h-4 mr-2" />
+                My Dashboard
+              </Button>
+            </Link>
             <Button variant="outline" size="sm" onClick={() => signOut()}>
               <LogOut className="w-4 h-4 mr-2" />
               Sign Out
@@ -82,8 +91,42 @@ const AdminPage = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        <SponsorList />
-        <PodcastManager />
+        <Tabs defaultValue="users" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4 md:w-auto md:inline-grid">
+            <TabsTrigger value="users" className="gap-2">
+              <Users className="w-4 h-4" />
+              <span className="hidden sm:inline">Users</span>
+            </TabsTrigger>
+            <TabsTrigger value="podcasts" className="gap-2">
+              <Mic className="w-4 h-4" />
+              <span className="hidden sm:inline">Podcasts</span>
+            </TabsTrigger>
+            <TabsTrigger value="submissions" className="gap-2">
+              <Rss className="w-4 h-4" />
+              <span className="hidden sm:inline">Submissions</span>
+            </TabsTrigger>
+            <TabsTrigger value="sponsors" className="gap-2">
+              <Handshake className="w-4 h-4" />
+              <span className="hidden sm:inline">Sponsors</span>
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="users">
+            <UserManager />
+          </TabsContent>
+
+          <TabsContent value="podcasts">
+            <PodcastManager />
+          </TabsContent>
+
+          <TabsContent value="submissions">
+            <SubmissionManager />
+          </TabsContent>
+
+          <TabsContent value="sponsors">
+            <SponsorList />
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );
