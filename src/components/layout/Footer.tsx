@@ -15,8 +15,8 @@ export const Footer = () => {
               </div>
             </Link>
             <p className="text-muted-foreground text-sm max-w-md">
-              Celebrating the impactful voices of veteran podcasters. Join us October 5th, 2025
-              for the annual Veteran Podcast Awards ceremony.
+              Celebrating the impactful voices of veteran podcasters. Join us October 5th, 2026
+              for the annual Veteran Podcast Awards livestream ceremony.
             </p>
           </div>
 
@@ -24,23 +24,18 @@ export const Footer = () => {
             <h4 className="font-serif text-primary mb-4">Quick Links</h4>
             <ul className="space-y-2">
               <li>
-                <Link to="/nominees" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  View Nominees
-                </Link>
-              </li>
-              <li>
                 <Link to="/categories" className="text-sm text-muted-foreground hover:text-primary transition-colors">
                   Categories
                 </Link>
               </li>
               <li>
-                <Link to="/register" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Register Your Podcast
+                <Link to="/about" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  About VPA
                 </Link>
               </li>
               <li>
-                <Link to="/vote" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Vote Now
+                <Link to="/" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  Get Notified
                 </Link>
               </li>
             </ul>
@@ -49,11 +44,6 @@ export const Footer = () => {
           <div>
             <h4 className="font-serif text-primary mb-4">Connect</h4>
             <ul className="space-y-2">
-              <li>
-                <Link to="/about" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  About VPA
-                </Link>
-              </li>
               <li>
                 <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">
                   Contact Us
@@ -70,7 +60,7 @@ export const Footer = () => {
 
         <div className="border-t border-border mt-8 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-xs text-muted-foreground">
-            © 2025 Veteran Podcast Awards. All rights reserved.
+            © 2026 Veteran Podcast Awards. All rights reserved.
           </p>
           <p className="text-xs text-muted-foreground">
             A property of National Military Podcast Day

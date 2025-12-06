@@ -1,6 +1,7 @@
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { Award, Calendar, Mic, Users, Heart } from "lucide-react";
+import { Award, Calendar, Mic, Users, Heart, Video } from "lucide-react";
+import { PreRegistrationForm } from "@/components/home/PreRegistrationForm";
 import logo from "@/assets/vpa-logo.png";
 
 const AboutPage = () => {
@@ -76,6 +77,28 @@ const AboutPage = () => {
             </div>
           </div>
 
+          {/* 2026 Livestream */}
+          <div className="max-w-4xl mx-auto mb-16">
+            <div className="bg-gradient-to-br from-destructive/10 to-card border border-destructive/30 rounded-xl p-8 md:p-12">
+              <div className="flex items-center justify-center gap-2 mb-6">
+                <Video className="w-6 h-6 text-destructive" />
+                <span className="text-sm text-destructive font-semibold uppercase tracking-wider">
+                  Live Streaming Event
+                </span>
+              </div>
+              <h2 className="font-serif text-2xl md:text-3xl font-bold mb-6 text-center">
+                <span className="text-gold-gradient">2026 Awards Ceremony</span>
+              </h2>
+              <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-8">
+                For the first time, the Veteran Podcast Awards will be streamed live worldwide
+                on October 5th, 2026. Join us from anywhere to celebrate the best in veteran podcasting.
+              </p>
+              <div className="flex justify-center">
+                <PreRegistrationForm />
+              </div>
+            </div>
+          </div>
+
           {/* National Military Podcast Day */}
           <div className="max-w-4xl mx-auto mb-16">
             <div className="bg-gradient-to-br from-secondary to-card border border-border rounded-xl p-8 md:p-12">
@@ -127,10 +150,10 @@ const AboutPage = () => {
                   </span>
                 </div>
                 <p className="text-muted-foreground text-sm">
-                  As we continue to grow, we're committed to expanding our
-                  reach and impact. We're building partnerships, adding new
-                  categories, and finding more ways to support veteran
-                  podcasters in sharing their important stories with the world.
+                  In 2026, we're taking the awards to the next level with our first
+                  ever livestream ceremony. We're committed to expanding our
+                  reach and finding more ways to support veteran podcasters
+                  in sharing their important stories with the world.
                 </p>
               </div>
             </div>
