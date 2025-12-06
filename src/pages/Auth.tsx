@@ -7,12 +7,12 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { z } from "zod";
 import logo from "@/assets/vpa-logo.png";
-import { Eye, EyeOff, Mail, Lock, User, Mic, Vote } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, Mic, Vote, Heart } from "lucide-react";
 
 const emailSchema = z.string().email("Please enter a valid email address");
 const passwordSchema = z.string().min(6, "Password must be at least 6 characters");
 
-type UserType = "podcaster" | "voter";
+type UserType = "podcaster" | "voter" | "fan";
 
 const AuthPage = () => {
   const [searchParams] = useSearchParams();
@@ -146,21 +146,21 @@ const AuthPage = () => {
                 {/* User Type Selection */}
                 <div className="space-y-2">
                   <Label>I am a...</Label>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-3 gap-3">
                     <button
                       type="button"
                       onClick={() => {
                         setUserType("podcaster");
                         setErrors(prev => ({ ...prev, userType: undefined }));
                       }}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${
+                      className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${
                         userType === "podcaster"
                           ? "border-primary bg-primary/10 text-primary"
                           : "border-border hover:border-primary/50 text-muted-foreground hover:text-foreground"
                       }`}
                     >
-                      <Mic className="w-6 h-6" />
-                      <span className="text-sm font-medium">Podcaster</span>
+                      <Mic className="w-5 h-5" />
+                      <span className="text-xs font-medium">Podcaster</span>
                     </button>
                     <button
                       type="button"
@@ -168,14 +168,29 @@ const AuthPage = () => {
                         setUserType("voter");
                         setErrors(prev => ({ ...prev, userType: undefined }));
                       }}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${
+                      className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${
                         userType === "voter"
                           ? "border-primary bg-primary/10 text-primary"
                           : "border-border hover:border-primary/50 text-muted-foreground hover:text-foreground"
                       }`}
                     >
-                      <Vote className="w-6 h-6" />
-                      <span className="text-sm font-medium">Voter</span>
+                      <Vote className="w-5 h-5" />
+                      <span className="text-xs font-medium">Voter</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUserType("fan");
+                        setErrors(prev => ({ ...prev, userType: undefined }));
+                      }}
+                      className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${
+                        userType === "fan"
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border hover:border-primary/50 text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <Heart className="w-5 h-5" />
+                      <span className="text-xs font-medium">Fan</span>
                     </button>
                   </div>
                   {errors.userType && (

@@ -160,9 +160,14 @@ export type Database = {
           avatar_url: string | null
           bio: string | null
           created_at: string
+          custom_voting_link: string | null
           email: string | null
           full_name: string | null
           id: string
+          podcast_id: string | null
+          social_instagram: string | null
+          social_linkedin: string | null
+          social_twitter: string | null
           updated_at: string
           user_type: string | null
           website_url: string | null
@@ -171,9 +176,14 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
+          custom_voting_link?: string | null
           email?: string | null
           full_name?: string | null
           id: string
+          podcast_id?: string | null
+          social_instagram?: string | null
+          social_linkedin?: string | null
+          social_twitter?: string | null
           updated_at?: string
           user_type?: string | null
           website_url?: string | null
@@ -182,14 +192,62 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
+          custom_voting_link?: string | null
           email?: string | null
           full_name?: string | null
           id?: string
+          podcast_id?: string | null
+          social_instagram?: string | null
+          social_linkedin?: string | null
+          social_twitter?: string | null
           updated_at?: string
           user_type?: string | null
           website_url?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_podcast_id_fkey"
+            columns: ["podcast_id"]
+            isOneToOne: false
+            referencedRelation: "podcasts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      promotional_assets: {
+        Row: {
+          asset_type: string
+          asset_url: string
+          created_at: string
+          description: string | null
+          id: string
+          podcast_id: string
+        }
+        Insert: {
+          asset_type: string
+          asset_url: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          podcast_id: string
+        }
+        Update: {
+          asset_type?: string
+          asset_url?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          podcast_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promotional_assets_podcast_id_fkey"
+            columns: ["podcast_id"]
+            isOneToOne: false
+            referencedRelation: "podcasts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sponsors: {
         Row: {
@@ -248,6 +306,76 @@ export type Database = {
         }
         Relationships: []
       }
+      vote_counts: {
+        Row: {
+          category_id: string
+          id: string
+          podcast_id: string
+          updated_at: string
+          vote_count: number
+          year: number
+        }
+        Insert: {
+          category_id: string
+          id?: string
+          podcast_id: string
+          updated_at?: string
+          vote_count?: number
+          year?: number
+        }
+        Update: {
+          category_id?: string
+          id?: string
+          podcast_id?: string
+          updated_at?: string
+          vote_count?: number
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vote_counts_podcast_id_fkey"
+            columns: ["podcast_id"]
+            isOneToOne: false
+            referencedRelation: "podcasts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      votes: {
+        Row: {
+          category_id: string
+          created_at: string
+          id: string
+          nominee_id: string
+          user_id: string
+          year: number
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          id?: string
+          nominee_id: string
+          user_id: string
+          year?: number
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          id?: string
+          nominee_id?: string
+          user_id?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "votes_nominee_id_fkey"
+            columns: ["nominee_id"]
+            isOneToOne: false
+            referencedRelation: "podcasts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -264,6 +392,7 @@ export type Database = {
     Enums: {
       app_role: "admin" | "moderator" | "user"
       sponsor_tier: "platinum" | "gold" | "silver" | "bronze"
+      user_type: "podcaster" | "voter" | "fan"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -393,6 +522,7 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "moderator", "user"],
       sponsor_tier: ["platinum", "gold", "silver", "bronze"],
+      user_type: ["podcaster", "voter", "fan"],
     },
   },
 } as const
