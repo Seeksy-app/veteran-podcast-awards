@@ -60,6 +60,16 @@ export const Footer = () => {
                   Livestream
                 </Link>
               </li>
+              <li>
+                <Link to="/podcast-day" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  Podcast Day
+                </Link>
+              </li>
+              <li>
+                <a href="mailto:hello@veteranpodcastawards.com" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  hello@veteranpodcastawards.com
+                </a>
+              </li>
             </ul>
           </div>
         </div>
