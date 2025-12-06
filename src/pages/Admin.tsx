@@ -5,10 +5,11 @@ import { SponsorList } from '@/components/admin/SponsorList';
 import { PodcastManager } from '@/components/admin/PodcastManager';
 import { UserManager } from '@/components/admin/UserManager';
 import { SubmissionManager } from '@/components/admin/SubmissionManager';
+import { ContactManager } from '@/components/admin/ContactManager';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ThemeSelector } from '@/components/theme/ThemeToggle';
-import { LogOut, Shield, Home, Users, Mic, Handshake, Rss } from 'lucide-react';
+import { LogOut, Shield, Home, Users, Mic, Handshake, Rss, Mail } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import logo from '@/assets/vpa-logo.png';
 
@@ -94,10 +95,14 @@ const AdminPage = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue="users" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 md:w-auto md:inline-grid">
+          <TabsList className="grid w-full grid-cols-5 md:w-auto md:inline-grid">
             <TabsTrigger value="users" className="gap-2">
               <Users className="w-4 h-4" />
               <span className="hidden sm:inline">Users</span>
+            </TabsTrigger>
+            <TabsTrigger value="contacts" className="gap-2">
+              <Mail className="w-4 h-4" />
+              <span className="hidden sm:inline">Contacts</span>
             </TabsTrigger>
             <TabsTrigger value="podcasts" className="gap-2">
               <Mic className="w-4 h-4" />
@@ -115,6 +120,10 @@ const AdminPage = () => {
 
           <TabsContent value="users">
             <UserManager />
+          </TabsContent>
+
+          <TabsContent value="contacts">
+            <ContactManager />
           </TabsContent>
 
           <TabsContent value="podcasts">
