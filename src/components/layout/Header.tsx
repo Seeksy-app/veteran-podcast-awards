@@ -4,6 +4,7 @@ import { Menu, X, LogIn, LogOut, User, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ContactFormDialog, useContactForm } from "@/components/contact/ContactFormDialog";
 import { useAuth } from "@/hooks/useAuth";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import logo from "@/assets/vpa-logo.png";
 import {
   DropdownMenu,
@@ -62,6 +63,7 @@ export const Header = () => {
             </nav>
 
             <div className="hidden lg:flex items-center gap-3">
+              <ThemeToggle />
               <Button 
                 variant="goldOutline" 
                 size="sm" 

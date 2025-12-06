@@ -7,6 +7,7 @@ import { UserManager } from '@/components/admin/UserManager';
 import { SubmissionManager } from '@/components/admin/SubmissionManager';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ThemeSelector } from '@/components/theme/ThemeToggle';
 import { LogOut, Shield, Home, Users, Mic, Handshake, Rss } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import logo from '@/assets/vpa-logo.png';
@@ -74,6 +75,7 @@ const AdminPage = () => {
             </div>
           </div>
           <div className="flex items-center gap-4">
+            <ThemeSelector showLabels={false} />
             <span className="text-sm text-muted-foreground hidden md:block">{user.email}</span>
             <Link to="/dashboard">
               <Button variant="outline" size="sm">
