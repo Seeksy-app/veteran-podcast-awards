@@ -12,6 +12,7 @@ import Admin from "./pages/Admin";
 import Network from "./pages/Network";
 import Auth from "./pages/Auth";
 import Sponsors from "./pages/Sponsors";
+import PodcastDay from "./pages/PodcastDay";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Dashboard from "./pages/Dashboard";
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/categories" element={<Categories />} />
             <Route path="/network" element={<Network />} />
             <Route path="/sponsors" element={<Sponsors />} />
+            <Route path="/podcast-day" element={<PodcastDay />} />
             <Route path="/about" element={<About />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
