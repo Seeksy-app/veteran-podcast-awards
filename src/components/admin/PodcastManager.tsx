@@ -48,7 +48,18 @@ export const PodcastManager = () => {
 
   const addPodcast = useMutation({
     mutationFn: async (rssUrl: string) => {
-      // First, parse the RSS feed
+      // Check for duplicate RSS URL
+      const { data: existing } = await supabase
+        .from("podcasts")
+        .select("id, title")
+        .eq("rss_url", rssUrl)
+        .maybeSingle();
+
+      if (existing) {
+        throw new Error(`Duplicate: "${existing.title}" already exists`);
+      }
+
+      // Parse the RSS feed
       const result = await parseRSSFeed(rssUrl);
       if (!result.success) throw new Error(result.error || "Failed to parse RSS");
 
