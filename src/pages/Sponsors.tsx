@@ -5,12 +5,19 @@ import { SponsorshipBenefits } from "@/components/sponsors/SponsorshipBenefits";
 import { ContactFormDialog, useContactForm } from "@/components/contact/ContactFormDialog";
 import { Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SEO } from "@/components/SEO";
 
 const SponsorsPage = () => {
   const contactForm = useContactForm();
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title="Sponsors & Partnership Opportunities"
+        description="Partner with the Veteran Podcast Awards to reach the military and veteran podcasting community. Sponsorship tiers available for the 2026 awards ceremony."
+        keywords="veteran podcast sponsors, military podcast sponsorship, veteran podcast awards partners, sponsor opportunities"
+        canonicalUrl="/sponsors"
+      />
       <Header />
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4">

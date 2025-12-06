@@ -3,10 +3,17 @@ import { Footer } from "@/components/layout/Footer";
 import { Award, Calendar, Mic, Users, Heart, Video } from "lucide-react";
 import { PreRegistrationForm } from "@/components/home/PreRegistrationForm";
 import logo from "@/assets/vpa-logo.png";
+import { SEO } from "@/components/SEO";
 
 const AboutPage = () => {
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title="About Us"
+        description="Learn about the Veteran Podcast Awards mission to celebrate and recognize veteran podcasters. Join us October 5th, 2026 for our first livestream awards ceremony."
+        keywords="about veteran podcast awards, veteran podcast mission, military podcast community, podcaster recognition"
+        canonicalUrl="/about"
+      />
       <Header />
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4">

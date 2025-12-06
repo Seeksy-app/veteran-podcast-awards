@@ -12,6 +12,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import heroBg from "@/assets/hero-bg.jpg";
+import { SEO } from "@/components/SEO";
 
 const NetworkPage = () => {
   const [showDisclaimer, setShowDisclaimer] = useState(false);
@@ -19,6 +20,12 @@ const NetworkPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title="Veteran & Military Podcast Network"
+        description="Discover 800+ veteran and military podcasts. Explore shows from veterans sharing stories, insights, business advice, and perspectives that matter."
+        keywords="veteran podcast network, military podcasts, veteran podcasters, military veteran shows, podcast directory"
+        canonicalUrl="/network"
+      />
       <Header />
       
       {/* Hero Section with Microphone Background */}
