@@ -4,6 +4,7 @@ import { Award, ChevronRight, Clock, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { PreRegistrationForm } from "@/components/home/PreRegistrationForm";
+import { SEO } from "@/components/SEO";
 
 const confirmedCategories = [
   {
@@ -56,6 +57,12 @@ const plannedCategories = [
 const CategoriesPage = () => {
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title="2026 Award Categories"
+        description="Browse the official Veteran Podcast Awards categories for 2026. Awards for Best Overall, Army, Navy, Marine Corps, Air Force, Coast Guard, Space Force veteran podcasts and more."
+        keywords="veteran podcast categories, military podcast awards, best veteran podcast, army podcast, navy podcast, marine corps podcast"
+        canonicalUrl="/categories"
+      />
       <Header />
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4">

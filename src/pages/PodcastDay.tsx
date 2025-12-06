@@ -3,6 +3,7 @@ import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { SEO } from "@/components/SEO";
 import { 
   Calendar, 
   Mic, 
@@ -55,6 +56,25 @@ const PodcastDay = () => {
   const shareUrl = typeof window !== 'undefined' ? window.location.href : 'https://veteranpodcastawards.com/podcast-day';
   const shareText = "Celebrate National Military Podcast Day on October 5th! #MilitaryPodcastDay";
 
+  const podcastDayStructuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'Event',
+    name: 'National Military Podcast Day',
+    startDate: '2026-10-05',
+    eventStatus: 'https://schema.org/EventScheduled',
+    eventAttendanceMode: 'https://schema.org/OnlineEventAttendanceMode',
+    location: {
+      '@type': 'VirtualLocation',
+      url: 'https://veteranpodcastawards.com/podcast-day'
+    },
+    description: 'National Military Podcast Day celebrates military podcasters using their platforms to share stories and find healing. October 5th annually.',
+    organizer: {
+      '@type': 'Organization',
+      name: 'Veteran Podcast Awards',
+      url: 'https://veteranpodcastawards.com'
+    }
+  };
+
   const handleShare = (platform: string) => {
     const urls: Record<string, string> = {
       twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`,
@@ -80,6 +100,13 @@ const PodcastDay = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <SEO 
+        title="National Military Podcast Day - October 5th"
+        description="Celebrate National Military Podcast Day on October 5th. Honor veteran podcasters who use their platforms to share stories, promote businesses, and find healing through voice."
+        keywords="national military podcast day, military podcast day, october 5, veteran podcasters, military podcasting, PTSD therapy, veteran voices"
+        canonicalUrl="/podcast-day"
+        structuredData={podcastDayStructuredData}
+      />
       <Header />
       
       <main className="flex-1 pt-20">
