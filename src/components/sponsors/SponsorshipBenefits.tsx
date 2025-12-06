@@ -31,7 +31,11 @@ const communityStats = [
   { stat: "500K+", label: "Combined Social Media Reach" },
 ];
 
-export const SponsorshipBenefits = () => {
+interface SponsorshipBenefitsProps {
+  onContactClick?: () => void;
+}
+
+export const SponsorshipBenefits = ({ onContactClick }: SponsorshipBenefitsProps) => {
   return (
     <section className="py-20 bg-gradient-to-b from-background to-secondary/20">
       <div className="container mx-auto px-4">
@@ -133,10 +137,8 @@ export const SponsorshipBenefits = () => {
               Contact us today to discuss sponsorship packages and how we can create 
               a customized partnership that meets your marketing goals.
             </p>
-            <Button variant="gold" size="lg" asChild>
-              <a href="mailto:sponsors@veteranpodcastawards.com">
-                Contact Us About Sponsorship
-              </a>
+            <Button variant="gold" size="lg" onClick={onContactClick}>
+              Contact Us About Sponsorship
             </Button>
           </div>
         </div>
