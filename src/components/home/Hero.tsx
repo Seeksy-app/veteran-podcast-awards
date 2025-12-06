@@ -42,7 +42,7 @@ export const Hero = () => {
 
       <div className="relative z-10 container mx-auto px-4 pt-24 pb-16">
         <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
-          <div className="animate-float mb-8">
+          <div className="animate-float mb-10">
             <img
               src={logo}
               alt="Veteran Podcast Awards"
@@ -50,29 +50,29 @@ export const Hero = () => {
             />
           </div>
 
-          <div className="inline-flex items-center gap-2 bg-secondary/50 border border-border rounded-full px-4 py-2 mb-6 animate-fade-in">
+          <div className="inline-flex items-center gap-2 bg-secondary/50 border border-border rounded-full px-4 py-2 mb-8 animate-fade-in">
             <Award className="w-4 h-4 text-primary" />
             <span className="text-sm text-muted-foreground">
               National Military Podcast Day • October 5th, 2026
             </span>
           </div>
 
-          <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl font-bold mb-6 animate-slide-up">
+          <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl font-bold mb-8 animate-slide-up leading-tight">
             <span className="text-gold-gradient">Veteran Podcast</span>
             <br />
             <span className="text-foreground">Awards 2026</span>
           </h1>
 
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-8 animate-slide-up" style={{ animationDelay: "0.1s" }}>
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-12 animate-slide-up leading-relaxed" style={{ animationDelay: "0.1s" }}>
             Celebrating the impactful voices of veteran podcasters. 
             Join us for the live ceremony on October 5th, 2026.
           </p>
 
-          <div className="mb-10 animate-slide-up" style={{ animationDelay: "0.2s" }}>
+          <div className="mb-12 animate-slide-up" style={{ animationDelay: "0.2s" }}>
             <CountdownTimer targetDate="2026-10-05T18:00:00" />
           </div>
 
-          <div className="mb-10 animate-slide-up" style={{ animationDelay: "0.3s" }}>
+          <div className="mb-12 animate-slide-up" style={{ animationDelay: "0.3s" }}>
             <PreRegistrationForm />
           </div>
 
