@@ -689,6 +689,16 @@ export const ContactManager = () => {
     );
   }, [contacts, smartLists]);
 
+  // Get all unique tags from contacts
+  const existingTags = useMemo(() => {
+    if (!contacts) return [];
+    const tagSet = new Set<string>();
+    contacts.forEach((c) => {
+      c.tags?.forEach((t) => tagSet.add(t));
+    });
+    return Array.from(tagSet).sort();
+  }, [contacts]);
+
   const toggleImportList = (listName: string) => {
     if (importOptions.lists.includes(listName)) {
       setImportOptions({ ...importOptions, lists: importOptions.lists.filter((l) => l !== listName) });
@@ -1556,6 +1566,26 @@ export const ContactManager = () => {
                       <X className="w-3 h-3 cursor-pointer" onClick={() => removeSmartListTag(tag)} />
                     </Badge>
                   ))}
+                </div>
+              )}
+              {existingTags.length > 0 && (
+                <div className="space-y-1 mt-2">
+                  <Label className="text-xs text-muted-foreground">Existing tags (click to add)</Label>
+                  <div className="flex flex-wrap gap-1">
+                    {existingTags
+                      .filter((t) => !smartListForm.tags.includes(t))
+                      .map((tag) => (
+                        <Badge
+                          key={tag}
+                          variant="outline"
+                          className="cursor-pointer hover:bg-primary/10 text-xs"
+                          onClick={() => setSmartListForm({ ...smartListForm, tags: [...smartListForm.tags, tag] })}
+                        >
+                          <Plus className="w-2 h-2 mr-1" />
+                          {tag}
+                        </Badge>
+                      ))}
+                  </div>
                 </div>
               )}
             </div>
