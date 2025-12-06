@@ -14,6 +14,102 @@ export type Database = {
   }
   public: {
     Tables: {
+      email_campaigns: {
+        Row: {
+          clicked_count: number
+          content: string
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          opened_count: number
+          sent_at: string | null
+          sent_count: number
+          status: string
+          subject: string
+          target_list: string
+        }
+        Insert: {
+          clicked_count?: number
+          content: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          opened_count?: number
+          sent_at?: string | null
+          sent_count?: number
+          status?: string
+          subject: string
+          target_list: string
+        }
+        Update: {
+          clicked_count?: number
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          opened_count?: number
+          sent_at?: string | null
+          sent_count?: number
+          status?: string
+          subject?: string
+          target_list?: string
+        }
+        Relationships: []
+      }
+      email_sends: {
+        Row: {
+          campaign_id: string | null
+          clicked_at: string | null
+          contact_id: string | null
+          email: string
+          id: string
+          opened_at: string | null
+          resend_id: string | null
+          sent_at: string
+          status: string
+        }
+        Insert: {
+          campaign_id?: string | null
+          clicked_at?: string | null
+          contact_id?: string | null
+          email: string
+          id?: string
+          opened_at?: string | null
+          resend_id?: string | null
+          sent_at?: string
+          status?: string
+        }
+        Update: {
+          campaign_id?: string | null
+          clicked_at?: string | null
+          contact_id?: string | null
+          email?: string
+          id?: string
+          opened_at?: string | null
+          resend_id?: string | null
+          sent_at?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_sends_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "email_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_sends_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "podcast_contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       favorites: {
         Row: {
           created_at: string
@@ -85,6 +181,27 @@ export type Database = {
         }
         Relationships: []
       }
+      mailing_lists: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       podcast_contacts: {
         Row: {
           contact_type: string | null
@@ -94,12 +211,15 @@ export type Database = {
           id: string
           is_on_vpn: boolean
           linked_podcast_id: string | null
+          lists: string[] | null
           name: string
           notes: string | null
           podcast_name: string | null
           podcast_url: string | null
           rss_url: string | null
+          source: string | null
           status: string
+          tags: string[] | null
           updated_at: string
         }
         Insert: {
@@ -110,12 +230,15 @@ export type Database = {
           id?: string
           is_on_vpn?: boolean
           linked_podcast_id?: string | null
+          lists?: string[] | null
           name: string
           notes?: string | null
           podcast_name?: string | null
           podcast_url?: string | null
           rss_url?: string | null
+          source?: string | null
           status?: string
+          tags?: string[] | null
           updated_at?: string
         }
         Update: {
@@ -126,12 +249,15 @@ export type Database = {
           id?: string
           is_on_vpn?: boolean
           linked_podcast_id?: string | null
+          lists?: string[] | null
           name?: string
           notes?: string | null
           podcast_name?: string | null
           podcast_url?: string | null
           rss_url?: string | null
+          source?: string | null
           status?: string
+          tags?: string[] | null
           updated_at?: string
         }
         Relationships: [

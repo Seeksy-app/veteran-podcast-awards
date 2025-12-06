@@ -2,3 +2,9 @@ project_id = "snhrqbtwahgarxxbizsz"
 
 [functions.parse-rss]
 verify_jwt = false
+
+[functions.podcast-assistant]
+verify_jwt = false
+
+[functions.send-campaign]
+verify_jwt = true
