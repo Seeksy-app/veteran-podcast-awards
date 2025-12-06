@@ -82,6 +82,9 @@ export const Header = () => {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => navigate("/dashboard")}>
+                      Dashboard
+                    </DropdownMenuItem>
                     {isAdmin && (
                       <DropdownMenuItem onClick={() => navigate("/admin")}>
                         Admin Panel
