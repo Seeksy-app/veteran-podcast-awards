@@ -370,11 +370,11 @@ export const PodcastManager = () => {
           </Button>
         </div>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid gap-2">
           {filteredPodcasts.map((podcast) => (
             <div
               key={podcast.id}
-              className="flex items-center gap-4 p-4 bg-card border border-border rounded-lg"
+              className="flex items-center gap-3 p-3 bg-card border border-border rounded-lg"
             >
               {podcast.image_url ? (
                 <img
