@@ -1,19 +1,48 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Mic, Award, Users } from "lucide-react";
+import { Award, Users, Play } from "lucide-react";
 import logo from "@/assets/vpa-logo.png";
 import heroBg from "@/assets/hero-bg.jpg";
 import { CountdownTimer } from "./CountdownTimer";
+import { PreRegistrationForm } from "./PreRegistrationForm";
+import { useState } from "react";
+
+// Video URL from Supabase storage - update this when video is uploaded
+const VIDEO_URL = "https://snhrqbtwahgarxxbizsz.supabase.co/storage/v1/object/public/videos/hero-video.mp4";
 
 export const Hero = () => {
+  const [videoLoaded, setVideoLoaded] = useState(false);
+  const [videoError, setVideoError] = useState(false);
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      {/* Video Background */}
+      {!videoError && (
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          onLoadedData={() => setVideoLoaded(true)}
+          onError={() => setVideoError(true)}
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
+            videoLoaded ? "opacity-100" : "opacity-0"
+          }`}
+        >
+          <source src={VIDEO_URL} type="video/mp4" />
+        </video>
+      )}
+
+      {/* Fallback Image Background */}
       <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ${
+          videoLoaded && !videoError ? "opacity-0" : "opacity-100"
+        }`}
         style={{ backgroundImage: `url(${heroBg})` }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/70 to-background" />
-      </div>
+      />
+
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background" />
 
       <div className="relative z-10 container mx-auto px-4 pt-24 pb-16">
         <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
@@ -28,14 +57,14 @@ export const Hero = () => {
           <div className="inline-flex items-center gap-2 bg-secondary/50 border border-border rounded-full px-4 py-2 mb-6 animate-fade-in">
             <Award className="w-4 h-4 text-primary" />
             <span className="text-sm text-muted-foreground">
-              National Military Podcast Day • October 5th
+              National Military Podcast Day • October 5th, 2026
             </span>
           </div>
 
           <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl font-bold mb-6 animate-slide-up">
             <span className="text-gold-gradient">Veteran Podcast</span>
             <br />
-            <span className="text-foreground">Awards</span>
+            <span className="text-foreground">Awards 2026</span>
           </h1>
 
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-8 animate-slide-up" style={{ animationDelay: "0.1s" }}>
@@ -47,33 +76,38 @@ export const Hero = () => {
             <CountdownTimer targetDate="2026-10-05T18:00:00" />
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 animate-slide-up" style={{ animationDelay: "0.3s" }}>
-            <Link to="/register">
-              <Button variant="hero" size="xl">
-                <Mic className="w-5 h-5" />
-                Register Your Podcast
+          {/* Pre-Registration Form */}
+          <div className="mb-10 animate-slide-up" style={{ animationDelay: "0.3s" }}>
+            <PreRegistrationForm />
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4 animate-slide-up" style={{ animationDelay: "0.4s" }}>
+            <Link to="/nominees">
+              <Button variant="goldOutline" size="lg">
+                <Users className="w-5 h-5" />
+                View 2025 Winners
               </Button>
             </Link>
-            <Link to="/vote">
-              <Button variant="goldOutline" size="xl">
-                <Users className="w-5 h-5" />
-                Vote for Nominees
+            <Link to="/about">
+              <Button variant="outline" size="lg">
+                <Play className="w-5 h-5" />
+                Learn More
               </Button>
             </Link>
           </div>
 
-          <div className="grid grid-cols-3 gap-8 mt-16 animate-fade-in" style={{ animationDelay: "0.4s" }}>
+          <div className="grid grid-cols-3 gap-8 mt-16 animate-fade-in" style={{ animationDelay: "0.5s" }}>
             <div className="text-center">
               <p className="font-serif text-3xl md:text-4xl text-primary font-bold">25+</p>
               <p className="text-sm text-muted-foreground">Categories</p>
             </div>
             <div className="text-center">
               <p className="font-serif text-3xl md:text-4xl text-primary font-bold">100+</p>
-              <p className="text-sm text-muted-foreground">Nominees</p>
+              <p className="text-sm text-muted-foreground">Past Nominees</p>
             </div>
             <div className="text-center">
               <p className="font-serif text-3xl md:text-4xl text-primary font-bold">5K+</p>
-              <p className="text-sm text-muted-foreground">Votes Cast</p>
+              <p className="text-sm text-muted-foreground">Community Votes</p>
             </div>
           </div>
         </div>

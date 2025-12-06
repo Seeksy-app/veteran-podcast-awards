@@ -1,6 +1,5 @@
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Mic, Calendar } from "lucide-react";
+import { Calendar, Bell } from "lucide-react";
+import { PreRegistrationForm } from "./PreRegistrationForm";
 
 export const CallToAction = () => {
   return (
@@ -13,31 +12,29 @@ export const CallToAction = () => {
         <div className="max-w-3xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 bg-secondary/50 border border-border rounded-full px-4 py-2 mb-6">
             <Calendar className="w-4 h-4 text-primary" />
-            <span className="text-sm text-muted-foreground">October 5th, 2025</span>
+            <span className="text-sm text-muted-foreground">October 5th, 2026</span>
           </div>
 
           <h2 className="font-serif text-3xl md:text-5xl font-bold mb-6">
-            <span className="text-foreground">Ready to Be </span>
-            <span className="text-gold-gradient">Recognized?</span>
+            <span className="text-foreground">Be the First to </span>
+            <span className="text-gold-gradient">Know</span>
           </h2>
 
           <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Join the veteran podcasting community's biggest celebration. Register your podcast
-            today and let your audience vote for you in the 2025 Veteran Podcast Awards.
+            The 2026 Veteran Podcast Awards are coming. Sign up to get notified
+            when registration opens and be among the first to submit your podcast.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/register">
-              <Button variant="hero" size="xl">
-                <Mic className="w-5 h-5" />
-                Register Your Podcast
-              </Button>
-            </Link>
+          <div className="flex justify-center mb-8">
+            <PreRegistrationForm />
           </div>
 
-          <p className="mt-8 text-sm text-muted-foreground">
-            Registration deadline: September 15th, 2025
-          </p>
+          <div className="flex items-center justify-center gap-2 text-muted-foreground">
+            <Bell className="w-4 h-4" />
+            <p className="text-sm">
+              Registration opens Summer 2026
+            </p>
+          </div>
         </div>
       </div>
     </section>
