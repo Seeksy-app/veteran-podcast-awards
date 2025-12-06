@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { DOMParser, Element as XMLElement } from "https://deno.land/x/deno_dom@v0.1.43/deno-dom-wasm.ts";
+import { parse } from "https://deno.land/x/xml@2.1.3/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -25,70 +25,125 @@ interface PodcastData {
   episodes: Episode[];
 }
 
-function getTextContent(element: XMLElement | null, tagName: string): string {
-  if (!element) return "";
-  const el = element.querySelector(tagName);
-  return el?.textContent?.trim() || "";
+function getNodeText(node: unknown): string {
+  if (!node) return "";
+  if (typeof node === "string") return node.trim();
+  if (typeof node === "object" && node !== null) {
+    // Handle text content
+    if ("#text" in node) return String((node as Record<string, unknown>)["#text"]).trim();
+    if ("$" in node) return String((node as Record<string, unknown>)["$"]).trim();
+    // Try to get nested text
+    const obj = node as Record<string, unknown>;
+    for (const key of Object.keys(obj)) {
+      if (key !== "@" && typeof obj[key] === "string") {
+        return String(obj[key]).trim();
+      }
+    }
+  }
+  return "";
 }
 
-function parseRSSFeed(xml: string): PodcastData {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(xml, "text/xml");
+function getAttr(node: unknown, attrName: string): string {
+  if (!node || typeof node !== "object") return "";
+  const obj = node as Record<string, unknown>;
+  if ("@" in obj && typeof obj["@"] === "object" && obj["@"] !== null) {
+    const attrs = obj["@"] as Record<string, unknown>;
+    return String(attrs[attrName] || "");
+  }
+  // Also check direct attribute
+  if (`@${attrName}` in obj) {
+    return String(obj[`@${attrName}`] || "");
+  }
+  return "";
+}
+
+function findNode(parent: unknown, ...names: string[]): unknown {
+  if (!parent || typeof parent !== "object") return null;
+  const obj = parent as Record<string, unknown>;
+  for (const name of names) {
+    if (name in obj) return obj[name];
+    // Try with namespace variations
+    const colonIndex = name.indexOf(":");
+    if (colonIndex > -1) {
+      const localName = name.substring(colonIndex + 1);
+      if (localName in obj) return obj[localName];
+    }
+  }
+  return null;
+}
+
+function parseRSSFeed(xmlText: string): PodcastData {
+  const doc = parse(xmlText) as Record<string, unknown>;
   
   if (!doc) {
     throw new Error("Failed to parse XML");
   }
   
-  const channel = doc.querySelector("channel");
+  // Navigate to channel
+  const rss = doc.rss as Record<string, unknown> | undefined;
+  const feed = doc.feed as Record<string, unknown> | undefined;
+  
+  let channel: Record<string, unknown> | undefined;
+  
+  if (rss && typeof rss === "object") {
+    channel = rss.channel as Record<string, unknown>;
+  } else if (feed) {
+    // Atom feed
+    channel = feed;
+  }
   
   if (!channel) {
     throw new Error("Invalid RSS feed: no channel found");
   }
 
   // Get podcast info
-  const title = getTextContent(channel as XMLElement, "title");
-  const description = getTextContent(channel as XMLElement, "description") || 
-                     getTextContent(channel as XMLElement, "itunes\\:summary");
-  const author = getTextContent(channel as XMLElement, "itunes\\:author") || 
-                getTextContent(channel as XMLElement, "author");
-  const websiteUrl = getTextContent(channel as XMLElement, "link");
+  const title = getNodeText(channel.title);
+  const description = getNodeText(findNode(channel, "description", "itunes:summary", "summary")) || "";
+  const author = getNodeText(findNode(channel, "itunes:author", "author", "dc:creator")) || "";
+  const websiteUrl = getNodeText(channel.link) || getAttr(channel.link, "href") || "";
   
   // Get image - try multiple sources
   let imageUrl = "";
-  const itunesImage = channel.querySelector("itunes\\:image");
+  const itunesImage = findNode(channel, "itunes:image", "image");
   if (itunesImage) {
-    imageUrl = itunesImage.getAttribute("href") || "";
-  }
-  if (!imageUrl) {
-    const imageEl = channel.querySelector("image");
-    if (imageEl) {
-      imageUrl = getTextContent(imageEl as XMLElement, "url");
+    imageUrl = getAttr(itunesImage, "href") || "";
+    if (!imageUrl && typeof itunesImage === "object") {
+      const imgObj = itunesImage as Record<string, unknown>;
+      imageUrl = getNodeText(imgObj.url) || "";
     }
   }
 
   // Parse episodes (limit to 20 most recent)
-  const items = channel.querySelectorAll("item");
+  let items = channel.item as unknown[];
+  if (!items) {
+    items = channel.entry as unknown[] || []; // Atom feeds use "entry"
+  }
+  if (!Array.isArray(items)) {
+    items = items ? [items] : [];
+  }
+  
   const episodes: Episode[] = [];
   
   for (let i = 0; i < Math.min(items.length, 20); i++) {
-    const item = items[i] as XMLElement;
+    const item = items[i] as Record<string, unknown>;
+    if (!item) continue;
     
-    const enclosure = item.querySelector("enclosure");
-    const audioUrl = enclosure?.getAttribute("url") || "";
+    const enclosure = item.enclosure as Record<string, unknown>;
+    const audioUrl = getAttr(enclosure, "url") || "";
     
     // Get episode image if available
-    const episodeImage = item.querySelector("itunes\\:image");
-    const episodeImageUrl = episodeImage?.getAttribute("href") || imageUrl;
+    const episodeImage = findNode(item, "itunes:image");
+    const episodeImageUrl = getAttr(episodeImage, "href") || imageUrl;
     
     // Clean up description - strip HTML tags
-    let desc = getTextContent(item, "description") || getTextContent(item, "itunes\\:summary");
+    let desc = getNodeText(findNode(item, "description", "itunes:summary", "summary", "content")) || "";
     desc = desc.replace(/<[^>]*>/g, "").substring(0, 500);
     
     episodes.push({
-      title: getTextContent(item, "title"),
+      title: getNodeText(item.title),
       description: desc,
-      pubDate: getTextContent(item, "pubDate"),
-      duration: getTextContent(item, "itunes\\:duration"),
+      pubDate: getNodeText(findNode(item, "pubDate", "published", "updated")),
+      duration: getNodeText(findNode(item, "itunes:duration")),
       audioUrl,
       imageUrl: episodeImageUrl,
     });
@@ -126,7 +181,7 @@ serve(async (req) => {
     const rssResponse = await fetch(rssUrl, {
       headers: {
         "User-Agent": "Mozilla/5.0 (compatible; VeteranPodcastAwards/1.0)",
-        "Accept": "application/rss+xml, application/xml, text/xml",
+        "Accept": "application/rss+xml, application/xml, text/xml, */*",
       },
     });
     
