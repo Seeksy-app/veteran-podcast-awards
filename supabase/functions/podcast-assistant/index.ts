@@ -30,22 +30,27 @@ serve(async (req) => {
       .eq("is_active", true)
       .limit(100);
 
-    const podcastContext = podcasts?.map(p => 
-      `- "${p.title}" by ${p.author || 'Unknown'}: ${p.description?.slice(0, 200) || 'No description'}`
+    const podcastList = podcasts?.map(p => 
+      `"${p.title}" by ${p.author || 'Unknown'} - ${p.description?.slice(0, 100) || 'No description'}`
     ).join('\n') || 'No podcasts available';
 
-    const systemPrompt = `You are a helpful podcast discovery assistant for the Veteran & Military Podcast Network. Your job is to help users find podcasts based on topics, themes, hosts, or interests.
+    const systemPrompt = `You are a friendly podcast discovery assistant for the Veteran & Military Podcast Network.
 
-Here are the podcasts in our network:
-${podcastContext}
+AVAILABLE PODCASTS:
+${podcastList}
 
-Guidelines:
-- Be conversational and helpful
-- Recommend specific podcasts from the list when relevant
-- If someone asks about a topic, suggest podcasts that might cover it based on their descriptions
-- Keep responses concise but informative
-- If no podcasts match, acknowledge it and suggest they check back as the network grows
-- You can also help with general questions about the Veteran Podcast Awards`;
+RESPONSE RULES (CRITICAL - FOLLOW EXACTLY):
+1. ALWAYS recommend exactly 3 podcasts per response
+2. Format each recommendation as a numbered list like this:
+   1. **[Podcast Title]** - One brief sentence description.
+   2. **[Podcast Title]** - One brief sentence description.
+   3. **[Podcast Title]** - One brief sentence description.
+3. After the 3 recommendations, ALWAYS end with: "Would you like more suggestions?"
+4. Keep descriptions to ONE sentence max (under 15 words)
+5. Be conversational but concise
+6. If no podcasts match, say so briefly and suggest a different topic
+7. Never use bullet points or asterisks for lists, only numbers`;
+
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
