@@ -8,10 +8,12 @@ import { toast } from "sonner";
 type Message = { role: "user" | "assistant"; content: string };
 
 const SUGGESTED_PROMPTS = [
-  "Find podcasts about combat veterans",
-  "Show me comedy podcasts",
+  "Combat veteran stories",
   "Podcasts for military families",
-  "What's the best veteran podcast?",
+  "Mental health & PTSD",
+  "Funny veteran podcasts",
+  "Female veteran hosts",
+  "Business & entrepreneurship",
 ];
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/podcast-assistant`;
@@ -113,6 +115,23 @@ export const PodcastChatbot = () => {
     sendMessage(input);
   };
 
+  // Parse markdown bold text and format nicely
+  const formatMessage = (content: string) => {
+    // Convert **text** to bold spans
+    const parts = content.split(/(\*\*[^*]+\*\*)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith("**") && part.endsWith("**")) {
+        const text = part.slice(2, -2);
+        return (
+          <span key={i} className="font-semibold text-primary">
+            {text}
+          </span>
+        );
+      }
+      return part;
+    });
+  };
+
   return (
     <>
       {/* Floating Button */}
@@ -125,22 +144,22 @@ export const PodcastChatbot = () => {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 z-50 w-[360px] max-w-[calc(100vw-48px)] bg-card border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
+        <div className="fixed bottom-24 right-6 z-50 w-[380px] max-w-[calc(100vw-48px)] bg-card border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
           {/* Header */}
           <div className="bg-primary text-primary-foreground px-4 py-3 flex items-center gap-3">
             <Sparkles className="w-5 h-5" />
             <div>
               <h3 className="font-semibold text-sm">Podcast Discovery AI</h3>
-              <p className="text-xs opacity-80">Ask me about veteran podcasts</p>
+              <p className="text-xs opacity-80">Find your next favorite show</p>
             </div>
           </div>
 
           {/* Messages */}
-          <ScrollArea className="flex-1 h-[320px] p-4" ref={scrollRef}>
+          <ScrollArea className="flex-1 h-[350px] p-4" ref={scrollRef}>
             {messages.length === 0 ? (
-              <div className="space-y-3">
-                <p className="text-sm text-muted-foreground text-center mb-4">
-                  Hi! I can help you discover podcasts. Try asking:
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground text-center">
+                  What kind of podcast are you looking for?
                 </p>
                 <div className="flex flex-wrap gap-2 justify-center">
                   {SUGGESTED_PROMPTS.map((prompt) => (
@@ -162,18 +181,37 @@ export const PodcastChatbot = () => {
                     className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                   >
                     <div
-                      className={`max-w-[85%] px-3 py-2 rounded-2xl text-sm ${
+                      className={`max-w-[90%] px-3 py-2 rounded-2xl text-sm leading-relaxed ${
                         msg.role === "user"
                           ? "bg-primary text-primary-foreground rounded-br-md"
                           : "bg-secondary text-secondary-foreground rounded-bl-md"
                       }`}
                     >
-                      {msg.content || (
+                      {msg.content ? (
+                        <div className="whitespace-pre-line">{formatMessage(msg.content)}</div>
+                      ) : (
                         <Loader2 className="w-4 h-4 animate-spin" />
                       )}
                     </div>
                   </div>
                 ))}
+                {/* Quick prompts after response */}
+                {messages.length > 0 && messages[messages.length - 1].role === "assistant" && !isLoading && (
+                  <div className="flex flex-wrap gap-1.5 pt-2">
+                    <button
+                      onClick={() => sendMessage("Show me more")}
+                      className="text-xs bg-primary/10 hover:bg-primary/20 text-primary px-2.5 py-1 rounded-full transition-colors"
+                    >
+                      Show more
+                    </button>
+                    <button
+                      onClick={() => sendMessage("Something different")}
+                      className="text-xs bg-primary/10 hover:bg-primary/20 text-primary px-2.5 py-1 rounded-full transition-colors"
+                    >
+                      Different topic
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </ScrollArea>
