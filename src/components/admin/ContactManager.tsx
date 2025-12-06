@@ -6,10 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, FileSpreadsheet, Search, Mail, Edit, Download, CheckCircle2, XCircle } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Plus, Trash2, FileSpreadsheet, Search, Mail, Edit, Download, CheckCircle2, XCircle, Send, Tag, X } from "lucide-react";
 import { toast } from "sonner";
 
 interface Contact {
@@ -26,6 +28,15 @@ interface Contact {
   host_name: string | null;
   is_on_vpn: boolean;
   linked_podcast_id: string | null;
+  source: string | null;
+  tags: string[] | null;
+  lists: string[] | null;
+}
+
+interface MailingList {
+  id: string;
+  name: string;
+  description: string | null;
 }
 
 interface Podcast {
@@ -42,21 +53,22 @@ const STATUS_OPTIONS = [
   { value: "declined", label: "Declined" },
 ];
 
-const TYPE_OPTIONS = [
-  "Military Podcast",
-  "Veteran Podcast",
-  "First Responder Podcast",
-  "Other",
-];
+const TYPE_OPTIONS = ["Military Podcast", "Veteran Podcast", "First Responder Podcast", "Other"];
+
+const SOURCE_OPTIONS = ["Manual", "CSV Import", "Website Signup", "Referral", "Event", "Social Media", "Cold Outreach"];
 
 export const ContactManager = () => {
   const queryClient = useQueryClient();
+  const [activeTab, setActiveTab] = useState("contacts");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isCampaignDialogOpen, setIsCampaignDialogOpen] = useState(false);
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [vpnFilter, setVpnFilter] = useState<string>("all");
+  const [listFilter, setListFilter] = useState<string>("all");
+  const [newTag, setNewTag] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
@@ -70,6 +82,16 @@ export const ContactManager = () => {
     notes: "",
     status: "uncontacted",
     is_on_vpn: false,
+    source: "Manual",
+    tags: [] as string[],
+    lists: [] as string[],
+  });
+
+  const [campaignData, setCampaignData] = useState({
+    name: "",
+    subject: "",
+    content: "",
+    targetList: "",
   });
 
   const { data: contacts, isLoading } = useQuery({
@@ -84,13 +106,19 @@ export const ContactManager = () => {
     },
   });
 
-  // Fetch all podcasts to match against
+  const { data: mailingLists } = useQuery({
+    queryKey: ["mailing-lists"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("mailing_lists").select("*").order("name");
+      if (error) throw error;
+      return data as MailingList[];
+    },
+  });
+
   const { data: podcasts } = useQuery({
     queryKey: ["all-podcasts-for-matching"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("podcasts")
-        .select("id, title, rss_url");
+      const { data, error } = await supabase.from("podcasts").select("id, title, rss_url");
       if (error) throw error;
       return data as Podcast[];
     },
@@ -104,20 +132,19 @@ export const ContactManager = () => {
         contact.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         contact.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
         contact.podcast_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        contact.host_name?.toLowerCase().includes(searchQuery.toLowerCase());
+        contact.host_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        contact.tags?.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase()));
       const matchesStatus = statusFilter === "all" || contact.status === statusFilter;
-      const matchesVpn = vpnFilter === "all" || 
-        (vpnFilter === "on_vpn" && contact.is_on_vpn) ||
-        (vpnFilter === "not_on_vpn" && !contact.is_on_vpn);
-      return matchesSearch && matchesStatus && matchesVpn;
+      const matchesVpn = vpnFilter === "all" || (vpnFilter === "on_vpn" && contact.is_on_vpn) || (vpnFilter === "not_on_vpn" && !contact.is_on_vpn);
+      const matchesList = listFilter === "all" || contact.lists?.includes(listFilter);
+      return matchesSearch && matchesStatus && matchesVpn && matchesList;
     });
-  }, [contacts, searchQuery, statusFilter, vpnFilter]);
+  }, [contacts, searchQuery, statusFilter, vpnFilter, listFilter]);
 
-  // Find matching podcast by RSS URL
   const findMatchingPodcast = (rssUrl: string | null | undefined): Podcast | undefined => {
     if (!rssUrl || !podcasts) return undefined;
     const normalizedUrl = rssUrl.toLowerCase().trim();
-    return podcasts.find(p => p.rss_url.toLowerCase().trim() === normalizedUrl);
+    return podcasts.find((p) => p.rss_url.toLowerCase().trim() === normalizedUrl);
   };
 
   const addContact = useMutation({
@@ -135,6 +162,9 @@ export const ContactManager = () => {
         status: data.status,
         is_on_vpn: matchingPodcast ? true : data.is_on_vpn,
         linked_podcast_id: matchingPodcast?.id || null,
+        source: data.source || "Manual",
+        tags: data.tags,
+        lists: data.lists,
       });
       if (error) throw error;
     },
@@ -170,6 +200,9 @@ export const ContactManager = () => {
           status: data.status,
           is_on_vpn: matchingPodcast ? true : data.is_on_vpn,
           linked_podcast_id: matchingPodcast?.id || null,
+          source: data.source || "Manual",
+          tags: data.tags,
+          lists: data.lists,
         })
         .eq("id", id);
       if (error) throw error;
@@ -194,15 +227,17 @@ export const ContactManager = () => {
   });
 
   const bulkImport = useMutation({
-    mutationFn: async (importContacts: Array<{
-      name: string;
-      email: string;
-      podcast_name?: string;
-      rss_url?: string;
-      podcast_url?: string;
-      host_name?: string;
-      contact_type?: string;
-    }>) => {
+    mutationFn: async (
+      importContacts: Array<{
+        name: string;
+        email: string;
+        podcast_name?: string;
+        rss_url?: string;
+        podcast_url?: string;
+        host_name?: string;
+        contact_type?: string;
+      }>
+    ) => {
       let matchedCount = 0;
       const contactsToInsert = importContacts.map((c) => {
         const matchingPodcast = findMatchingPodcast(c.rss_url);
@@ -218,19 +253,59 @@ export const ContactManager = () => {
           status: "uncontacted",
           is_on_vpn: !!matchingPodcast,
           linked_podcast_id: matchingPodcast?.id || null,
+          source: "CSV Import",
+          tags: [],
+          lists: [],
         };
       });
 
-      const { error } = await supabase.from("podcast_contacts").upsert(
-        contactsToInsert,
-        { onConflict: "email", ignoreDuplicates: true }
-      );
+      const { error } = await supabase.from("podcast_contacts").upsert(contactsToInsert, { onConflict: "email", ignoreDuplicates: true });
       if (error) throw error;
       return { total: importContacts.length, matched: matchedCount };
     },
     onSuccess: ({ total, matched }) => {
       queryClient.invalidateQueries({ queryKey: ["podcast-contacts"] });
       toast.success(`Imported ${total} contacts. ${matched} matched to VPN podcasts.`);
+    },
+  });
+
+  const sendCampaign = useMutation({
+    mutationFn: async (data: typeof campaignData) => {
+      // Create campaign record
+      const { data: campaign, error: campaignError } = await supabase
+        .from("email_campaigns")
+        .insert({
+          name: data.name,
+          subject: data.subject,
+          content: data.content,
+          target_list: data.targetList,
+          status: "sending",
+        })
+        .select()
+        .single();
+
+      if (campaignError) throw campaignError;
+
+      // Call edge function to send emails
+      const { data: result, error: sendError } = await supabase.functions.invoke("send-campaign", {
+        body: {
+          campaignId: campaign.id,
+          subject: data.subject,
+          content: data.content,
+          targetList: data.targetList,
+        },
+      });
+
+      if (sendError) throw sendError;
+      return result;
+    },
+    onSuccess: (result) => {
+      toast.success(`Campaign sent! ${result.sent} emails delivered, ${result.failed} failed.`);
+      setIsCampaignDialogOpen(false);
+      setCampaignData({ name: "", subject: "", content: "", targetList: "" });
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to send campaign: ${error.message}`);
     },
   });
 
@@ -246,6 +321,9 @@ export const ContactManager = () => {
       notes: "",
       status: "uncontacted",
       is_on_vpn: false,
+      source: "Manual",
+      tags: [],
+      lists: [],
     });
   };
 
@@ -269,10 +347,9 @@ export const ContactManager = () => {
         contact_type?: string;
       }> = [];
 
-      // Parse header to find column indices
       const headerLine = lines[0]?.toLowerCase() || "";
       const headerCells = headerLine.split(/[,;\t]/).map((c) => c.trim().replace(/^["']|["']$/g, ""));
-      
+
       const typeIdx = headerCells.findIndex((c) => c.includes("type"));
       const podcastUrlIdx = headerCells.findIndex((c) => c.includes("podcast url") || c === "podcast_url");
       const rssUrlIdx = headerCells.findIndex((c) => c.includes("rss"));
@@ -280,13 +357,11 @@ export const ContactManager = () => {
       const hostNameIdx = headerCells.findIndex((c) => c.includes("host"));
       const emailIdx = headerCells.findIndex((c) => c.includes("email"));
 
-      // Skip header if present
       const startIndex = emailIdx !== -1 ? 1 : 0;
 
       for (let i = startIndex; i < lines.length; i++) {
         const cells = lines[i].split(/[,;\t]/).map((c) => c.trim().replace(/^["']|["']$/g, ""));
-        
-        // Find email - either by index or by searching for @
+
         let email = emailIdx !== -1 ? cells[emailIdx] : cells.find((c) => c.includes("@"));
         if (!email || !email.includes("@")) continue;
 
@@ -297,15 +372,7 @@ export const ContactManager = () => {
         const host_name = hostNameIdx !== -1 ? cells[hostNameIdx] : undefined;
         const name = host_name || email.split("@")[0];
 
-        importContacts.push({
-          name,
-          email,
-          podcast_name,
-          rss_url,
-          podcast_url,
-          host_name,
-          contact_type,
-        });
+        importContacts.push({ name, email, podcast_name, rss_url, podcast_url, host_name, contact_type });
       }
 
       if (importContacts.length > 0) {
@@ -322,7 +389,7 @@ export const ContactManager = () => {
   const handleExport = () => {
     if (!contacts?.length) return;
     const csv = [
-      "Type,Podcast URL,RSS URL,Podcast Name,Host Name,Email,Status,Notes,On VPN",
+      "Type,Podcast URL,RSS URL,Podcast Name,Host Name,Email,Status,Source,Tags,Lists,On VPN,Notes",
       ...contacts.map((c) =>
         [
           c.contact_type || "",
@@ -332,8 +399,11 @@ export const ContactManager = () => {
           c.host_name || c.name,
           c.email,
           c.status,
-          c.notes || "",
+          c.source || "",
+          (c.tags || []).join(";"),
+          (c.lists || []).join(";"),
           c.is_on_vpn ? "Yes" : "No",
+          c.notes || "",
         ]
           .map((v) => `"${String(v).replace(/"/g, '""')}"`)
           .join(",")
@@ -362,8 +432,30 @@ export const ContactManager = () => {
       notes: contact.notes || "",
       status: contact.status,
       is_on_vpn: contact.is_on_vpn,
+      source: contact.source || "Manual",
+      tags: contact.tags || [],
+      lists: contact.lists || [],
     });
     setIsEditDialogOpen(true);
+  };
+
+  const addTag = () => {
+    if (newTag.trim() && !formData.tags.includes(newTag.trim())) {
+      setFormData({ ...formData, tags: [...formData.tags, newTag.trim()] });
+      setNewTag("");
+    }
+  };
+
+  const removeTag = (tag: string) => {
+    setFormData({ ...formData, tags: formData.tags.filter((t) => t !== tag) });
+  };
+
+  const toggleList = (listName: string) => {
+    if (formData.lists.includes(listName)) {
+      setFormData({ ...formData, lists: formData.lists.filter((l) => l !== listName) });
+    } else {
+      setFormData({ ...formData, lists: [...formData.lists, listName] });
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -383,164 +475,214 @@ export const ContactManager = () => {
     }
   };
 
-  const vpnOnCount = contacts?.filter(c => c.is_on_vpn).length || 0;
-  const vpnOffCount = (contacts?.length || 0) - vpnOnCount;
+  const vpnOnCount = contacts?.filter((c) => c.is_on_vpn).length || 0;
+  const listCounts = useMemo(() => {
+    if (!contacts || !mailingLists) return {};
+    return mailingLists.reduce(
+      (acc, list) => {
+        acc[list.name] = contacts.filter((c) => c.lists?.includes(list.name)).length;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
+  }, [contacts, mailingLists]);
 
   return (
-    <div className="mt-12">
-      <div className="flex flex-col gap-4 mb-6">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <h2 className="font-serif text-xl font-bold text-foreground">Podcast Contacts</h2>
-            <span className="text-sm text-muted-foreground bg-secondary px-2 py-1 rounded-full">
-              {contacts?.length || 0} total
-            </span>
-            <span className="text-sm text-green-600 bg-green-500/20 px-2 py-1 rounded-full">
-              {vpnOnCount} on VPN
-            </span>
-          </div>
+    <div className="mt-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <div className="flex justify-between items-center mb-4">
+          <TabsList>
+            <TabsTrigger value="contacts">Contacts</TabsTrigger>
+            <TabsTrigger value="lists">Lists</TabsTrigger>
+          </TabsList>
           <div className="flex gap-2">
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileUpload}
-              accept=".csv,.txt,.tsv"
-              className="hidden"
-            />
-            <Button variant="outline" onClick={handleExport} disabled={!contacts?.length}>
-              <Download className="w-4 h-4 mr-2" />
-              Export
-            </Button>
-            <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
-              <FileSpreadsheet className="w-4 h-4 mr-2" />
-              Import CSV
-            </Button>
-            <Button onClick={() => { resetForm(); setIsAddDialogOpen(true); }}>
-              <Plus className="w-4 h-4 mr-2" />
-              Add Contact
-            </Button>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by name, email, or podcast..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 bg-secondary/30"
-            />
-          </div>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-36">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              {STATUS_OPTIONS.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={vpnFilter} onValueChange={setVpnFilter}>
-            <SelectTrigger className="w-36">
-              <SelectValue placeholder="VPN Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              <SelectItem value="on_vpn">On VPN</SelectItem>
-              <SelectItem value="not_on_vpn">Not on VPN</SelectItem>
-            </SelectContent>
-          </Select>
-          {(searchQuery || statusFilter !== "all" || vpnFilter !== "all") && (
-            <span className="text-sm text-muted-foreground">
-              Showing {filteredContacts.length} of {contacts?.length || 0}
-            </span>
-          )}
-        </div>
-      </div>
-
-      {isLoading ? (
-        <div className="text-center py-8 text-muted-foreground">Loading contacts...</div>
-      ) : !contacts?.length ? (
-        <div className="text-center py-12 bg-card border border-border rounded-lg">
-          <Mail className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground mb-4">No contacts yet</p>
-          <Button onClick={() => fileInputRef.current?.click()}>
-            <FileSpreadsheet className="w-4 h-4 mr-2" />
-            Import from Spreadsheet
-          </Button>
-        </div>
-      ) : (
-        <div className="grid gap-2">
-          {filteredContacts.map((contact) => (
-            <div key={contact.id} className="flex items-center gap-3 p-3 bg-card border border-border rounded-lg">
-              <div className="flex-shrink-0" title={contact.is_on_vpn ? "On VPN" : "Not on VPN"}>
-                {contact.is_on_vpn ? (
-                  <CheckCircle2 className="w-5 h-5 text-green-600" />
-                ) : (
-                  <XCircle className="w-5 h-5 text-muted-foreground" />
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="font-semibold text-foreground truncate">{contact.host_name || contact.name}</h3>
-                  <span className={`text-xs px-2 py-0.5 rounded ${getStatusColor(contact.status)}`}>
-                    {STATUS_OPTIONS.find((o) => o.value === contact.status)?.label}
-                  </span>
-                  {contact.contact_type && contact.contact_type !== "Military Podcast" && (
-                    <span className="text-xs px-2 py-0.5 rounded bg-secondary text-secondary-foreground">
-                      {contact.contact_type}
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm text-muted-foreground truncate">{contact.email}</p>
-                {contact.podcast_name && (
-                  <p className="text-xs text-primary truncate">{contact.podcast_name}</p>
-                )}
-              </div>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="icon" onClick={() => openEditDialog(contact)}>
-                  <Edit className="w-4 h-4" />
+            <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept=".csv,.txt,.tsv" className="hidden" />
+            {activeTab === "contacts" && (
+              <>
+                <Button variant="outline" onClick={() => setIsCampaignDialogOpen(true)}>
+                  <Send className="w-4 h-4 mr-2" />
+                  Send Campaign
                 </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="outline" size="icon" className="text-destructive">
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Delete Contact</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Are you sure you want to delete {contact.name}?
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={() => deleteContact.mutate(contact.id)}
-                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                      >
-                        Delete
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
-            </div>
-          ))}
+                <Button variant="outline" onClick={handleExport} disabled={!contacts?.length}>
+                  <Download className="w-4 h-4 mr-2" />
+                  Export
+                </Button>
+                <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
+                  <FileSpreadsheet className="w-4 h-4 mr-2" />
+                  Import
+                </Button>
+                <Button
+                  onClick={() => {
+                    resetForm();
+                    setIsAddDialogOpen(true);
+                  }}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Contact
+                </Button>
+              </>
+            )}
+          </div>
         </div>
-      )}
 
-      {/* Add/Edit Dialog */}
-      <Dialog open={isAddDialogOpen || isEditDialogOpen} onOpenChange={(open) => {
-        if (!open) { setIsAddDialogOpen(false); setIsEditDialogOpen(false); setEditingContact(null); }
-      }}>
-        <DialogContent className="max-w-lg">
+        <TabsContent value="contacts" className="mt-0">
+          <div className="flex flex-col gap-4 mb-4">
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-muted-foreground bg-secondary px-2 py-1 rounded-full">{contacts?.length || 0} total</span>
+              <span className="text-sm text-green-600 bg-green-500/20 px-2 py-1 rounded-full">{vpnOnCount} on VPN</span>
+            </div>
+
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input placeholder="Search by name, email, podcast, or tag..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9 bg-secondary/30" />
+              </div>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-32">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  {STATUS_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={listFilter} onValueChange={setListFilter}>
+                <SelectTrigger className="w-36">
+                  <SelectValue placeholder="List" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Lists</SelectItem>
+                  {mailingLists?.map((list) => (
+                    <SelectItem key={list.id} value={list.name}>
+                      {list.name} ({listCounts[list.name] || 0})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={vpnFilter} onValueChange={setVpnFilter}>
+                <SelectTrigger className="w-28">
+                  <SelectValue placeholder="VPN" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="on_vpn">On VPN</SelectItem>
+                  <SelectItem value="not_on_vpn">Not on VPN</SelectItem>
+                </SelectContent>
+              </Select>
+              {(searchQuery || statusFilter !== "all" || vpnFilter !== "all" || listFilter !== "all") && (
+                <span className="text-sm text-muted-foreground">
+                  {filteredContacts.length} of {contacts?.length || 0}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {isLoading ? (
+            <div className="text-center py-8 text-muted-foreground">Loading contacts...</div>
+          ) : !contacts?.length ? (
+            <div className="text-center py-12 bg-card border border-border rounded-lg">
+              <Mail className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground mb-4">No contacts yet</p>
+              <Button onClick={() => fileInputRef.current?.click()}>
+                <FileSpreadsheet className="w-4 h-4 mr-2" />
+                Import from Spreadsheet
+              </Button>
+            </div>
+          ) : (
+            <div className="grid gap-2">
+              {filteredContacts.map((contact) => (
+                <div key={contact.id} className="flex items-center gap-3 p-3 bg-card border border-border rounded-lg">
+                  <div className="flex-shrink-0" title={contact.is_on_vpn ? "On VPN" : "Not on VPN"}>
+                    {contact.is_on_vpn ? <CheckCircle2 className="w-5 h-5 text-green-600" /> : <XCircle className="w-5 h-5 text-muted-foreground" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-semibold text-foreground truncate">{contact.host_name || contact.name}</h3>
+                      <span className={`text-xs px-2 py-0.5 rounded ${getStatusColor(contact.status)}`}>{STATUS_OPTIONS.find((o) => o.value === contact.status)?.label}</span>
+                      {contact.lists?.map((list) => (
+                        <Badge key={list} variant="outline" className="text-xs">
+                          {list}
+                        </Badge>
+                      ))}
+                    </div>
+                    <p className="text-sm text-muted-foreground truncate">{contact.email}</p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {contact.podcast_name && <span className="text-xs text-primary truncate">{contact.podcast_name}</span>}
+                      {contact.tags?.map((tag) => (
+                        <Badge key={tag} variant="secondary" className="text-xs">
+                          <Tag className="w-2 h-2 mr-1" />
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" size="icon" onClick={() => openEditDialog(contact)}>
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="outline" size="icon" className="text-destructive">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Contact</AlertDialogTitle>
+                          <AlertDialogDescription>Are you sure you want to delete {contact.name}?</AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => deleteContact.mutate(contact.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="lists" className="mt-0">
+          <div className="grid gap-3">
+            {mailingLists?.map((list) => (
+              <div key={list.id} className="flex items-center justify-between p-4 bg-card border border-border rounded-lg">
+                <div>
+                  <h3 className="font-semibold text-foreground">{list.name}</h3>
+                  {list.description && <p className="text-sm text-muted-foreground">{list.description}</p>}
+                </div>
+                <div className="flex items-center gap-4">
+                  <span className="text-sm text-muted-foreground">{listCounts[list.name] || 0} contacts</span>
+                  <Button variant="outline" size="sm" onClick={() => { setCampaignData({ ...campaignData, targetList: list.name }); setIsCampaignDialogOpen(true); }}>
+                    <Send className="w-4 h-4 mr-2" />
+                    Send Email
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      {/* Add/Edit Contact Dialog */}
+      <Dialog
+        open={isAddDialogOpen || isEditDialogOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setIsAddDialogOpen(false);
+            setIsEditDialogOpen(false);
+            setEditingContact(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingContact ? "Edit Contact" : "Add Contact"}</DialogTitle>
           </DialogHeader>
@@ -548,30 +690,17 @@ export const ContactManager = () => {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Host Name *</Label>
-                <Input
-                  value={formData.host_name || formData.name}
-                  onChange={(e) => setFormData({ ...formData, host_name: e.target.value, name: e.target.value })}
-                  placeholder="John Doe"
-                />
+                <Input value={formData.host_name || formData.name} onChange={(e) => setFormData({ ...formData, host_name: e.target.value, name: e.target.value })} placeholder="John Doe" />
               </div>
               <div className="space-y-2">
                 <Label>Email *</Label>
-                <Input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="john@example.com"
-                />
+                <Input type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} placeholder="john@example.com" />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Podcast Name</Label>
-                <Input
-                  value={formData.podcast_name}
-                  onChange={(e) => setFormData({ ...formData, podcast_name: e.target.value })}
-                  placeholder="My Podcast"
-                />
+                <Input value={formData.podcast_name} onChange={(e) => setFormData({ ...formData, podcast_name: e.target.value })} placeholder="My Podcast" />
               </div>
               <div className="space-y-2">
                 <Label>Type</Label>
@@ -590,20 +719,12 @@ export const ContactManager = () => {
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Podcast URL (Apple/Spotify)</Label>
-              <Input
-                value={formData.podcast_url}
-                onChange={(e) => setFormData({ ...formData, podcast_url: e.target.value })}
-                placeholder="https://podcasts.apple.com/..."
-              />
+              <Label>Podcast URL</Label>
+              <Input value={formData.podcast_url} onChange={(e) => setFormData({ ...formData, podcast_url: e.target.value })} placeholder="https://podcasts.apple.com/..." />
             </div>
             <div className="space-y-2">
               <Label>RSS URL</Label>
-              <Input
-                value={formData.rss_url}
-                onChange={(e) => setFormData({ ...formData, rss_url: e.target.value })}
-                placeholder="https://..."
-              />
+              <Input value={formData.rss_url} onChange={(e) => setFormData({ ...formData, rss_url: e.target.value })} placeholder="https://..." />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -621,26 +742,71 @@ export const ContactManager = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2 flex items-end">
-                <div className="flex items-center space-x-2 pb-2">
-                  <Checkbox
-                    id="is_on_vpn"
-                    checked={formData.is_on_vpn}
-                    onCheckedChange={(checked) => setFormData({ ...formData, is_on_vpn: !!checked })}
-                  />
-                  <Label htmlFor="is_on_vpn" className="cursor-pointer">Listed on VPN</Label>
-                </div>
+              <div className="space-y-2">
+                <Label>Source</Label>
+                <Select value={formData.source} onValueChange={(v) => setFormData({ ...formData, source: v })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SOURCE_OPTIONS.map((opt) => (
+                      <SelectItem key={opt} value={opt}>
+                        {opt}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
+
+            <div className="space-y-2">
+              <Label>Mailing Lists</Label>
+              <div className="flex flex-wrap gap-2">
+                {mailingLists?.map((list) => (
+                  <Badge
+                    key={list.id}
+                    variant={formData.lists.includes(list.name) ? "default" : "outline"}
+                    className="cursor-pointer"
+                    onClick={() => toggleList(list.name)}
+                  >
+                    {list.name}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Tags</Label>
+              <div className="flex gap-2">
+                <Input value={newTag} onChange={(e) => setNewTag(e.target.value)} placeholder="Add tag..." onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addTag())} />
+                <Button type="button" variant="outline" onClick={addTag}>
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </div>
+              {formData.tags.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {formData.tags.map((tag) => (
+                    <Badge key={tag} variant="secondary" className="gap-1">
+                      {tag}
+                      <X className="w-3 h-3 cursor-pointer" onClick={() => removeTag(tag)} />
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox id="is_on_vpn" checked={formData.is_on_vpn} onCheckedChange={(checked) => setFormData({ ...formData, is_on_vpn: !!checked })} />
+              <Label htmlFor="is_on_vpn" className="cursor-pointer">
+                Listed on VPN
+              </Label>
+            </div>
+
             <div className="space-y-2">
               <Label>Notes</Label>
-              <Textarea
-                value={formData.notes}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                placeholder="Any notes about this contact..."
-                rows={2}
-              />
+              <Textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} placeholder="Any notes..." rows={2} />
             </div>
+
             <Button
               onClick={() => {
                 if (!formData.email) {
@@ -661,6 +827,64 @@ export const ContactManager = () => {
               className="w-full"
             >
               {editingContact ? "Update Contact" : "Add Contact"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Send Campaign Dialog */}
+      <Dialog open={isCampaignDialogOpen} onOpenChange={setIsCampaignDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Send Email Campaign</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Campaign Name</Label>
+              <Input value={campaignData.name} onChange={(e) => setCampaignData({ ...campaignData, name: e.target.value })} placeholder="December Newsletter" />
+            </div>
+            <div className="space-y-2">
+              <Label>Target List *</Label>
+              <Select value={campaignData.targetList} onValueChange={(v) => setCampaignData({ ...campaignData, targetList: v })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a list..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {mailingLists?.map((list) => (
+                    <SelectItem key={list.id} value={list.name}>
+                      {list.name} ({listCounts[list.name] || 0} contacts)
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Subject *</Label>
+              <Input value={campaignData.subject} onChange={(e) => setCampaignData({ ...campaignData, subject: e.target.value })} placeholder="Hello {{name}}!" />
+              <p className="text-xs text-muted-foreground">Use {"{{name}}"} for personalization</p>
+            </div>
+            <div className="space-y-2">
+              <Label>Email Content (HTML) *</Label>
+              <Textarea
+                value={campaignData.content}
+                onChange={(e) => setCampaignData({ ...campaignData, content: e.target.value })}
+                placeholder="<h1>Hello {{name}}!</h1><p>Thank you for being part of our network...</p>"
+                rows={8}
+              />
+              <p className="text-xs text-muted-foreground">Use {"{{name}}"}, {"{{podcast_name}}"}, {"{{email}}"} for personalization</p>
+            </div>
+            <Button
+              onClick={() => {
+                if (!campaignData.targetList || !campaignData.subject || !campaignData.content) {
+                  toast.error("Please fill in all required fields");
+                  return;
+                }
+                sendCampaign.mutate(campaignData);
+              }}
+              disabled={sendCampaign.isPending}
+              className="w-full"
+            >
+              {sendCampaign.isPending ? "Sending..." : `Send to ${listCounts[campaignData.targetList] || 0} contacts`}
             </Button>
           </div>
         </DialogContent>
