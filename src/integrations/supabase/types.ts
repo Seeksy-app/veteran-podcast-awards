@@ -56,6 +56,33 @@ export type Database = {
         }
         Relationships: []
       }
+      podcast_submissions: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+          rss_url: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          rss_url: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          rss_url?: string
+          status?: string
+        }
+        Relationships: []
+      }
       podcasts: {
         Row: {
           author: string | null

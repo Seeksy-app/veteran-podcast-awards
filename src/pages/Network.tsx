@@ -1,6 +1,8 @@
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { PodcastGrid } from "@/components/podcasts/PodcastGrid";
+import { PodcastSubmissionForm } from "@/components/podcasts/PodcastSubmissionForm";
+import { PodcastDisclaimer } from "@/components/podcasts/PodcastDisclaimer";
 import { Radio, Users } from "lucide-react";
 
 const NetworkPage = () => {
@@ -42,8 +44,18 @@ const NetworkPage = () => {
             </div>
           </div>
 
+          {/* Disclaimer */}
+          <div className="mb-12">
+            <PodcastDisclaimer />
+          </div>
+
           {/* Podcast Grid */}
           <PodcastGrid />
+
+          {/* Submission Form */}
+          <div className="mt-16 max-w-2xl mx-auto">
+            <PodcastSubmissionForm />
+          </div>
         </div>
       </main>
       <Footer />
