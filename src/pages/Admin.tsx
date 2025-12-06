@@ -1,13 +1,22 @@
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { AdminLogin } from '@/components/admin/AdminLogin';
 import { SponsorList } from '@/components/admin/SponsorList';
 import { PodcastManager } from '@/components/admin/PodcastManager';
 import { Button } from '@/components/ui/button';
-import { LogOut, Shield } from 'lucide-react';
+import { LogOut, Shield, Home } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import logo from '@/assets/vpa-logo.png';
 
 const AdminPage = () => {
   const { user, loading, isAdmin, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate('/auth', { state: { from: '/admin' } });
+    }
+  }, [user, loading, navigate]);
 
   if (loading) {
     return (
@@ -18,7 +27,7 @@ const AdminPage = () => {
   }
 
   if (!user) {
-    return <AdminLogin />;
+    return null; // Will redirect
   }
 
   if (!isAdmin) {
@@ -30,10 +39,18 @@ const AdminPage = () => {
           <p className="text-muted-foreground mb-6">
             You don't have admin privileges. Contact an administrator for access.
           </p>
-          <Button variant="outline" onClick={() => signOut()}>
-            <LogOut className="w-4 h-4 mr-2" />
-            Sign Out
-          </Button>
+          <div className="flex gap-4 justify-center">
+            <Link to="/">
+              <Button variant="outline">
+                <Home className="w-4 h-4 mr-2" />
+                Go Home
+              </Button>
+            </Link>
+            <Button variant="outline" onClick={() => signOut()}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -45,7 +62,9 @@ const AdminPage = () => {
       <header className="border-b border-border bg-card">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={logo} alt="VPA Logo" className="w-10 h-10" />
+            <Link to="/">
+              <img src={logo} alt="VPA Logo" className="w-10 h-10" />
+            </Link>
             <div>
               <h1 className="font-serif text-lg font-bold text-foreground">Admin Dashboard</h1>
               <p className="text-xs text-muted-foreground">Veteran Podcast Awards</p>

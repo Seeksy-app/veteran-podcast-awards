@@ -9,6 +9,7 @@ import Categories from "./pages/Categories";
 import About from "./pages/About";
 import Admin from "./pages/Admin";
 import Network from "./pages/Network";
+import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
           <Route path="/categories" element={<Categories />} />
           <Route path="/network" element={<Network />} />
           <Route path="/about" element={<About />} />
+          <Route path="/auth" element={<Auth />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
