@@ -8,6 +8,7 @@ import Livestream from "./pages/Livestream";
 import Categories from "./pages/Categories";
 import About from "./pages/About";
 import Admin from "./pages/Admin";
+import Network from "./pages/Network";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/livestream" element={<Livestream />} />
           <Route path="/categories" element={<Categories />} />
+          <Route path="/network" element={<Network />} />
           <Route path="/about" element={<About />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<NotFound />} />

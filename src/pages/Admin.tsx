@@ -1,6 +1,7 @@
 import { useAuth } from '@/hooks/useAuth';
 import { AdminLogin } from '@/components/admin/AdminLogin';
 import { SponsorList } from '@/components/admin/SponsorList';
+import { PodcastManager } from '@/components/admin/PodcastManager';
 import { Button } from '@/components/ui/button';
 import { LogOut, Shield } from 'lucide-react';
 import logo from '@/assets/vpa-logo.png';
@@ -63,6 +64,7 @@ const AdminPage = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <SponsorList />
+        <PodcastManager />
       </main>
     </div>
   );
