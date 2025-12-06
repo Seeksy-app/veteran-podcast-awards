@@ -1,8 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Play, Pause, ExternalLink, Clock, Calendar } from "lucide-react";
+import { Play, Pause, ExternalLink, Clock, Calendar, Heart } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 import type { Podcast, Episode } from "@/hooks/usePodcasts";
 
 interface PodcastEpisodesModalProps {
@@ -14,6 +18,68 @@ interface PodcastEpisodesModalProps {
 export const PodcastEpisodesModal = ({ podcast, open, onOpenChange }: PodcastEpisodesModalProps) => {
   const [playingEpisode, setPlayingEpisode] = useState<string | null>(null);
   const [audioRef, setAudioRef] = useState<HTMLAudioElement | null>(null);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [isLoadingFavorite, setIsLoadingFavorite] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  // Check if podcast is in favorites
+  useEffect(() => {
+    const checkFavorite = async () => {
+      if (!user || !podcast) return;
+      
+      const { data } = await supabase
+        .from("favorites")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("podcast_id", podcast.id)
+        .maybeSingle();
+      
+      setIsFavorite(!!data);
+    };
+    
+    if (open && podcast) {
+      checkFavorite();
+    }
+  }, [user, podcast, open]);
+
+  const handleToggleFavorite = async () => {
+    if (!user) {
+      toast.error("Sign in to follow podcasts", {
+        action: {
+          label: "Sign In",
+          onClick: () => navigate("/auth"),
+        },
+      });
+      return;
+    }
+
+    if (!podcast) return;
+
+    setIsLoadingFavorite(true);
+    try {
+      if (isFavorite) {
+        await supabase
+          .from("favorites")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("podcast_id", podcast.id);
+        setIsFavorite(false);
+        toast.success("Removed from favorites");
+      } else {
+        await supabase.from("favorites").insert({
+          user_id: user.id,
+          podcast_id: podcast.id,
+        });
+        setIsFavorite(true);
+        toast.success("Added to favorites!");
+      }
+    } catch (error) {
+      toast.error("Failed to update favorites");
+    } finally {
+      setIsLoadingFavorite(false);
+    }
+  };
 
   const handlePlay = (episode: Episode) => {
     if (playingEpisode === episode.audioUrl) {
@@ -68,17 +134,29 @@ export const PodcastEpisodesModal = ({ podcast, open, onOpenChange }: PodcastEpi
               {podcast.author && (
                 <p className="text-sm text-muted-foreground">by {podcast.author}</p>
               )}
-              {podcast.website_url && (
-                <a
-                  href={podcast.website_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-sm text-primary hover:underline mt-2"
-                >
-                  Visit Website <ExternalLink className="w-3 h-3" />
-                </a>
-              )}
+              <div className="flex items-center gap-3 mt-2">
+                {podcast.website_url && (
+                  <a
+                    href={podcast.website_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+                  >
+                    Visit Website <ExternalLink className="w-3 h-3" />
+                  </a>
+                )}
+              </div>
             </div>
+            <Button
+              variant={isFavorite ? "default" : "outline"}
+              size="sm"
+              onClick={handleToggleFavorite}
+              disabled={isLoadingFavorite}
+              className={isFavorite ? "bg-primary text-primary-foreground" : ""}
+            >
+              <Heart className={`w-4 h-4 mr-1 ${isFavorite ? "fill-current" : ""}`} />
+              {isFavorite ? "Following" : "Follow"}
+            </Button>
           </div>
         </DialogHeader>
 
