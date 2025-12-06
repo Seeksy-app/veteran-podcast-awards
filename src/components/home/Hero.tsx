@@ -1,0 +1,83 @@
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Mic, Award, Users } from "lucide-react";
+import logo from "@/assets/vpa-logo.png";
+import heroBg from "@/assets/hero-bg.jpg";
+import { CountdownTimer } from "./CountdownTimer";
+
+export const Hero = () => {
+  return (
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${heroBg})` }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/70 to-background" />
+      </div>
+
+      <div className="relative z-10 container mx-auto px-4 pt-24 pb-16">
+        <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
+          <div className="animate-float mb-8">
+            <img
+              src={logo}
+              alt="Veteran Podcast Awards"
+              className="w-32 h-32 md:w-40 md:h-40 glow-gold rounded-full"
+            />
+          </div>
+
+          <div className="inline-flex items-center gap-2 bg-secondary/50 border border-border rounded-full px-4 py-2 mb-6 animate-fade-in">
+            <Award className="w-4 h-4 text-primary" />
+            <span className="text-sm text-muted-foreground">
+              National Military Podcast Day • October 5th
+            </span>
+          </div>
+
+          <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl font-bold mb-6 animate-slide-up">
+            <span className="text-gold-gradient">Veteran Podcast</span>
+            <br />
+            <span className="text-foreground">Awards</span>
+          </h1>
+
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-8 animate-slide-up" style={{ animationDelay: "0.1s" }}>
+            Celebrating the impactful voices of veteran podcasters. Help us honor
+            those who share their stories, inspire others, and strengthen our community.
+          </p>
+
+          <div className="mb-10 animate-slide-up" style={{ animationDelay: "0.2s" }}>
+            <CountdownTimer targetDate="2026-10-05T18:00:00" />
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4 animate-slide-up" style={{ animationDelay: "0.3s" }}>
+            <Link to="/register">
+              <Button variant="hero" size="xl">
+                <Mic className="w-5 h-5" />
+                Register Your Podcast
+              </Button>
+            </Link>
+            <Link to="/vote">
+              <Button variant="goldOutline" size="xl">
+                <Users className="w-5 h-5" />
+                Vote for Nominees
+              </Button>
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-3 gap-8 mt-16 animate-fade-in" style={{ animationDelay: "0.4s" }}>
+            <div className="text-center">
+              <p className="font-serif text-3xl md:text-4xl text-primary font-bold">25+</p>
+              <p className="text-sm text-muted-foreground">Categories</p>
+            </div>
+            <div className="text-center">
+              <p className="font-serif text-3xl md:text-4xl text-primary font-bold">100+</p>
+              <p className="text-sm text-muted-foreground">Nominees</p>
+            </div>
+            <div className="text-center">
+              <p className="font-serif text-3xl md:text-4xl text-primary font-bold">5K+</p>
+              <p className="text-sm text-muted-foreground">Votes Cast</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
