@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import logo from "@/assets/vpa-logo.png";
+import { PodcastDisclaimer } from "@/components/podcasts/PodcastDisclaimer";
 
 export const Footer = () => {
   return (
@@ -61,6 +62,11 @@ export const Footer = () => {
               </li>
             </ul>
           </div>
+        </div>
+
+        {/* Disclaimer Section */}
+        <div className="mt-8">
+          <PodcastDisclaimer />
         </div>
 
         <div className="border-t border-border mt-8 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">

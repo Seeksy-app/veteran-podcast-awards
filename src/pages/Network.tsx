@@ -1,11 +1,21 @@
+import { useState } from "react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { PodcastGrid } from "@/components/podcasts/PodcastGrid";
 import { PodcastSubmissionForm } from "@/components/podcasts/PodcastSubmissionForm";
 import { PodcastDisclaimer } from "@/components/podcasts/PodcastDisclaimer";
-import { Radio, Users } from "lucide-react";
+import { Radio, Users, Headphones, Info, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 const NetworkPage = () => {
+  const [showDisclaimer, setShowDisclaimer] = useState(false);
+  const [showSubmitForm, setShowSubmitForm] = useState(false);
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -29,33 +39,50 @@ const NetworkPage = () => {
           </div>
 
           {/* Stats */}
-          <div className="flex justify-center gap-12 mb-16">
+          <div className="flex justify-center gap-12 mb-12">
             <div className="text-center">
-              <p className="font-serif text-3xl md:text-4xl text-primary font-bold">50+</p>
+              <p className="font-serif text-3xl md:text-4xl text-primary font-bold">800+</p>
               <p className="text-sm text-muted-foreground">Podcasts</p>
             </div>
             <div className="text-center">
-              <p className="font-serif text-3xl md:text-4xl text-primary font-bold">1000+</p>
+              <p className="font-serif text-3xl md:text-4xl text-primary font-bold">10,000+</p>
               <p className="text-sm text-muted-foreground">Episodes</p>
             </div>
             <div className="text-center">
-              <Users className="w-8 h-8 text-primary mx-auto mb-1" />
-              <p className="text-sm text-muted-foreground">Community</p>
+              <Headphones className="w-8 h-8 text-primary mx-auto mb-1" />
+              <p className="text-sm text-muted-foreground">Millions of Listeners</p>
             </div>
           </div>
 
-          {/* Disclaimer */}
-          <div className="mb-12">
-            <PodcastDisclaimer />
+          {/* Action Buttons */}
+          <div className="flex justify-center gap-4 mb-12">
+            <Dialog open={showDisclaimer} onOpenChange={setShowDisclaimer}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="rounded-full">
+                  <Info className="w-4 h-4 mr-2" />
+                  Disclaimer
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <PodcastDisclaimer />
+              </DialogContent>
+            </Dialog>
+
+            <Dialog open={showSubmitForm} onOpenChange={setShowSubmitForm}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="rounded-full">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Your Podcast
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-lg">
+                <PodcastSubmissionForm onSuccess={() => setShowSubmitForm(false)} />
+              </DialogContent>
+            </Dialog>
           </div>
 
-          {/* Podcast Grid */}
+          {/* Podcast Grid with Search */}
           <PodcastGrid />
-
-          {/* Submission Form */}
-          <div className="mt-16 max-w-2xl mx-auto">
-            <PodcastSubmissionForm />
-          </div>
         </div>
       </main>
       <Footer />
