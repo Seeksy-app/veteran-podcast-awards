@@ -17,6 +17,7 @@ const navItems = [
   { label: "Livestream", href: "/livestream" },
   { label: "Network", href: "/network" },
   { label: "Categories", href: "/categories" },
+  { label: "Sponsors", href: "/sponsors" },
   { label: "About", href: "/about" },
 ];
 
