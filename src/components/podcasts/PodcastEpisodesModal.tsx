@@ -45,9 +45,10 @@ export const PodcastEpisodesModal = ({ podcast, open, onOpenChange }: PodcastEpi
 
   const handleToggleFavorite = async () => {
     if (!user) {
-      toast.error("Sign in to follow podcasts", {
+      toast("Create an account to follow podcasts and get notified of new episodes!", {
+        duration: 5000,
         action: {
-          label: "Sign In",
+          label: "Sign Up",
           onClick: () => navigate("/auth"),
         },
       });
