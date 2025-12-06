@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      awards_config: {
+        Row: {
+          created_at: string
+          event_date: string | null
+          id: string
+          is_active: boolean
+          name: string
+          nominations_open: boolean
+          updated_at: string
+          voting_open: boolean
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          event_date?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          nominations_open?: boolean
+          updated_at?: string
+          voting_open?: boolean
+          year: number
+        }
+        Update: {
+          created_at?: string
+          event_date?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          nominations_open?: boolean
+          updated_at?: string
+          voting_open?: boolean
+          year?: number
+        }
+        Relationships: []
+      }
       email_campaigns: {
         Row: {
           clicked_count: number
@@ -297,6 +333,47 @@ export type Database = {
         }
         Relationships: []
       }
+      podcaster_messages: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          recipient_id: string
+          sender_email: string
+          sender_name: string
+          subject: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          recipient_id: string
+          sender_email: string
+          sender_name: string
+          subject: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          recipient_id?: string
+          sender_email?: string
+          sender_name?: string
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "podcaster_messages_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       podcasts: {
         Row: {
           author: string | null
@@ -371,6 +448,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          allow_contact: boolean | null
           avatar_url: string | null
           bio: string | null
           created_at: string
@@ -378,15 +456,18 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
+          is_public: boolean | null
           podcast_id: string | null
           social_instagram: string | null
           social_linkedin: string | null
           social_twitter: string | null
           updated_at: string
           user_type: string | null
+          username_slug: string | null
           website_url: string | null
         }
         Insert: {
+          allow_contact?: boolean | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
@@ -394,15 +475,18 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id: string
+          is_public?: boolean | null
           podcast_id?: string | null
           social_instagram?: string | null
           social_linkedin?: string | null
           social_twitter?: string | null
           updated_at?: string
           user_type?: string | null
+          username_slug?: string | null
           website_url?: string | null
         }
         Update: {
+          allow_contact?: boolean | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
@@ -410,12 +494,14 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          is_public?: boolean | null
           podcast_id?: string | null
           social_instagram?: string | null
           social_linkedin?: string | null
           social_twitter?: string | null
           updated_at?: string
           user_type?: string | null
+          username_slug?: string | null
           website_url?: string | null
         }
         Relationships: [
