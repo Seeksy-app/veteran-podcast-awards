@@ -26,8 +26,13 @@ import {
   Copy,
   CheckCircle,
   BarChart3,
-  Mic
+  Mic,
+  Settings,
+  Sun,
+  Moon,
+  Monitor
 } from "lucide-react";
+import { useTheme } from "@/hooks/useTheme";
 
 interface Profile {
   id: string;
@@ -59,6 +64,7 @@ const Dashboard = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { theme, setTheme } = useTheme();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [votes, setVotes] = useState<UserVote[]>([]);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -285,7 +291,7 @@ const Dashboard = () => {
 
           {/* Dashboard Tabs */}
           <Tabs defaultValue="profile" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3 md:w-auto md:inline-grid">
+            <TabsList className="grid w-full grid-cols-4 md:w-auto md:inline-grid">
               <TabsTrigger value="profile" className="gap-2">
                 <User className="w-4 h-4" />
                 <span className="hidden sm:inline">Profile</span>
@@ -297,6 +303,10 @@ const Dashboard = () => {
               <TabsTrigger value="share" className="gap-2">
                 <Share2 className="w-4 h-4" />
                 <span className="hidden sm:inline">Share</span>
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="gap-2">
+                <Settings className="w-4 h-4" />
+                <span className="hidden sm:inline">Settings</span>
               </TabsTrigger>
             </TabsList>
 
@@ -526,6 +536,71 @@ const Dashboard = () => {
                   </Card>
                 )}
               </div>
+            </TabsContent>
+
+            {/* Settings Tab */}
+            <TabsContent value="settings">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Settings className="w-5 h-5 text-primary" />
+                    Preferences
+                  </CardTitle>
+                  <CardDescription>
+                    Customize your experience
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Theme Selection */}
+                  <div className="space-y-3">
+                    <Label className="text-base font-medium">Theme</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Choose how the app looks to you
+                    </p>
+                    <div className="grid grid-cols-3 gap-3">
+                      <button
+                        onClick={() => setTheme("light")}
+                        className={`flex flex-col items-center gap-3 p-4 rounded-lg border-2 transition-all ${
+                          theme === "light"
+                            ? "border-primary bg-primary/10"
+                            : "border-border hover:border-primary/50"
+                        }`}
+                      >
+                        <div className="w-12 h-12 rounded-full bg-amber-50 border-2 border-amber-200 flex items-center justify-center">
+                          <Sun className="w-6 h-6 text-amber-500" />
+                        </div>
+                        <span className="text-sm font-medium">Day</span>
+                      </button>
+                      <button
+                        onClick={() => setTheme("dark")}
+                        className={`flex flex-col items-center gap-3 p-4 rounded-lg border-2 transition-all ${
+                          theme === "dark"
+                            ? "border-primary bg-primary/10"
+                            : "border-border hover:border-primary/50"
+                        }`}
+                      >
+                        <div className="w-12 h-12 rounded-full bg-slate-800 border-2 border-slate-600 flex items-center justify-center">
+                          <Moon className="w-6 h-6 text-slate-300" />
+                        </div>
+                        <span className="text-sm font-medium">Night</span>
+                      </button>
+                      <button
+                        onClick={() => setTheme("system")}
+                        className={`flex flex-col items-center gap-3 p-4 rounded-lg border-2 transition-all ${
+                          theme === "system"
+                            ? "border-primary bg-primary/10"
+                            : "border-border hover:border-primary/50"
+                        }`}
+                      >
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-50 to-slate-800 border-2 border-border flex items-center justify-center">
+                          <Monitor className="w-6 h-6 text-foreground" />
+                        </div>
+                        <span className="text-sm font-medium">Auto</span>
+                      </button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
         </div>
