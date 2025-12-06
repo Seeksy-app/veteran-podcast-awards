@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Trash2, FileSpreadsheet, Search, Mail, Edit, Download, CheckCircle2, XCircle, Send, Tag, X, Sparkles, Filter, Save } from "lucide-react";
+import { Plus, Trash2, FileSpreadsheet, Search, Mail, Edit, Download, CheckCircle2, XCircle, Send, Tag, X, Sparkles, Filter, Save, BarChart3, Eye, MousePointerClick, Clock } from "lucide-react";
 import { toast } from "sonner";
 
 interface Contact {
@@ -57,6 +57,32 @@ interface Podcast {
   id: string;
   title: string;
   rss_url: string;
+}
+
+interface Campaign {
+  id: string;
+  name: string;
+  subject: string;
+  content: string;
+  target_list: string;
+  status: string;
+  sent_count: number;
+  opened_count: number;
+  clicked_count: number;
+  sent_at: string | null;
+  created_at: string;
+}
+
+interface EmailSend {
+  id: string;
+  campaign_id: string | null;
+  contact_id: string | null;
+  email: string;
+  status: string;
+  resend_id: string | null;
+  sent_at: string;
+  opened_at: string | null;
+  clicked_at: string | null;
 }
 
 const STATUS_OPTIONS = [
@@ -182,6 +208,35 @@ export const ContactManager = () => {
       if (error) throw error;
       return data as Podcast[];
     },
+  });
+
+  const { data: campaigns } = useQuery({
+    queryKey: ["email-campaigns"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("email_campaigns")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data as Campaign[];
+    },
+  });
+
+  const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
+
+  const { data: campaignSends } = useQuery({
+    queryKey: ["email-sends", selectedCampaign],
+    queryFn: async () => {
+      if (!selectedCampaign) return [];
+      const { data, error } = await supabase
+        .from("email_sends")
+        .select("*")
+        .eq("campaign_id", selectedCampaign)
+        .order("sent_at", { ascending: false });
+      if (error) throw error;
+      return data as EmailSend[];
+    },
+    enabled: !!selectedCampaign,
   });
 
   // Apply smart list filter
@@ -670,6 +725,7 @@ export const ContactManager = () => {
           <TabsList>
             <TabsTrigger value="contacts">Contacts</TabsTrigger>
             <TabsTrigger value="lists">Lists</TabsTrigger>
+            <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
           </TabsList>
           <div className="flex gap-2">
             <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept=".csv,.txt,.tsv" className="hidden" />
@@ -935,6 +991,141 @@ export const ContactManager = () => {
                 )}
               </div>
             </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="campaigns" className="mt-0">
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 mb-4">
+              <BarChart3 className="w-5 h-5 text-primary" />
+              <h3 className="font-semibold text-foreground">Campaign History</h3>
+              <span className="text-sm text-muted-foreground">({campaigns?.length || 0} campaigns)</span>
+            </div>
+
+            {!campaigns?.length ? (
+              <div className="text-center py-12 bg-card border border-border rounded-lg">
+                <Mail className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground mb-2">No campaigns sent yet</p>
+                <p className="text-sm text-muted-foreground">Send your first email campaign from the Contacts tab</p>
+              </div>
+            ) : (
+              <div className="grid gap-4">
+                {campaigns.map((campaign) => (
+                  <div
+                    key={campaign.id}
+                    className={`p-4 bg-card border rounded-lg cursor-pointer transition-colors ${
+                      selectedCampaign === campaign.id ? "border-primary" : "border-border hover:border-primary/50"
+                    }`}
+                    onClick={() => setSelectedCampaign(selectedCampaign === campaign.id ? null : campaign.id)}
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <h4 className="font-medium text-foreground">{campaign.name}</h4>
+                        <p className="text-sm text-muted-foreground">{campaign.subject}</p>
+                      </div>
+                      <Badge variant={campaign.status === "sent" ? "default" : campaign.status === "sending" ? "secondary" : "outline"}>
+                        {campaign.status}
+                      </Badge>
+                    </div>
+
+                    <div className="flex items-center gap-6 text-sm">
+                      <div className="flex items-center gap-1.5">
+                        <Send className="w-4 h-4 text-muted-foreground" />
+                        <span className="font-medium">{campaign.sent_count}</span>
+                        <span className="text-muted-foreground">sent</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Eye className="w-4 h-4 text-blue-500" />
+                        <span className="font-medium">{campaign.opened_count}</span>
+                        <span className="text-muted-foreground">opened</span>
+                        {campaign.sent_count > 0 && (
+                          <span className="text-muted-foreground">
+                            ({Math.round((campaign.opened_count / campaign.sent_count) * 100)}%)
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <MousePointerClick className="w-4 h-4 text-green-500" />
+                        <span className="font-medium">{campaign.clicked_count}</span>
+                        <span className="text-muted-foreground">clicked</span>
+                        {campaign.sent_count > 0 && (
+                          <span className="text-muted-foreground">
+                            ({Math.round((campaign.clicked_count / campaign.sent_count) * 100)}%)
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1.5 ml-auto">
+                        <Clock className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">
+                          {campaign.sent_at
+                            ? new Date(campaign.sent_at).toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                                hour: "numeric",
+                                minute: "2-digit",
+                              })
+                            : "Not sent"}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="mt-2">
+                      <Badge variant="outline" className="text-xs">
+                        List: {campaign.target_list}
+                      </Badge>
+                    </div>
+
+                    {/* Expanded send log */}
+                    {selectedCampaign === campaign.id && (
+                      <div className="mt-4 pt-4 border-t border-border">
+                        <h5 className="text-sm font-medium text-foreground mb-3">Send Log</h5>
+                        {!campaignSends?.length ? (
+                          <p className="text-sm text-muted-foreground">No send records found</p>
+                        ) : (
+                          <div className="max-h-64 overflow-y-auto space-y-2">
+                            {campaignSends.map((send) => (
+                              <div
+                                key={send.id}
+                                className="flex items-center justify-between p-2 bg-secondary/30 rounded text-sm"
+                              >
+                                <span className="text-foreground truncate max-w-[200px]">{send.email}</span>
+                                <div className="flex items-center gap-3">
+                                  <Badge
+                                    variant={send.status === "sent" ? "default" : send.status === "failed" ? "destructive" : "outline"}
+                                    className="text-xs"
+                                  >
+                                    {send.status}
+                                  </Badge>
+                                  {send.opened_at && (
+                                    <span className="flex items-center gap-1 text-blue-500">
+                                      <Eye className="w-3 h-3" />
+                                      Opened
+                                    </span>
+                                  )}
+                                  {send.clicked_at && (
+                                    <span className="flex items-center gap-1 text-green-500">
+                                      <MousePointerClick className="w-3 h-3" />
+                                      Clicked
+                                    </span>
+                                  )}
+                                  <span className="text-muted-foreground text-xs">
+                                    {new Date(send.sent_at).toLocaleTimeString("en-US", {
+                                      hour: "numeric",
+                                      minute: "2-digit",
+                                    })}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </TabsContent>
       </Tabs>
