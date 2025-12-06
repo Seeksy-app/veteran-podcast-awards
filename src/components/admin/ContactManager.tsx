@@ -92,7 +92,15 @@ export const ContactManager = () => {
     subject: "",
     content: "",
     targetList: "",
+    fromName: "Veteran Podcast Awards",
+    fromEmail: "hello@veteranpodcastawards.com",
   });
+
+  const FROM_EMAIL_OPTIONS = [
+    { label: "VPA (hello@veteranpodcastawards.com)", value: "hello@veteranpodcastawards.com" },
+    { label: "VPA Notifications (notifications@veteranpodcastawards.com)", value: "notifications@veteranpodcastawards.com" },
+    { label: "Seeksy (hello@seeksy.io)", value: "hello@seeksy.io" },
+  ];
 
   const { data: contacts, isLoading } = useQuery({
     queryKey: ["podcast-contacts"],
@@ -293,6 +301,8 @@ export const ContactManager = () => {
           subject: data.subject,
           content: data.content,
           targetList: data.targetList,
+          fromName: data.fromName,
+          fromEmail: data.fromEmail,
         },
       });
 
@@ -302,7 +312,7 @@ export const ContactManager = () => {
     onSuccess: (result) => {
       toast.success(`Campaign sent! ${result.sent} emails delivered, ${result.failed} failed.`);
       setIsCampaignDialogOpen(false);
-      setCampaignData({ name: "", subject: "", content: "", targetList: "" });
+      setCampaignData({ name: "", subject: "", content: "", targetList: "", fromName: "Veteran Podcast Awards", fromEmail: "hello@veteranpodcastawards.com" });
     },
     onError: (error: Error) => {
       toast.error(`Failed to send campaign: ${error.message}`);
@@ -843,20 +853,41 @@ export const ContactManager = () => {
               <Label>Campaign Name</Label>
               <Input value={campaignData.name} onChange={(e) => setCampaignData({ ...campaignData, name: e.target.value })} placeholder="December Newsletter" />
             </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Target List *</Label>
+                <Select value={campaignData.targetList} onValueChange={(v) => setCampaignData({ ...campaignData, targetList: v })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a list..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {mailingLists?.map((list) => (
+                      <SelectItem key={list.id} value={list.name}>
+                        {list.name} ({listCounts[list.name] || 0})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>From Email *</Label>
+                <Select value={campaignData.fromEmail} onValueChange={(v) => setCampaignData({ ...campaignData, fromEmail: v })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {FROM_EMAIL_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
             <div className="space-y-2">
-              <Label>Target List *</Label>
-              <Select value={campaignData.targetList} onValueChange={(v) => setCampaignData({ ...campaignData, targetList: v })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a list..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {mailingLists?.map((list) => (
-                    <SelectItem key={list.id} value={list.name}>
-                      {list.name} ({listCounts[list.name] || 0} contacts)
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label>From Name</Label>
+              <Input value={campaignData.fromName} onChange={(e) => setCampaignData({ ...campaignData, fromName: e.target.value })} placeholder="Veteran Podcast Awards" />
             </div>
             <div className="space-y-2">
               <Label>Subject *</Label>
