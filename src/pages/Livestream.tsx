@@ -1,14 +1,17 @@
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Calendar, Bell, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { PreRegistrationForm } from "@/components/home/PreRegistrationForm";
 import { SponsorDisplay } from "@/components/sponsors/SponsorDisplay";
 import { SponsorshipBenefits } from "@/components/sponsors/SponsorshipBenefits";
-import logo from "@/assets/vpa-logo.png";
+import { ContactFormDialog, useContactForm } from "@/components/contact/ContactFormDialog";
 
 const VIDEO_URL = "https://snhrqbtwahgarxxbizsz.supabase.co/storage/v1/object/public/videos/hero-video.mp4";
 
 const LivestreamPage = () => {
+  const contactForm = useContactForm();
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -32,37 +35,24 @@ const LivestreamPage = () => {
             </p>
           </div>
 
-          {/* Video Player Section */}
+          {/* Video Player Section - Now Playing */}
           <div className="max-w-4xl mx-auto mb-12">
             <div className="relative aspect-video bg-card border border-border rounded-xl overflow-hidden">
               <video
                 controls
+                autoPlay
+                muted
+                loop
+                playsInline
                 className="w-full h-full object-cover"
-                poster=""
               >
                 <source src={VIDEO_URL} type="video/mp4" />
                 Your browser does not support the video tag.
               </video>
-              
-              {/* Overlay for pre-event */}
-              <div className="absolute inset-0 bg-background/80 flex flex-col items-center justify-center">
-                <img
-                  src={logo}
-                  alt="Veteran Podcast Awards"
-                  className="w-24 h-24 mb-6 glow-gold rounded-full"
-                />
-                <div className="flex items-center gap-2 bg-primary/20 border border-primary/50 rounded-full px-4 py-2 mb-4">
-                  <Calendar className="w-4 h-4 text-primary" />
-                  <span className="text-sm text-primary font-medium">October 5th, 2026 • 6:00 PM ET</span>
-                </div>
-                <h2 className="font-serif text-2xl md:text-3xl font-bold text-foreground mb-2">
-                  Coming Soon
-                </h2>
-                <p className="text-muted-foreground text-center max-w-md">
-                  The livestream will begin on the day of the event. 
-                  Register below to get a reminder.
-                </p>
-              </div>
+            </div>
+            <div className="flex items-center justify-center gap-2 mt-4 text-muted-foreground text-sm">
+              <Calendar className="w-4 h-4 text-primary" />
+              <span>Full ceremony streaming October 5th, 2026 at 6:00 PM ET</span>
             </div>
           </div>
 
@@ -102,21 +92,29 @@ const LivestreamPage = () => {
 
             {/* Become a Sponsor CTA */}
             <div className="mt-16 text-center">
-              <div className="inline-flex items-center gap-2 bg-secondary/50 border border-border rounded-lg px-6 py-4">
-                <Users className="w-5 h-5 text-primary" />
-                <div className="text-left">
-                  <p className="font-medium text-foreground">Interested in sponsoring?</p>
-                  <p className="text-sm text-muted-foreground">Scroll down to learn about our sponsorship opportunities.</p>
-                </div>
-              </div>
+              <Button 
+                variant="goldOutline" 
+                size="lg"
+                onClick={() => contactForm.openForm("sponsorship")}
+              >
+                <Users className="w-5 h-5 mr-2" />
+                Become a Sponsor
+              </Button>
             </div>
           </div>
         </div>
 
         {/* Sponsorship Benefits Section */}
-        <SponsorshipBenefits />
+        <SponsorshipBenefits onContactClick={() => contactForm.openForm("sponsorship")} />
       </main>
       <Footer />
+
+      {/* Contact Form Dialog */}
+      <ContactFormDialog
+        open={contactForm.isOpen}
+        onOpenChange={contactForm.setIsOpen}
+        type={contactForm.formType}
+      />
     </div>
   );
 };
