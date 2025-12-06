@@ -805,7 +805,13 @@ export const ContactManager = () => {
                   <SelectItem value="not_on_vpn">Not on VPN</SelectItem>
                 </SelectContent>
               </Select>
-              <Select value={smartListFilter} onValueChange={setSmartListFilter}>
+              <Select value={smartListFilter} onValueChange={(value) => {
+                if (value === "__create__") {
+                  setIsSmartListDialogOpen(true);
+                } else {
+                  setSmartListFilter(value);
+                }
+              }}>
                 <SelectTrigger className="w-40">
                   <SelectValue placeholder="Smart List" />
                 </SelectTrigger>
@@ -819,6 +825,12 @@ export const ContactManager = () => {
                       </span>
                     </SelectItem>
                   ))}
+                  <SelectItem value="__create__" className="text-primary font-medium">
+                    <span className="flex items-center gap-1">
+                      <Plus className="w-3 h-3" />
+                      Create Smart List
+                    </span>
+                  </SelectItem>
                 </SelectContent>
               </Select>
               {(searchQuery || statusFilter !== "all" || vpnFilter !== "all" || listFilter !== "all" || smartListFilter !== "all") && (
