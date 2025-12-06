@@ -10,6 +10,7 @@ import About from "./pages/About";
 import Admin from "./pages/Admin";
 import Network from "./pages/Network";
 import Auth from "./pages/Auth";
+import Sponsors from "./pages/Sponsors";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
           <Route path="/livestream" element={<Livestream />} />
           <Route path="/categories" element={<Categories />} />
           <Route path="/network" element={<Network />} />
+          <Route path="/sponsors" element={<Sponsors />} />
           <Route path="/about" element={<About />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/admin" element={<Admin />} />

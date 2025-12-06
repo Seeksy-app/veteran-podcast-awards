@@ -3,15 +3,11 @@ import { Footer } from "@/components/layout/Footer";
 import { Calendar, Bell, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PreRegistrationForm } from "@/components/home/PreRegistrationForm";
-import { SponsorDisplay } from "@/components/sponsors/SponsorDisplay";
-import { SponsorshipBenefits } from "@/components/sponsors/SponsorshipBenefits";
-import { ContactFormDialog, useContactForm } from "@/components/contact/ContactFormDialog";
+import { Link } from "react-router-dom";
 
 const VIDEO_URL = "https://snhrqbtwahgarxxbizsz.supabase.co/storage/v1/object/public/videos/hero-video.mp4";
 
 const LivestreamPage = () => {
-  const contactForm = useContactForm();
-
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -57,7 +53,7 @@ const LivestreamPage = () => {
           </div>
 
           {/* Registration Section */}
-          <div className="max-w-2xl mx-auto mb-20">
+          <div className="max-w-2xl mx-auto mb-12">
             <div className="bg-card border border-border rounded-xl p-8 text-center">
               <div className="flex items-center justify-center gap-2 mb-4">
                 <Bell className="w-5 h-5 text-primary" />
@@ -75,46 +71,21 @@ const LivestreamPage = () => {
             </div>
           </div>
 
-          {/* Sponsors Section */}
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-10">
-              <h2 className="font-serif text-2xl md:text-3xl font-bold mb-4">
-                <span className="text-foreground">Our </span>
-                <span className="text-gold-gradient">Sponsors</span>
-              </h2>
-              <p className="text-muted-foreground">
-                Thank you to our sponsors for making this event possible.
-              </p>
-            </div>
-
-            {/* Sponsor Tiers - Dynamic from Database */}
-            <SponsorDisplay />
-
-            {/* Become a Sponsor CTA */}
-            <div className="mt-16 text-center">
-              <Button 
-                variant="goldOutline" 
-                size="lg"
-                onClick={() => contactForm.openForm("sponsorship")}
-              >
+          {/* Sponsors CTA */}
+          <div className="text-center">
+            <p className="text-muted-foreground mb-4">
+              Interested in sponsoring the Veteran Podcast Awards?
+            </p>
+            <Button variant="goldOutline" size="lg" asChild>
+              <Link to="/sponsors">
                 <Users className="w-5 h-5 mr-2" />
-                Become a Sponsor
-              </Button>
-            </div>
+                View Sponsors & Opportunities
+              </Link>
+            </Button>
           </div>
         </div>
-
-        {/* Sponsorship Benefits Section */}
-        <SponsorshipBenefits onContactClick={() => contactForm.openForm("sponsorship")} />
       </main>
       <Footer />
-
-      {/* Contact Form Dialog */}
-      <ContactFormDialog
-        open={contactForm.isOpen}
-        onOpenChange={contactForm.setIsOpen}
-        type={contactForm.formType}
-      />
     </div>
   );
 };
