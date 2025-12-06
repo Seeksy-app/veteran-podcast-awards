@@ -4,13 +4,14 @@ import { Footer } from "@/components/layout/Footer";
 import { PodcastGrid } from "@/components/podcasts/PodcastGrid";
 import { PodcastSubmissionForm } from "@/components/podcasts/PodcastSubmissionForm";
 import { PodcastDisclaimer } from "@/components/podcasts/PodcastDisclaimer";
-import { Radio, Users, Headphones, Info, Plus } from "lucide-react";
+import { Radio, Headphones, Info, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import heroBg from "@/assets/hero-bg.jpg";
 
 const NetworkPage = () => {
   const [showDisclaimer, setShowDisclaimer] = useState(false);
@@ -19,8 +20,16 @@ const NetworkPage = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="pt-24 pb-16">
-        <div className="container mx-auto px-4">
+      
+      {/* Hero Section with Microphone Background */}
+      <section className="relative pt-24 pb-16 overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${heroBg})` }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/80 to-background" />
+        
+        <div className="relative z-10 container mx-auto px-4">
           {/* Header */}
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 bg-primary/20 border border-primary/50 rounded-full px-4 py-2 mb-6">
@@ -55,7 +64,7 @@ const NetworkPage = () => {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex justify-center gap-4 mb-12">
+          <div className="flex justify-center gap-4">
             <Dialog open={showDisclaimer} onOpenChange={setShowDisclaimer}>
               <DialogTrigger asChild>
                 <Button variant="outline" size="sm" className="rounded-full">
@@ -80,8 +89,12 @@ const NetworkPage = () => {
               </DialogContent>
             </Dialog>
           </div>
+        </div>
+      </section>
 
-          {/* Podcast Grid with Search */}
+      {/* Podcast Grid Section */}
+      <main className="pb-16">
+        <div className="container mx-auto px-4">
           <PodcastGrid />
         </div>
       </main>
