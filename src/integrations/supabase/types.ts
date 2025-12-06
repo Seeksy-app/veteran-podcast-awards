@@ -87,39 +87,62 @@ export type Database = {
       }
       podcast_contacts: {
         Row: {
+          contact_type: string | null
           created_at: string
           email: string
+          host_name: string | null
           id: string
+          is_on_vpn: boolean
+          linked_podcast_id: string | null
           name: string
           notes: string | null
           podcast_name: string | null
+          podcast_url: string | null
           rss_url: string | null
           status: string
           updated_at: string
         }
         Insert: {
+          contact_type?: string | null
           created_at?: string
           email: string
+          host_name?: string | null
           id?: string
+          is_on_vpn?: boolean
+          linked_podcast_id?: string | null
           name: string
           notes?: string | null
           podcast_name?: string | null
+          podcast_url?: string | null
           rss_url?: string | null
           status?: string
           updated_at?: string
         }
         Update: {
+          contact_type?: string | null
           created_at?: string
           email?: string
+          host_name?: string | null
           id?: string
+          is_on_vpn?: boolean
+          linked_podcast_id?: string | null
           name?: string
           notes?: string | null
           podcast_name?: string | null
+          podcast_url?: string | null
           rss_url?: string | null
           status?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "podcast_contacts_linked_podcast_id_fkey"
+            columns: ["linked_podcast_id"]
+            isOneToOne: false
+            referencedRelation: "podcasts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       podcast_submissions: {
         Row: {

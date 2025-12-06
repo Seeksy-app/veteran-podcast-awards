@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, FileSpreadsheet, Search, Mail, Edit, Download } from "lucide-react";
+import { Plus, Trash2, FileSpreadsheet, Search, Mail, Edit, Download, CheckCircle2, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
 interface Contact {
@@ -20,6 +21,17 @@ interface Contact {
   notes: string | null;
   status: string;
   created_at: string;
+  contact_type: string | null;
+  podcast_url: string | null;
+  host_name: string | null;
+  is_on_vpn: boolean;
+  linked_podcast_id: string | null;
+}
+
+interface Podcast {
+  id: string;
+  title: string;
+  rss_url: string;
 }
 
 const STATUS_OPTIONS = [
@@ -30,6 +42,13 @@ const STATUS_OPTIONS = [
   { value: "declined", label: "Declined" },
 ];
 
+const TYPE_OPTIONS = [
+  "Military Podcast",
+  "Veteran Podcast",
+  "First Responder Podcast",
+  "Other",
+];
+
 export const ContactManager = () => {
   const queryClient = useQueryClient();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -37,6 +56,7 @@ export const ContactManager = () => {
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [vpnFilter, setVpnFilter] = useState<string>("all");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
@@ -44,8 +64,12 @@ export const ContactManager = () => {
     email: "",
     podcast_name: "",
     rss_url: "",
+    podcast_url: "",
+    host_name: "",
+    contact_type: "Military Podcast",
     notes: "",
     status: "uncontacted",
+    is_on_vpn: false,
   });
 
   const { data: contacts, isLoading } = useQuery({
@@ -60,6 +84,18 @@ export const ContactManager = () => {
     },
   });
 
+  // Fetch all podcasts to match against
+  const { data: podcasts } = useQuery({
+    queryKey: ["all-podcasts-for-matching"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("podcasts")
+        .select("id, title, rss_url");
+      if (error) throw error;
+      return data as Podcast[];
+    },
+  });
+
   const filteredContacts = useMemo(() => {
     if (!contacts) return [];
     return contacts.filter((contact) => {
@@ -67,21 +103,38 @@ export const ContactManager = () => {
         !searchQuery.trim() ||
         contact.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         contact.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        contact.podcast_name?.toLowerCase().includes(searchQuery.toLowerCase());
+        contact.podcast_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        contact.host_name?.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesStatus = statusFilter === "all" || contact.status === statusFilter;
-      return matchesSearch && matchesStatus;
+      const matchesVpn = vpnFilter === "all" || 
+        (vpnFilter === "on_vpn" && contact.is_on_vpn) ||
+        (vpnFilter === "not_on_vpn" && !contact.is_on_vpn);
+      return matchesSearch && matchesStatus && matchesVpn;
     });
-  }, [contacts, searchQuery, statusFilter]);
+  }, [contacts, searchQuery, statusFilter, vpnFilter]);
+
+  // Find matching podcast by RSS URL
+  const findMatchingPodcast = (rssUrl: string | null | undefined): Podcast | undefined => {
+    if (!rssUrl || !podcasts) return undefined;
+    const normalizedUrl = rssUrl.toLowerCase().trim();
+    return podcasts.find(p => p.rss_url.toLowerCase().trim() === normalizedUrl);
+  };
 
   const addContact = useMutation({
     mutationFn: async (data: typeof formData) => {
+      const matchingPodcast = findMatchingPodcast(data.rss_url);
       const { error } = await supabase.from("podcast_contacts").insert({
-        name: data.name,
+        name: data.name || data.host_name,
         email: data.email,
         podcast_name: data.podcast_name || null,
         rss_url: data.rss_url || null,
+        podcast_url: data.podcast_url || null,
+        host_name: data.host_name || null,
+        contact_type: data.contact_type || "Military Podcast",
         notes: data.notes || null,
         status: data.status,
+        is_on_vpn: matchingPodcast ? true : data.is_on_vpn,
+        linked_podcast_id: matchingPodcast?.id || null,
       });
       if (error) throw error;
     },
@@ -102,15 +155,21 @@ export const ContactManager = () => {
 
   const updateContact = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<typeof formData> }) => {
+      const matchingPodcast = findMatchingPodcast(data.rss_url);
       const { error } = await supabase
         .from("podcast_contacts")
         .update({
-          name: data.name,
+          name: data.name || data.host_name,
           email: data.email,
           podcast_name: data.podcast_name || null,
           rss_url: data.rss_url || null,
+          podcast_url: data.podcast_url || null,
+          host_name: data.host_name || null,
+          contact_type: data.contact_type || "Military Podcast",
           notes: data.notes || null,
           status: data.status,
+          is_on_vpn: matchingPodcast ? true : data.is_on_vpn,
+          linked_podcast_id: matchingPodcast?.id || null,
         })
         .eq("id", id);
       if (error) throw error;
@@ -135,28 +194,59 @@ export const ContactManager = () => {
   });
 
   const bulkImport = useMutation({
-    mutationFn: async (contacts: Array<{ name: string; email: string; podcast_name?: string; rss_url?: string }>) => {
-      const { error } = await supabase.from("podcast_contacts").upsert(
-        contacts.map((c) => ({
-          name: c.name,
+    mutationFn: async (importContacts: Array<{
+      name: string;
+      email: string;
+      podcast_name?: string;
+      rss_url?: string;
+      podcast_url?: string;
+      host_name?: string;
+      contact_type?: string;
+    }>) => {
+      let matchedCount = 0;
+      const contactsToInsert = importContacts.map((c) => {
+        const matchingPodcast = findMatchingPodcast(c.rss_url);
+        if (matchingPodcast) matchedCount++;
+        return {
+          name: c.name || c.host_name || c.email.split("@")[0],
           email: c.email,
           podcast_name: c.podcast_name || null,
           rss_url: c.rss_url || null,
+          podcast_url: c.podcast_url || null,
+          host_name: c.host_name || null,
+          contact_type: c.contact_type || "Military Podcast",
           status: "uncontacted",
-        })),
+          is_on_vpn: !!matchingPodcast,
+          linked_podcast_id: matchingPodcast?.id || null,
+        };
+      });
+
+      const { error } = await supabase.from("podcast_contacts").upsert(
+        contactsToInsert,
         { onConflict: "email", ignoreDuplicates: true }
       );
       if (error) throw error;
-      return contacts.length;
+      return { total: importContacts.length, matched: matchedCount };
     },
-    onSuccess: (count) => {
+    onSuccess: ({ total, matched }) => {
       queryClient.invalidateQueries({ queryKey: ["podcast-contacts"] });
-      toast.success(`Imported ${count} contacts`);
+      toast.success(`Imported ${total} contacts. ${matched} matched to VPN podcasts.`);
     },
   });
 
   const resetForm = () => {
-    setFormData({ name: "", email: "", podcast_name: "", rss_url: "", notes: "", status: "uncontacted" });
+    setFormData({
+      name: "",
+      email: "",
+      podcast_name: "",
+      rss_url: "",
+      podcast_url: "",
+      host_name: "",
+      contact_type: "Military Podcast",
+      notes: "",
+      status: "uncontacted",
+      is_on_vpn: false,
+    });
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -169,29 +259,59 @@ export const ContactManager = () => {
       if (!text) return;
 
       const lines = text.split(/\r?\n/).filter((l) => l.trim());
-      const contacts: Array<{ name: string; email: string; podcast_name?: string; rss_url?: string }> = [];
+      const importContacts: Array<{
+        name: string;
+        email: string;
+        podcast_name?: string;
+        rss_url?: string;
+        podcast_url?: string;
+        host_name?: string;
+        contact_type?: string;
+      }> = [];
+
+      // Parse header to find column indices
+      const headerLine = lines[0]?.toLowerCase() || "";
+      const headerCells = headerLine.split(/[,;\t]/).map((c) => c.trim().replace(/^["']|["']$/g, ""));
+      
+      const typeIdx = headerCells.findIndex((c) => c.includes("type"));
+      const podcastUrlIdx = headerCells.findIndex((c) => c.includes("podcast url") || c === "podcast_url");
+      const rssUrlIdx = headerCells.findIndex((c) => c.includes("rss"));
+      const podcastNameIdx = headerCells.findIndex((c) => c.includes("podcast name") || c === "podcast_name");
+      const hostNameIdx = headerCells.findIndex((c) => c.includes("host"));
+      const emailIdx = headerCells.findIndex((c) => c.includes("email"));
 
       // Skip header if present
-      const startIndex = lines[0]?.toLowerCase().includes("email") ? 1 : 0;
+      const startIndex = emailIdx !== -1 ? 1 : 0;
 
       for (let i = startIndex; i < lines.length; i++) {
         const cells = lines[i].split(/[,;\t]/).map((c) => c.trim().replace(/^["']|["']$/g, ""));
-        // Try to find email column
-        const emailIndex = cells.findIndex((c) => c.includes("@"));
-        if (emailIndex === -1) continue;
+        
+        // Find email - either by index or by searching for @
+        let email = emailIdx !== -1 ? cells[emailIdx] : cells.find((c) => c.includes("@"));
+        if (!email || !email.includes("@")) continue;
 
-        const email = cells[emailIndex];
-        const name = cells[0] !== email ? cells[0] : cells[1] || email.split("@")[0];
-        const podcast_name = cells.find((c, i) => i !== emailIndex && i !== 0 && !c.includes("http"));
-        const rss_url = cells.find((c) => c.includes("http"));
+        const contact_type = typeIdx !== -1 ? cells[typeIdx] : "Military Podcast";
+        const podcast_url = podcastUrlIdx !== -1 ? cells[podcastUrlIdx] : undefined;
+        const rss_url = rssUrlIdx !== -1 ? cells[rssUrlIdx] : undefined;
+        const podcast_name = podcastNameIdx !== -1 ? cells[podcastNameIdx] : undefined;
+        const host_name = hostNameIdx !== -1 ? cells[hostNameIdx] : undefined;
+        const name = host_name || email.split("@")[0];
 
-        contacts.push({ name, email, podcast_name, rss_url });
+        importContacts.push({
+          name,
+          email,
+          podcast_name,
+          rss_url,
+          podcast_url,
+          host_name,
+          contact_type,
+        });
       }
 
-      if (contacts.length > 0) {
-        bulkImport.mutate(contacts);
+      if (importContacts.length > 0) {
+        bulkImport.mutate(importContacts);
       } else {
-        toast.error("No valid contacts found in file");
+        toast.error("No valid contacts found in file. Make sure there's an Email column.");
       }
     };
 
@@ -202,10 +322,20 @@ export const ContactManager = () => {
   const handleExport = () => {
     if (!contacts?.length) return;
     const csv = [
-      "Name,Email,Podcast,RSS URL,Status,Notes",
+      "Type,Podcast URL,RSS URL,Podcast Name,Host Name,Email,Status,Notes,On VPN",
       ...contacts.map((c) =>
-        [c.name, c.email, c.podcast_name || "", c.rss_url || "", c.status, c.notes || ""]
-          .map((v) => `"${v.replace(/"/g, '""')}"`)
+        [
+          c.contact_type || "",
+          c.podcast_url || "",
+          c.rss_url || "",
+          c.podcast_name || "",
+          c.host_name || c.name,
+          c.email,
+          c.status,
+          c.notes || "",
+          c.is_on_vpn ? "Yes" : "No",
+        ]
+          .map((v) => `"${String(v).replace(/"/g, '""')}"`)
           .join(",")
       ),
     ].join("\n");
@@ -226,8 +356,12 @@ export const ContactManager = () => {
       email: contact.email,
       podcast_name: contact.podcast_name || "",
       rss_url: contact.rss_url || "",
+      podcast_url: contact.podcast_url || "",
+      host_name: contact.host_name || "",
+      contact_type: contact.contact_type || "Military Podcast",
       notes: contact.notes || "",
       status: contact.status,
+      is_on_vpn: contact.is_on_vpn,
     });
     setIsEditDialogOpen(true);
   };
@@ -249,6 +383,9 @@ export const ContactManager = () => {
     }
   };
 
+  const vpnOnCount = contacts?.filter(c => c.is_on_vpn).length || 0;
+  const vpnOffCount = (contacts?.length || 0) - vpnOnCount;
+
   return (
     <div className="mt-12">
       <div className="flex flex-col gap-4 mb-6">
@@ -257,6 +394,9 @@ export const ContactManager = () => {
             <h2 className="font-serif text-xl font-bold text-foreground">Podcast Contacts</h2>
             <span className="text-sm text-muted-foreground bg-secondary px-2 py-1 rounded-full">
               {contacts?.length || 0} total
+            </span>
+            <span className="text-sm text-green-600 bg-green-500/20 px-2 py-1 rounded-full">
+              {vpnOnCount} on VPN
             </span>
           </div>
           <div className="flex gap-2">
@@ -282,7 +422,7 @@ export const ContactManager = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
@@ -293,8 +433,8 @@ export const ContactManager = () => {
             />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="Filter by status" />
+            <SelectTrigger className="w-36">
+              <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Statuses</SelectItem>
@@ -305,7 +445,17 @@ export const ContactManager = () => {
               ))}
             </SelectContent>
           </Select>
-          {(searchQuery || statusFilter !== "all") && (
+          <Select value={vpnFilter} onValueChange={setVpnFilter}>
+            <SelectTrigger className="w-36">
+              <SelectValue placeholder="VPN Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="on_vpn">On VPN</SelectItem>
+              <SelectItem value="not_on_vpn">Not on VPN</SelectItem>
+            </SelectContent>
+          </Select>
+          {(searchQuery || statusFilter !== "all" || vpnFilter !== "all") && (
             <span className="text-sm text-muted-foreground">
               Showing {filteredContacts.length} of {contacts?.length || 0}
             </span>
@@ -328,12 +478,24 @@ export const ContactManager = () => {
         <div className="grid gap-2">
           {filteredContacts.map((contact) => (
             <div key={contact.id} className="flex items-center gap-3 p-3 bg-card border border-border rounded-lg">
+              <div className="flex-shrink-0" title={contact.is_on_vpn ? "On VPN" : "Not on VPN"}>
+                {contact.is_on_vpn ? (
+                  <CheckCircle2 className="w-5 h-5 text-green-600" />
+                ) : (
+                  <XCircle className="w-5 h-5 text-muted-foreground" />
+                )}
+              </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-foreground truncate">{contact.name}</h3>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="font-semibold text-foreground truncate">{contact.host_name || contact.name}</h3>
                   <span className={`text-xs px-2 py-0.5 rounded ${getStatusColor(contact.status)}`}>
                     {STATUS_OPTIONS.find((o) => o.value === contact.status)?.label}
                   </span>
+                  {contact.contact_type && contact.contact_type !== "Military Podcast" && (
+                    <span className="text-xs px-2 py-0.5 rounded bg-secondary text-secondary-foreground">
+                      {contact.contact_type}
+                    </span>
+                  )}
                 </div>
                 <p className="text-sm text-muted-foreground truncate">{contact.email}</p>
                 {contact.podcast_name && (
@@ -378,17 +540,17 @@ export const ContactManager = () => {
       <Dialog open={isAddDialogOpen || isEditDialogOpen} onOpenChange={(open) => {
         if (!open) { setIsAddDialogOpen(false); setIsEditDialogOpen(false); setEditingContact(null); }
       }}>
-        <DialogContent>
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>{editingContact ? "Edit Contact" : "Add Contact"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Name *</Label>
+                <Label>Host Name *</Label>
                 <Input
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  value={formData.host_name || formData.name}
+                  onChange={(e) => setFormData({ ...formData, host_name: e.target.value, name: e.target.value })}
                   placeholder="John Doe"
                 />
               </div>
@@ -412,6 +574,39 @@ export const ContactManager = () => {
                 />
               </div>
               <div className="space-y-2">
+                <Label>Type</Label>
+                <Select value={formData.contact_type} onValueChange={(v) => setFormData({ ...formData, contact_type: v })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TYPE_OPTIONS.map((opt) => (
+                      <SelectItem key={opt} value={opt}>
+                        {opt}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Podcast URL (Apple/Spotify)</Label>
+              <Input
+                value={formData.podcast_url}
+                onChange={(e) => setFormData({ ...formData, podcast_url: e.target.value })}
+                placeholder="https://podcasts.apple.com/..."
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>RSS URL</Label>
+              <Input
+                value={formData.rss_url}
+                onChange={(e) => setFormData({ ...formData, rss_url: e.target.value })}
+                placeholder="https://..."
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
                 <Label>Status</Label>
                 <Select value={formData.status} onValueChange={(v) => setFormData({ ...formData, status: v })}>
                   <SelectTrigger>
@@ -426,14 +621,16 @@ export const ContactManager = () => {
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-            <div className="space-y-2">
-              <Label>RSS URL</Label>
-              <Input
-                value={formData.rss_url}
-                onChange={(e) => setFormData({ ...formData, rss_url: e.target.value })}
-                placeholder="https://..."
-              />
+              <div className="space-y-2 flex items-end">
+                <div className="flex items-center space-x-2 pb-2">
+                  <Checkbox
+                    id="is_on_vpn"
+                    checked={formData.is_on_vpn}
+                    onCheckedChange={(checked) => setFormData({ ...formData, is_on_vpn: !!checked })}
+                  />
+                  <Label htmlFor="is_on_vpn" className="cursor-pointer">Listed on VPN</Label>
+                </div>
+              </div>
             </div>
             <div className="space-y-2">
               <Label>Notes</Label>
@@ -441,13 +638,17 @@ export const ContactManager = () => {
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                 placeholder="Any notes about this contact..."
-                rows={3}
+                rows={2}
               />
             </div>
             <Button
               onClick={() => {
-                if (!formData.name || !formData.email) {
-                  toast.error("Name and email are required");
+                if (!formData.email) {
+                  toast.error("Email is required");
+                  return;
+                }
+                if (!formData.name && !formData.host_name) {
+                  toast.error("Host name is required");
                   return;
                 }
                 if (editingContact) {
