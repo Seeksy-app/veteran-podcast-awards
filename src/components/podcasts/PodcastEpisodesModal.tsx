@@ -45,11 +45,22 @@ export const PodcastEpisodesModal = ({ podcast, open, onOpenChange }: PodcastEpi
 
   const handleToggleFavorite = async () => {
     if (!user) {
-      toast("Create an account to follow podcasts and get notified of new episodes!", {
-        duration: 5000,
+      toast("🎧 Create an account to follow podcasts and get notified of new episodes!", {
+        duration: 6000,
         action: {
-          label: "Sign Up",
+          label: "Sign Up Free",
           onClick: () => navigate("/auth"),
+        },
+        style: {
+          background: "hsl(var(--primary))",
+          color: "hsl(var(--primary-foreground))",
+          border: "none",
+          fontWeight: 500,
+        },
+        actionButtonStyle: {
+          background: "hsl(var(--background))",
+          color: "hsl(var(--foreground))",
+          fontWeight: 600,
         },
       });
       return;
