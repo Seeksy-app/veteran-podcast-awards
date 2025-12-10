@@ -80,7 +80,7 @@ const Opportunity = () => {
           </div>
         </section>
 
-        {/* Sponsorship Opportunities for Military & Veteran Brands */}
+        {/* Example 2026 Sponsorship Opportunities */}
         <section className="py-16 bg-muted/20 border-b">
           <div className="container mx-auto px-4">
             <div className="max-w-5xl mx-auto">
@@ -88,102 +88,43 @@ const Opportunity = () => {
                 <div className="p-3 bg-gold/20 rounded-full">
                   <DollarSign className="w-6 h-6 text-gold" />
                 </div>
-                <h2 className="font-display text-3xl font-bold">2025 Sponsorship Opportunities</h2>
+                <h2 className="font-display text-3xl font-bold">Example 2026 Sponsorship Opportunities</h2>
               </div>
               <p className="text-muted-foreground mb-8 max-w-2xl">
-                Premium sponsorship packages designed for brands looking to authentically connect with the military and veteran community.
+                Multiple revenue streams through tiered sponsorship packages designed for brands seeking authentic connection with the military community.
               </p>
 
-              <div className="grid lg:grid-cols-3 gap-6">
-                {/* Presenting Partner */}
-                <Card className="relative overflow-hidden border-2 border-gold">
-                  <div className="absolute top-0 right-0 bg-gold text-gold-foreground px-3 py-1 text-sm font-semibold">
-                    FLAGSHIP
-                  </div>
-                  <CardHeader className="pb-2">
-                    <Badge className="w-fit mb-2 bg-gold/20 text-gold border-gold">$100,000</Badge>
-                    <CardTitle className="text-xl">Presenting Partner</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex items-start gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-gold mt-1 shrink-0" />
-                      <span className="text-sm">Naming Rights: "VPA presented by [Partner]"</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-gold mt-1 shrink-0" />
-                      <span className="text-sm">Exclusive 60-sec Executive message during show</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-gold mt-1 shrink-0" />
-                      <span className="text-sm">4x :30 ads during livestream</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-gold mt-1 shrink-0" />
-                      <span className="text-sm">Brand "logo bug" during broadcast</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-gold mt-1 shrink-0" />
-                      <span className="text-sm">4 dedicated emails (600K+ impressions)</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-gold mt-1 shrink-0" />
-                      <span className="text-sm">Social reach: 1.4M+</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-gold mt-1 shrink-0" />
-                      <span className="text-sm">Press release inclusion</span>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Category Sponsor */}
-                <Card className="border-2 border-primary/50">
-                  <CardHeader className="pb-2">
-                    <Badge className="w-fit mb-2 bg-primary/20 text-primary border-primary">$25,000 each</Badge>
-                    <CardTitle className="text-xl">Category Sponsor</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex items-start gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-primary mt-1 shrink-0" />
-                      <span className="text-sm">Category naming rights</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-primary mt-1 shrink-0" />
-                      <span className="text-sm">Logo across slides/ticker/email (200K+ impressions)</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-primary mt-1 shrink-0" />
-                      <span className="text-sm">1 dedicated post + 3 stories</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-primary mt-1 shrink-0" />
-                      <span className="text-sm">On-screen recognition</span>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Engagement Sponsor */}
-                <Card className="border-2 border-muted">
-                  <CardHeader className="pb-2">
-                    <Badge variant="secondary" className="w-fit mb-2">$10,000</Badge>
-                    <CardTitle className="text-xl">Engagement Sponsor</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex items-start gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-muted-foreground mt-1 shrink-0" />
-                      <span className="text-sm">Livestream interview segment</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-muted-foreground mt-1 shrink-0" />
-                      <span className="text-sm">Post-event newsletter + content features</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-muted-foreground mt-1 shrink-0" />
-                      <span className="text-sm">Logo on app + Apple TV channel</span>
-                    </div>
-                  </CardContent>
-                </Card>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                <div className="bg-card border-2 border-gold rounded-xl p-5 text-center">
+                  <Trophy className="w-8 h-8 text-gold mx-auto mb-3" />
+                  <h3 className="font-semibold text-lg mb-1">Presenting</h3>
+                  <p className="text-sm text-muted-foreground">Title naming rights</p>
+                </div>
+                <div className="bg-card border rounded-xl p-5 text-center">
+                  <Star className="w-8 h-8 text-primary mx-auto mb-3" />
+                  <h3 className="font-semibold text-lg mb-1">Category</h3>
+                  <p className="text-sm text-muted-foreground">Award category sponsor</p>
+                </div>
+                <div className="bg-card border rounded-xl p-5 text-center">
+                  <Trophy className="w-8 h-8 text-primary mx-auto mb-3" />
+                  <h3 className="font-semibold text-lg mb-1">Award</h3>
+                  <p className="text-sm text-muted-foreground">Individual award sponsor</p>
+                </div>
+                <div className="bg-card border rounded-xl p-5 text-center">
+                  <Tv className="w-8 h-8 text-primary mx-auto mb-3" />
+                  <h3 className="font-semibold text-lg mb-1">Livestream</h3>
+                  <p className="text-sm text-muted-foreground">Broadcast integration</p>
+                </div>
+                <div className="bg-card border rounded-xl p-5 text-center">
+                  <Users className="w-8 h-8 text-primary mx-auto mb-3" />
+                  <h3 className="font-semibold text-lg mb-1">& More</h3>
+                  <p className="text-sm text-muted-foreground">Custom packages</p>
+                </div>
               </div>
+
+              <p className="text-center text-sm text-muted-foreground mt-6 italic">
+                Sponsorship tiers range from $10K engagement packages to $100K+ presenting partnerships
+              </p>
             </div>
           </div>
         </section>
