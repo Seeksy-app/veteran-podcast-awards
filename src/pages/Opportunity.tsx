@@ -64,77 +64,54 @@ const Opportunity = () => {
           </div>
         </section>
 
-        {/* Background Section */}
+        {/* Partner With The Veteran Community */}
         <section className="py-16 border-b">
           <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto">
-              <div className="flex items-center gap-3 mb-8">
-                <div className="p-3 bg-primary/10 rounded-full">
-                  <Mic className="w-6 h-6 text-primary" />
+            <div className="max-w-5xl mx-auto text-center">
+              <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">
+                <span className="text-foreground">Partner With </span>
+                <span className="text-gold">The Veteran Community</span>
+              </h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto mb-12">
+                Connect your brand with the dedicated military and veteran podcasting community 
+                and reach millions of engaged listeners who trust these voices.
+              </p>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                <div className="bg-card border rounded-xl p-6">
+                  <div className="text-3xl md:text-4xl font-bold text-gold mb-2">18M+</div>
+                  <div className="text-sm text-muted-foreground">Veterans in the U.S.</div>
                 </div>
-                <h2 className="font-display text-3xl font-bold">Background & Evolution</h2>
+                <div className="bg-card border rounded-xl p-6">
+                  <div className="text-3xl md:text-4xl font-bold text-gold mb-2">2M+</div>
+                  <div className="text-sm text-muted-foreground">Active Duty Service Members</div>
+                </div>
+                <div className="bg-card border rounded-xl p-6">
+                  <div className="text-3xl md:text-4xl font-bold text-gold mb-2">40M+</div>
+                  <div className="text-sm text-muted-foreground">Military-Connected Americans</div>
+                </div>
+                <div className="bg-card border rounded-xl p-6">
+                  <div className="text-3xl md:text-4xl font-bold text-gold mb-2">500K+</div>
+                  <div className="text-sm text-muted-foreground">Combined Social Media Reach</div>
+                </div>
               </div>
-              
-              <div className="grid md:grid-cols-2 gap-8">
-                <Card className="border-l-4 border-l-gold">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-lg">
-                      <Trophy className="w-5 h-5 text-gold" />
-                      Pre-COVID Momentum
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3 text-muted-foreground">
-                    <p>• Gaining significant traction with notable sponsor interest</p>
-                    <p>• Podcast equipment brands actively pursuing partnerships</p>
-                    <p>• Priority on amplifying the veteran voice over monetization</p>
-                  </CardContent>
-                </Card>
-
-                <Card className="border-l-4 border-l-primary">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-lg">
-                      <Rocket className="w-5 h-5 text-primary" />
-                      Current Advantages
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3 text-muted-foreground">
-                    <p>• Integrated with Parade Deck's verified creator network</p>
-                    <p>• Streaming distribution: Apple TV, mobile app, web</p>
-                    <p>• Deep reach into military/veteran influencer community</p>
-                  </CardContent>
-                </Card>
-              </div>
-
-              <Card className="mt-8 bg-muted/30">
-                <CardContent className="pt-6">
-                  <div className="flex items-start gap-4">
-                    <div className="p-2 bg-green-500/10 rounded-full">
-                      <TrendingUp className="w-5 h-5 text-green-500" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold mb-2">Improved Business Model</h3>
-                      <p className="text-muted-foreground">
-                        Moving forward, like other major awards programs, winners will purchase their own awards—reducing 
-                        costs (previously $100/award + $1,500/outsourced voting) and significantly improving margins.
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
             </div>
           </div>
         </section>
 
-        {/* Sponsorship Opportunities */}
+        {/* Sponsorship Opportunities for Military & Veteran Brands */}
         <section className="py-16 bg-muted/20 border-b">
           <div className="container mx-auto px-4">
             <div className="max-w-5xl mx-auto">
-              <div className="flex items-center gap-3 mb-8">
+              <div className="flex items-center gap-3 mb-4">
                 <div className="p-3 bg-gold/20 rounded-full">
                   <DollarSign className="w-6 h-6 text-gold" />
                 </div>
                 <h2 className="font-display text-3xl font-bold">2025 Sponsorship Opportunities</h2>
               </div>
+              <p className="text-muted-foreground mb-8 max-w-2xl">
+                Premium sponsorship packages designed for brands looking to authentically connect with the military and veteran community.
+              </p>
 
               <div className="grid lg:grid-cols-3 gap-6">
                 {/* Presenting Partner */}
@@ -340,6 +317,77 @@ const Opportunity = () => {
                       <div className="flex items-center gap-2">
                         <CheckCircle2 className="w-4 h-4 text-primary" />
                         <span>Existing user database & contacts</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Full Stack Event Platform */}
+              <Card className="mt-8 border-2 border-gold/50 bg-gradient-to-br from-gold/5 to-primary/5">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Tv className="w-5 h-5 text-gold" />
+                    Full Stack Event Platform Included
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground mb-4">
+                    A complete, custom-built event management platform providing a strong alternative to Eventbrite and other paid SaaS platforms.
+                  </p>
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-gold/10 rounded-full shrink-0">
+                        <Users className="w-4 h-4 text-gold" />
+                      </div>
+                      <div>
+                        <div className="font-medium">Registration & Ticketing</div>
+                        <div className="text-sm text-muted-foreground">Built-in user registration and event signups</div>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-gold/10 rounded-full shrink-0">
+                        <Tv className="w-4 h-4 text-gold" />
+                      </div>
+                      <div>
+                        <div className="font-medium">Livestream Integration</div>
+                        <div className="text-sm text-muted-foreground">Seamless streaming to web, mobile, Apple TV</div>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-gold/10 rounded-full shrink-0">
+                        <Mail className="w-4 h-4 text-gold" />
+                      </div>
+                      <div>
+                        <div className="font-medium">Email Marketing</div>
+                        <div className="text-sm text-muted-foreground">Built-in campaign tools with tracking</div>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-gold/10 rounded-full shrink-0">
+                        <Trophy className="w-4 h-4 text-gold" />
+                      </div>
+                      <div>
+                        <div className="font-medium">Voting System</div>
+                        <div className="text-sm text-muted-foreground">Complete nomination and voting workflow</div>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-gold/10 rounded-full shrink-0">
+                        <BarChart3 className="w-4 h-4 text-gold" />
+                      </div>
+                      <div>
+                        <div className="font-medium">Analytics Dashboard</div>
+                        <div className="text-sm text-muted-foreground">Real-time insights and reporting</div>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-gold/10 rounded-full shrink-0">
+                        <DollarSign className="w-4 h-4 text-gold" />
+                      </div>
+                      <div>
+                        <div className="font-medium">No Platform Fees</div>
+                        <div className="text-sm text-muted-foreground">Unlike Eventbrite, keep 100% of revenue</div>
                       </div>
                     </div>
                   </div>
