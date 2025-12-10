@@ -19,6 +19,7 @@ import Terms from "./pages/Terms";
 import Dashboard from "./pages/Dashboard";
 import PodcasterProfile from "./pages/PodcasterProfile";
 import NotFound from "./pages/NotFound";
+import Opportunity from "./pages/Opportunity";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,7 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/podcaster/:username" element={<PodcasterProfile />} />
+              <Route path="/opportunity" element={<Opportunity />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
