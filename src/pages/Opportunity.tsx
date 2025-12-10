@@ -33,7 +33,7 @@ const Opportunity = () => {
       
       <div className="min-h-screen bg-background">
         {/* Hero Section */}
-        <section className="relative py-20 bg-gradient-to-br from-primary/10 via-background to-gold/10">
+        <section className="relative py-20 bg-gradient-to-br from-primary/10 via-background to-gold/10 border-b">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
               <Badge variant="outline" className="mb-4 text-gold border-gold">
@@ -42,58 +42,39 @@ const Opportunity = () => {
               <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6">
                 Veteran Podcast Awards
               </h1>
-              <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-                A flagship recognition platform in the military/veteran media space with proven technology, 
-                established brand equity, and significant growth potential.
+              <p className="text-xl text-muted-foreground mb-4 max-w-2xl mx-auto">
+                A flagship recognition platform in the military/veteran media space with proven technology and established brand equity.
               </p>
-              <div className="flex flex-wrap justify-center gap-4">
-                <div className="bg-card border rounded-lg px-6 py-4 text-center">
-                  <div className="text-3xl font-bold text-gold">2.5M+</div>
-                  <div className="text-sm text-muted-foreground">Cross-Platform Impressions</div>
-                </div>
-                <div className="bg-card border rounded-lg px-6 py-4 text-center">
-                  <div className="text-3xl font-bold text-gold">1.4M+</div>
-                  <div className="text-sm text-muted-foreground">Social Reach</div>
-                </div>
-                <div className="bg-card border rounded-lg px-6 py-4 text-center">
-                  <div className="text-3xl font-bold text-gold">600K+</div>
-                  <div className="text-sm text-muted-foreground">Email Impressions</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Partner With The Veteran Community */}
-        <section className="py-16 border-b">
-          <div className="container mx-auto px-4">
-            <div className="max-w-5xl mx-auto text-center">
-              <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">
-                <span className="text-foreground">Partner With </span>
-                <span className="text-gold">The Veteran Community</span>
-              </h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto mb-12">
-                Connect your brand with the dedicated military and veteran podcasting community 
-                and reach millions of engaged listeners who trust these voices.
+              <p className="text-xl text-gold font-semibold mb-12">
+                Significant growth potential.
               </p>
-
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-                <div className="bg-card border rounded-xl p-6">
-                  <div className="text-3xl md:text-4xl font-bold text-gold mb-2">18M+</div>
-                  <div className="text-sm text-muted-foreground">Veterans in the U.S.</div>
+              
+              {/* Available Audience */}
+              <div className="mb-8">
+                <h2 className="text-sm uppercase tracking-wider text-muted-foreground mb-6">
+                  Available Audience to Target
+                </h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 max-w-4xl mx-auto">
+                  <div className="bg-card border rounded-xl p-6">
+                    <div className="text-3xl md:text-4xl font-bold text-gold mb-2">18M+</div>
+                    <div className="text-sm text-muted-foreground">Veterans in the U.S.</div>
+                  </div>
+                  <div className="bg-card border rounded-xl p-6">
+                    <div className="text-3xl md:text-4xl font-bold text-gold mb-2">2M+</div>
+                    <div className="text-sm text-muted-foreground">Active Duty Service Members</div>
+                  </div>
+                  <div className="bg-card border rounded-xl p-6">
+                    <div className="text-3xl md:text-4xl font-bold text-gold mb-2">40M+</div>
+                    <div className="text-sm text-muted-foreground">Military-Connected Americans</div>
+                  </div>
+                  <div className="bg-card border rounded-xl p-6">
+                    <div className="text-3xl md:text-4xl font-bold text-gold mb-2">500K+</div>
+                    <div className="text-sm text-muted-foreground">Combined Social Media Reach</div>
+                  </div>
                 </div>
-                <div className="bg-card border rounded-xl p-6">
-                  <div className="text-3xl md:text-4xl font-bold text-gold mb-2">2M+</div>
-                  <div className="text-sm text-muted-foreground">Active Duty Service Members</div>
-                </div>
-                <div className="bg-card border rounded-xl p-6">
-                  <div className="text-3xl md:text-4xl font-bold text-gold mb-2">40M+</div>
-                  <div className="text-sm text-muted-foreground">Military-Connected Americans</div>
-                </div>
-                <div className="bg-card border rounded-xl p-6">
-                  <div className="text-3xl md:text-4xl font-bold text-gold mb-2">500K+</div>
-                  <div className="text-sm text-muted-foreground">Combined Social Media Reach</div>
-                </div>
+                <p className="text-sm text-muted-foreground mt-4 italic">
+                  These figures represent the addressable market—an untapped audience that, when targeted, could significantly elevate the value of this property.
+                </p>
               </div>
             </div>
           </div>
