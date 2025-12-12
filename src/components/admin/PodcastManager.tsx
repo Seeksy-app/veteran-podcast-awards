@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Plus, Trash2, RefreshCw, Rss, ExternalLink, FileSpreadsheet, Search, Mic } from "lucide-react";
+import { Plus, Trash2, RefreshCw, Rss, ExternalLink, FileSpreadsheet, Search, Mic, Download } from "lucide-react";
 import { toast } from "sonner";
 
 interface Podcast {
@@ -241,6 +241,36 @@ export const PodcastManager = () => {
     setSelectedPodcastId(null);
   };
 
+  const handleExportCSV = () => {
+    if (!podcasts?.length) {
+      toast.error("No podcasts to export");
+      return;
+    }
+
+    const headers = ["Title", "Author", "RSS URL", "Website URL", "Description", "Image URL", "Active", "Display Order", "Last Fetched"];
+    const rows = podcasts.map((p) => [
+      `"${(p.title || "").replace(/"/g, '""')}"`,
+      `"${(p.author || "").replace(/"/g, '""')}"`,
+      `"${p.rss_url || ""}"`,
+      `"${p.website_url || ""}"`,
+      `"${(p.description || "").replace(/"/g, '""').replace(/\n/g, " ")}"`,
+      `"${p.image_url || ""}"`,
+      p.is_active ? "Yes" : "No",
+      p.display_order,
+      p.last_fetched_at || "",
+    ]);
+
+    const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `podcasts-export-${new Date().toISOString().split("T")[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    toast.success(`Exported ${podcasts.length} podcasts`);
+  };
+
   return (
     <div className="mt-12">
       <div className="flex flex-col gap-4 mb-6">
@@ -259,6 +289,10 @@ export const PodcastManager = () => {
               accept=".csv,.txt,.tsv"
               className="hidden"
             />
+            <Button variant="outline" onClick={handleExportCSV}>
+              <Download className="w-4 h-4 mr-2" />
+              Export CSV
+            </Button>
             <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
               <FileSpreadsheet className="w-4 h-4 mr-2" />
               Import Spreadsheet
