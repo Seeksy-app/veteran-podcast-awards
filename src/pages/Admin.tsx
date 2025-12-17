@@ -6,10 +6,12 @@ import { PodcastManager } from '@/components/admin/PodcastManager';
 import { UserManager } from '@/components/admin/UserManager';
 import { SubmissionManager } from '@/components/admin/SubmissionManager';
 import { ContactManager } from '@/components/admin/ContactManager';
+import { TechStackPanel } from '@/components/admin/TechStackPanel';
+import { SecurityPanel } from '@/components/admin/SecurityPanel';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ThemeSelector } from '@/components/theme/ThemeToggle';
-import { LogOut, Shield, Home, Users, Mic, Handshake, Rss, Mail } from 'lucide-react';
+import { LogOut, Shield, Home, Users, Mic, Handshake, Rss, Mail, Layers, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import logo from '@/assets/vpa-logo.png';
 
@@ -95,7 +97,7 @@ const AdminPage = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue="users" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 md:w-auto md:inline-grid">
+          <TabsList className="grid w-full grid-cols-7 md:w-auto md:inline-grid">
             <TabsTrigger value="users" className="gap-2">
               <Users className="w-4 h-4" />
               <span className="hidden sm:inline">Users</span>
@@ -115,6 +117,14 @@ const AdminPage = () => {
             <TabsTrigger value="sponsors" className="gap-2">
               <Handshake className="w-4 h-4" />
               <span className="hidden sm:inline">Sponsors</span>
+            </TabsTrigger>
+            <TabsTrigger value="tech-stack" className="gap-2">
+              <Layers className="w-4 h-4" />
+              <span className="hidden sm:inline">Tech Stack</span>
+            </TabsTrigger>
+            <TabsTrigger value="security" className="gap-2">
+              <ShieldCheck className="w-4 h-4" />
+              <span className="hidden sm:inline">Security</span>
             </TabsTrigger>
           </TabsList>
 
@@ -136,6 +146,14 @@ const AdminPage = () => {
 
           <TabsContent value="sponsors">
             <SponsorList />
+          </TabsContent>
+
+          <TabsContent value="tech-stack">
+            <TechStackPanel />
+          </TabsContent>
+
+          <TabsContent value="security">
+            <SecurityPanel />
           </TabsContent>
         </Tabs>
       </main>
