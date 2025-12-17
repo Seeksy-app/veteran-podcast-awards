@@ -48,27 +48,17 @@ const InvestorPortal = () => {
 
   const verifyAccessMutation = useMutation({
     mutationFn: async ({ email, code }: { email: string; code: string }) => {
+      // Use secure RPC function instead of direct table query
       const { data, error } = await supabase
-        .from('investor_access')
-        .select('*')
-        .eq('email', email.toLowerCase().trim())
-        .eq('access_code', code.toUpperCase().trim())
-        .eq('is_active', true)
-        .single();
+        .rpc('verify_investor_access', {
+          p_email: email.toLowerCase().trim(),
+          p_access_code: code.toUpperCase().trim()
+        });
 
-      if (error || !data) throw new Error('Invalid access code or email');
+      if (error) throw new Error('Invalid access code or email');
+      if (!data || data.length === 0) throw new Error('Invalid access code or email');
 
-      const access = data as InvestorAccess;
-      if (!isAfter(new Date(access.expires_at), new Date())) {
-        throw new Error('Access code has expired');
-      }
-
-      // Update last accessed
-      await supabase
-        .from('investor_access')
-        .update({ last_accessed_at: new Date().toISOString() })
-        .eq('id', access.id);
-
+      const access = data[0] as InvestorAccess;
       return access;
     },
     onSuccess: (data) => {

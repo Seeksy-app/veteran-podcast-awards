@@ -792,6 +792,16 @@ export type Database = {
         Args: { campaign_id: string }
         Returns: undefined
       }
+      verify_investor_access: {
+        Args: { p_access_code: string; p_email: string }
+        Returns: {
+          allowed_tabs: string[]
+          email: string
+          expires_at: string
+          id: string
+          is_active: boolean
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
