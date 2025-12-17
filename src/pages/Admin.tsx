@@ -100,7 +100,7 @@ const AdminPage = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue="users" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 md:w-auto md:inline-grid md:grid-cols-10">
+          <TabsList className="flex flex-wrap gap-1 h-auto p-1">
             <TabsTrigger value="users" className="gap-2">
               <Users className="w-4 h-4" />
               <span className="hidden sm:inline">Users</span>
