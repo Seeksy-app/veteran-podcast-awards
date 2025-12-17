@@ -23,11 +23,11 @@ interface InvestorAccess {
 }
 
 const AVAILABLE_TABS = [
+  { id: 'video', label: 'Video' },
+  { id: 'opportunity', label: 'Opportunity' },
   { id: 'metrics', label: 'Business Metrics' },
   { id: 'tech-stack', label: 'Tech Stack' },
   { id: 'security', label: 'Security' },
-  { id: 'video', label: 'Video' },
-  { id: 'opportunity', label: 'Opportunity' },
 ];
 
 const generateAccessCode = () => {
@@ -43,7 +43,7 @@ export const InvestorAccessManager = () => {
   const queryClient = useQueryClient();
   const [newEmail, setNewEmail] = useState('');
   const [expirationDays, setExpirationDays] = useState(30);
-  const [selectedTabs, setSelectedTabs] = useState<string[]>(['metrics', 'tech-stack', 'security', 'video', 'opportunity']);
+  const [selectedTabs, setSelectedTabs] = useState<string[]>(['video', 'opportunity', 'metrics', 'tech-stack', 'security']);
 
   const { data: accessList, isLoading } = useQuery({
     queryKey: ['investor-access'],
