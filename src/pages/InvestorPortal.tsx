@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,8 @@ import { ThemeSelector } from '@/components/theme/ThemeToggle';
 import { TechStackPanel } from '@/components/admin/TechStackPanel';
 import { SecurityPanel } from '@/components/admin/SecurityPanel';
 import { BusinessMetricsPanel } from '@/components/admin/BusinessMetricsPanel';
-import { Shield, Layers, ShieldCheck, BarChart3, Video, Lock, LogIn, FileText, ExternalLink } from 'lucide-react';
+import { OpportunityContent } from '@/components/investor/OpportunityContent';
+import { Shield, Layers, ShieldCheck, BarChart3, Video, Lock, LogIn, FileText } from 'lucide-react';
 import { isAfter } from 'date-fns';
 import { toast } from 'sonner';
 import logo from '@/assets/vpa-logo.png';
@@ -33,11 +34,11 @@ interface InvestorVideo {
 }
 
 const TAB_CONFIG = [
+  { id: 'video', label: 'Video', icon: Video },
+  { id: 'opportunity', label: 'Opportunity', icon: FileText },
   { id: 'metrics', label: 'Business Metrics', icon: BarChart3 },
   { id: 'tech-stack', label: 'Tech Stack', icon: Layers },
   { id: 'security', label: 'Security', icon: ShieldCheck },
-  { id: 'video', label: 'Video', icon: Video },
-  { id: 'opportunity', label: 'Opportunity', icon: FileText },
 ];
 
 const InvestorPortal = () => {
@@ -110,7 +111,7 @@ const InvestorPortal = () => {
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <img src={logo} alt="VPA Logo" className="w-16 h-16 mx-auto mb-4" />
-            <CardTitle className="font-serif text-2xl">Investor Portal</CardTitle>
+            <CardTitle className="font-serif text-2xl">Opportunity Portal</CardTitle>
             <CardDescription>
               Enter your email and access code to view platform information
             </CardDescription>
@@ -163,7 +164,7 @@ const InvestorPortal = () => {
           <div className="flex items-center gap-3">
             <img src={logo} alt="VPA Logo" className="w-10 h-10" />
             <div>
-              <h1 className="font-serif text-lg font-bold text-foreground">Investor Portal</h1>
+              <h1 className="font-serif text-lg font-bold text-foreground">Opportunity Portal</h1>
               <p className="text-xs text-muted-foreground">Veteran Podcast Awards</p>
             </div>
           </div>
@@ -252,27 +253,7 @@ const InvestorPortal = () => {
           </TabsContent>
 
           <TabsContent value="opportunity">
-            <div className="space-y-6">
-              <div>
-                <h2 className="font-serif text-2xl font-bold text-foreground">Investment Opportunity</h2>
-                <p className="text-muted-foreground">View the complete investment pitch and revenue opportunities</p>
-              </div>
-              <Card>
-                <CardContent className="py-8 text-center">
-                  <FileText className="w-16 h-16 mx-auto mb-4 text-primary" />
-                  <h3 className="text-xl font-semibold mb-2">Revenue & Acquisition Overview</h3>
-                  <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                    Explore sponsorship opportunities, growth projections, technology value, and strategic advantages of the Veteran Podcast Awards platform.
-                  </p>
-                  <Button asChild size="lg">
-                    <Link to="/opportunity" target="_blank">
-                      <ExternalLink className="w-4 h-4 mr-2" />
-                      View Full Opportunity
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
+            <OpportunityContent />
           </TabsContent>
         </Tabs>
       </main>
