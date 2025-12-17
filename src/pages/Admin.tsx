@@ -11,10 +11,11 @@ import { SecurityPanel } from '@/components/admin/SecurityPanel';
 import { BusinessMetricsPanel } from '@/components/admin/BusinessMetricsPanel';
 import { InvestorAccessManager } from '@/components/admin/InvestorAccessManager';
 import { InvestorVideoManager } from '@/components/admin/InvestorVideoManager';
+import { InvestorEngagementPanel } from '@/components/admin/InvestorEngagementPanel';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ThemeSelector } from '@/components/theme/ThemeToggle';
-import { LogOut, Shield, Home, Users, Mic, Handshake, Rss, Mail, Layers, ShieldCheck, BarChart3, KeyRound, Video } from 'lucide-react';
+import { LogOut, Shield, Home, Users, Mic, Handshake, Rss, Mail, Layers, ShieldCheck, BarChart3, KeyRound, Video, Activity } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import logo from '@/assets/vpa-logo.png';
 
@@ -141,6 +142,10 @@ const AdminPage = () => {
               <Video className="w-4 h-4" />
               <span className="hidden sm:inline">Videos</span>
             </TabsTrigger>
+            <TabsTrigger value="investor-engagement" className="gap-2">
+              <Activity className="w-4 h-4" />
+              <span className="hidden sm:inline">Engagement</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="users">
@@ -181,6 +186,10 @@ const AdminPage = () => {
 
           <TabsContent value="investor-videos">
             <InvestorVideoManager />
+          </TabsContent>
+
+          <TabsContent value="investor-engagement">
+            <InvestorEngagementPanel />
           </TabsContent>
         </Tabs>
       </main>
