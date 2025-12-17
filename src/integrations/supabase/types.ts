@@ -253,6 +253,41 @@ export type Database = {
         }
         Relationships: []
       }
+      investor_engagement_events: {
+        Row: {
+          created_at: string
+          email: string
+          event_data: Json | null
+          event_type: string
+          id: string
+          investor_access_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          investor_access_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          investor_access_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investor_engagement_events_investor_access_id_fkey"
+            columns: ["investor_access_id"]
+            isOneToOne: false
+            referencedRelation: "investor_access"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       investor_videos: {
         Row: {
           created_at: string

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,6 +12,7 @@ import { TechStackPanel } from '@/components/admin/TechStackPanel';
 import { SecurityPanel } from '@/components/admin/SecurityPanel';
 import { BusinessMetricsPanel } from '@/components/admin/BusinessMetricsPanel';
 import { OpportunityContent } from '@/components/investor/OpportunityContent';
+import { useInvestorTracking } from '@/hooks/useInvestorTracking';
 import { Shield, Layers, ShieldCheck, BarChart3, Video, Lock, LogIn, FileText } from 'lucide-react';
 import { isAfter } from 'date-fns';
 import { toast } from 'sonner';
@@ -47,6 +48,15 @@ const InvestorPortal = () => {
   const [email, setEmail] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [accessData, setAccessData] = useState<InvestorAccess | null>(null);
+  const [activeTab, setActiveTab] = useState<string>('');
+  const hasTrackedOpen = useRef(false);
+
+  const trackingContext = accessData ? {
+    email: accessData.email,
+    investorAccessId: accessData.id,
+  } : null;
+
+  const { trackPortalOpen, trackTabClick, trackVideoProgress } = useInvestorTracking(trackingContext);
 
   const verifyAccessMutation = useMutation({
     mutationFn: async ({ email, code }: { email: string; code: string }) => {
@@ -72,6 +82,14 @@ const InvestorPortal = () => {
       toast.error(error.message);
     },
   });
+
+  // Track portal open after successful authentication
+  useEffect(() => {
+    if (isAuthenticated && accessData && !hasTrackedOpen.current) {
+      hasTrackedOpen.current = true;
+      trackPortalOpen();
+    }
+  }, [isAuthenticated, accessData, trackPortalOpen]);
 
   const { data: videos } = useQuery({
     queryKey: ['investor-videos-public'],
@@ -177,7 +195,17 @@ const InvestorPortal = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        <Tabs defaultValue={defaultTab} className="space-y-6">
+        <Tabs 
+          defaultValue={defaultTab} 
+          className="space-y-6"
+          onValueChange={(value) => {
+            setActiveTab(value);
+            const tab = TAB_CONFIG.find(t => t.id === value);
+            if (tab && accessData?.allowed_tabs.includes(value)) {
+              trackTabClick(value, tab.label);
+            }
+          }}
+        >
           <TabsList className="inline-flex">
             {TAB_CONFIG.map((tab) => {
               const isAllowed = accessData?.allowed_tabs.includes(tab.id);
@@ -241,6 +269,13 @@ const InvestorPortal = () => {
                           controls
                           className="w-full rounded-lg"
                           preload="metadata"
+                          onTimeUpdate={(e) => {
+                            const videoEl = e.currentTarget;
+                            if (videoEl.duration > 0) {
+                              const percent = Math.floor((videoEl.currentTime / videoEl.duration) * 100);
+                              trackVideoProgress(video.id, video.title, percent, Math.floor(videoEl.duration));
+                            }
+                          }}
                         >
                           Your browser does not support the video tag.
                         </video>
