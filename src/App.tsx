@@ -20,6 +20,7 @@ import Dashboard from "./pages/Dashboard";
 import PodcasterProfile from "./pages/PodcasterProfile";
 import NotFound from "./pages/NotFound";
 import Opportunity from "./pages/Opportunity";
+import InvestorPortal from "./pages/InvestorPortal";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +47,7 @@ const App = () => (
               <Route path="/podcaster/:username" element={<PodcasterProfile />} />
               <Route path="/opportunity" element={<Opportunity />} />
               <Route path="/admin" element={<Admin />} />
+              <Route path="/investor" element={<InvestorPortal />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
