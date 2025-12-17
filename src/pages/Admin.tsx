@@ -9,10 +9,12 @@ import { ContactManager } from '@/components/admin/ContactManager';
 import { TechStackPanel } from '@/components/admin/TechStackPanel';
 import { SecurityPanel } from '@/components/admin/SecurityPanel';
 import { BusinessMetricsPanel } from '@/components/admin/BusinessMetricsPanel';
+import { InvestorAccessManager } from '@/components/admin/InvestorAccessManager';
+import { InvestorVideoManager } from '@/components/admin/InvestorVideoManager';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ThemeSelector } from '@/components/theme/ThemeToggle';
-import { LogOut, Shield, Home, Users, Mic, Handshake, Rss, Mail, Layers, ShieldCheck, BarChart3 } from 'lucide-react';
+import { LogOut, Shield, Home, Users, Mic, Handshake, Rss, Mail, Layers, ShieldCheck, BarChart3, KeyRound, Video } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import logo from '@/assets/vpa-logo.png';
 
@@ -98,7 +100,7 @@ const AdminPage = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue="users" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 md:w-auto md:inline-grid md:grid-cols-8">
+          <TabsList className="grid w-full grid-cols-5 md:w-auto md:inline-grid md:grid-cols-10">
             <TabsTrigger value="users" className="gap-2">
               <Users className="w-4 h-4" />
               <span className="hidden sm:inline">Users</span>
@@ -130,6 +132,14 @@ const AdminPage = () => {
             <TabsTrigger value="security" className="gap-2">
               <ShieldCheck className="w-4 h-4" />
               <span className="hidden sm:inline">Security</span>
+            </TabsTrigger>
+            <TabsTrigger value="investor-access" className="gap-2">
+              <KeyRound className="w-4 h-4" />
+              <span className="hidden sm:inline">Investors</span>
+            </TabsTrigger>
+            <TabsTrigger value="investor-videos" className="gap-2">
+              <Video className="w-4 h-4" />
+              <span className="hidden sm:inline">Videos</span>
             </TabsTrigger>
           </TabsList>
 
@@ -163,6 +173,14 @@ const AdminPage = () => {
 
           <TabsContent value="security">
             <SecurityPanel />
+          </TabsContent>
+
+          <TabsContent value="investor-access">
+            <InvestorAccessManager />
+          </TabsContent>
+
+          <TabsContent value="investor-videos">
+            <InvestorVideoManager />
           </TabsContent>
         </Tabs>
       </main>

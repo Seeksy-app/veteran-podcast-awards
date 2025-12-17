@@ -217,6 +217,75 @@ export type Database = {
         }
         Relationships: []
       }
+      investor_access: {
+        Row: {
+          access_code: string
+          allowed_tabs: string[]
+          created_at: string
+          created_by: string | null
+          email: string
+          expires_at: string
+          id: string
+          is_active: boolean
+          last_accessed_at: string | null
+        }
+        Insert: {
+          access_code: string
+          allowed_tabs?: string[]
+          created_at?: string
+          created_by?: string | null
+          email: string
+          expires_at: string
+          id?: string
+          is_active?: boolean
+          last_accessed_at?: string | null
+        }
+        Update: {
+          access_code?: string
+          allowed_tabs?: string[]
+          created_at?: string
+          created_by?: string | null
+          email?: string
+          expires_at?: string
+          id?: string
+          is_active?: boolean
+          last_accessed_at?: string | null
+        }
+        Relationships: []
+      }
+      investor_videos: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_order: number
+          id: string
+          is_active: boolean
+          title: string
+          updated_at: string
+          video_url: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          title: string
+          updated_at?: string
+          video_url: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          title?: string
+          updated_at?: string
+          video_url?: string
+        }
+        Relationships: []
+      }
       mailing_lists: {
         Row: {
           created_at: string
