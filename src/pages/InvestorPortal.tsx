@@ -21,10 +21,10 @@ import logo from '@/assets/vpa-logo.png';
 interface InvestorAccess {
   id: string;
   email: string;
-  access_code: string;
   allowed_tabs: string[];
   expires_at: string;
   is_active: boolean;
+  status: string;
 }
 
 interface InvestorVideo {
@@ -67,10 +67,22 @@ const InvestorPortal = () => {
           p_access_code: code.toUpperCase().trim()
         });
 
-      if (error) throw new Error('Invalid access code or email');
-      if (!data || data.length === 0) throw new Error('Invalid access code or email');
+      if (error) throw new Error('Unable to verify access. Please try again.');
+      if (!data || data.length === 0) throw new Error('Unable to verify access. Please try again.');
 
       const access = data[0] as InvestorAccess;
+      
+      // Handle different status responses
+      if (access.status === 'not_found') {
+        throw new Error('Invalid email or access code. Please check your credentials.');
+      }
+      if (access.status === 'disabled') {
+        throw new Error('This access code has been disabled. Please contact the administrator.');
+      }
+      if (access.status === 'expired') {
+        throw new Error('This access code has expired. Please contact the administrator for a new code.');
+      }
+      
       return access;
     },
     onSuccess: (data) => {

@@ -835,6 +835,7 @@ export type Database = {
           expires_at: string
           id: string
           is_active: boolean
+          status: string
         }[]
       }
     }
