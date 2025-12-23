@@ -269,22 +269,47 @@ const VPADeck = () => {
                 </div>
                 <div>
                   <h3 className="text-xl font-semibold text-slate-900 mb-3">
-                    A Perfect Fit for Recurrent's Media Portfolio
+                    A Perfect Fit for Recurrent's Military & Defense Portfolio
                   </h3>
                   <p className="text-slate-700 mb-4">
-                    <strong>Recurrent</strong> has built an impressive portfolio of trusted editorial brands serving passionate audiences—from <em>Popular Science</em> and <em>Outdoor Life</em> to military-focused properties like <strong>Task & Purpose</strong> and <strong>Donut</strong>. With 72M+ unique monthly visitors and deep expertise in audience-first media, Recurrent is uniquely positioned to amplify the Veteran Podcast Awards.
+                    <strong>Recurrent</strong> is a digital media company focused on optimizing and growing trusted digital media brands within five key categories: Automotive, Home, <strong>Military & Defense</strong>, Science & Tech, and Outdoors. With 72M+ unique monthly visitors and deep expertise in audience-first media, Recurrent has assembled the most comprehensive military-focused media portfolio in the industry.
                   </p>
+                  
+                  <h4 className="font-semibold text-slate-900 mb-3">Recurrent's Military & Defense Properties:</h4>
+                  <div className="grid md:grid-cols-2 gap-4 mb-6">
+                    <div className="bg-white rounded-lg p-4 border border-amber-200">
+                      <h5 className="font-semibold text-slate-900 mb-1">Task & Purpose</h5>
+                      <p className="text-sm text-slate-600">Authentic reporting and perspectives on stories that matter to the post-9/11 military, veterans, and the broader American public. One of the most trusted news and investigative journalism sources for the military.</p>
+                    </div>
+                    <div className="bg-white rounded-lg p-4 border border-amber-200">
+                      <h5 className="font-semibold text-slate-900 mb-1">The War Zone</h5>
+                      <p className="text-sm text-slate-600">Stands at the nexus of military technology, strategy, and foreign policy. Covers the full spectrum of modern warfare—air, sea, land, space, and cyber—with geopolitical context.</p>
+                    </div>
+                    <div className="bg-white rounded-lg p-4 border border-amber-200">
+                      <h5 className="font-semibold text-slate-900 mb-1">We Are The Mighty (WATM)</h5>
+                      <p className="text-sm text-slate-600">Veteran-led digital publisher and Emmy Award-winning media agency connecting 133 million-strong American service members, their families, and supporters.</p>
+                    </div>
+                    <div className="bg-white rounded-lg p-4 border border-amber-200">
+                      <h5 className="font-semibold text-slate-900 mb-1">Military Influencer Conference</h5>
+                      <p className="text-sm text-slate-600">The leading military-focused event for entrepreneurs, leaders, creatives, and brands who shape and support the military community. Partnership with USAA.</p>
+                    </div>
+                    <div className="bg-white rounded-lg p-4 border border-amber-200 md:col-span-2">
+                      <h5 className="font-semibold text-slate-900 mb-1">MilSpouseFest</h5>
+                      <p className="text-sm text-slate-600">A thriving live event series in partnership with USAA, and an engaging online community. For 10 years it has offered military spouses helpful content and meaningful connections.</p>
+                    </div>
+                  </div>
+
                   <p className="text-slate-700 mb-4">
                     <strong>The VPA represents a strategic expansion</strong> into streaming and podcast advertising—a rapidly growing market segment. As traditional digital advertising becomes more competitive, owning the premier awards platform in the military podcast space provides:
                   </p>
                   <ul className="list-disc list-inside space-y-2 text-slate-700 mb-4">
-                    <li><strong>Cross-Platform Synergy:</strong> Leverage Task & Purpose and Donut audiences to amplify VPA reach</li>
+                    <li><strong>Cross-Platform Synergy:</strong> Leverage Task & Purpose, The War Zone, and WATM audiences to amplify VPA reach</li>
+                    <li><strong>Event Integration:</strong> Natural tie-in with Military Influencer Conference and MilSpouseFest</li>
                     <li><strong>Streaming Ad Inventory:</strong> Direct access to engaged military/veteran podcast audiences</li>
-                    <li><strong>Event Revenue:</strong> Monetizable sponsorship tiers and livestream advertising</li>
                     <li><strong>Community Ownership:</strong> Become the convener of the military podcast ecosystem</li>
                   </ul>
                   <p className="text-slate-600 text-sm italic">
-                    This acquisition positions Recurrent as the definitive voice in military media, spanning written editorial, video content, and now audio/podcast recognition.
+                    This acquisition positions Recurrent as the definitive voice in military media, spanning written editorial, video content, live events, and now audio/podcast recognition.
                   </p>
                 </div>
               </div>
