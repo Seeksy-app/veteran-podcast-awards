@@ -326,7 +326,7 @@ const VPADeck = () => {
           {/* Sponsorship Opportunities */}
           <Card className="mb-8 bg-white border-slate-200">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-slate-900">
                 <DollarSign className="w-6 h-6 text-amber-600" />
                 Example 2026 Sponsorship Opportunities
               </CardTitle>
@@ -372,7 +372,7 @@ const VPADeck = () => {
           <div className="grid md:grid-cols-2 gap-6 mb-8">
             <Card className="bg-blue-50 border-blue-200">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
+                <CardTitle className="flex items-center gap-2 text-lg text-slate-900">
                   <Clock className="w-5 h-5 text-blue-600" />
                   Development Investment
                 </CardTitle>
@@ -385,7 +385,7 @@ const VPADeck = () => {
 
             <Card className="bg-green-50 border-green-200">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
+                <CardTitle className="flex items-center gap-2 text-lg text-slate-900">
                   <DollarSign className="w-5 h-5 text-green-600" />
                   Replacement Cost
                 </CardTitle>
@@ -400,7 +400,7 @@ const VPADeck = () => {
           {/* What's Included */}
           <Card className="mb-8 border-2 border-slate-300">
             <CardHeader>
-              <CardTitle>What's Included in the Acquisition</CardTitle>
+              <CardTitle className="text-slate-900">What's Included in the Acquisition</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid md:grid-cols-2 gap-4">
@@ -439,7 +439,7 @@ const VPADeck = () => {
           {/* Growth Projections */}
           <Card className="bg-slate-50">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-slate-900">
                 <BarChart3 className="w-6 h-6 text-amber-600" />
                 Growth Projections
               </CardTitle>
@@ -509,7 +509,7 @@ const VPADeck = () => {
             {techCategories.map((category) => (
               <Card key={category.title} className="bg-white border-slate-200">
                 <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center gap-2 text-lg">
+                  <CardTitle className="flex items-center gap-2 text-lg text-slate-900">
                     <category.icon className="w-5 h-5 text-blue-600" />
                     {category.title}
                   </CardTitle>
@@ -528,7 +528,7 @@ const VPADeck = () => {
 
           <Card className="bg-slate-50">
             <CardHeader>
-              <CardTitle className="text-lg">Development Statistics</CardTitle>
+              <CardTitle className="text-lg text-slate-900">Development Statistics</CardTitle>
               <CardDescription>Platform development metrics</CardDescription>
             </CardHeader>
             <CardContent>
@@ -569,7 +569,7 @@ const VPADeck = () => {
           {/* Executive Summary */}
           <Card className="mb-8 border-green-200 bg-green-50">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-slate-900">
                 <CheckCircle className="w-5 h-5 text-green-600" />
                 Executive Summary
               </CardTitle>
@@ -618,7 +618,7 @@ const VPADeck = () => {
           {/* Authentication */}
           <Card className="mb-8 bg-white border-slate-200">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-slate-900">
                 <Key className="w-5 h-5 text-slate-700" />
                 Authentication & Authorization
               </CardTitle>
@@ -653,7 +653,7 @@ const VPADeck = () => {
           {/* RLS Strategy */}
           <Card className="mb-8 bg-white border-slate-200">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-slate-900">
                 <Shield className="w-5 h-5 text-slate-700" />
                 Row Level Security (RLS) Strategy
               </CardTitle>
