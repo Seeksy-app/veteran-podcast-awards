@@ -12,10 +12,11 @@ import { BusinessMetricsPanel } from '@/components/admin/BusinessMetricsPanel';
 import { InvestorAccessManager } from '@/components/admin/InvestorAccessManager';
 import { InvestorVideoManager } from '@/components/admin/InvestorVideoManager';
 import { InvestorEngagementPanel } from '@/components/admin/InvestorEngagementPanel';
+import { DeckEngagementPanel } from '@/components/admin/DeckEngagementPanel';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ThemeSelector } from '@/components/theme/ThemeToggle';
-import { LogOut, Shield, Home, Users, Mic, Handshake, Rss, Mail, Layers, ShieldCheck, BarChart3, KeyRound, Video, Activity } from 'lucide-react';
+import { LogOut, Shield, Home, Users, Mic, Handshake, Rss, Mail, Layers, ShieldCheck, BarChart3, KeyRound, Video, Activity, FileText } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import logo from '@/assets/vpa-logo.png';
 
@@ -144,7 +145,11 @@ const AdminPage = () => {
             </TabsTrigger>
             <TabsTrigger value="investor-engagement" className="gap-2">
               <Activity className="w-4 h-4" />
-              <span className="hidden sm:inline">Engagement</span>
+              <span className="hidden sm:inline">Investor Engagement</span>
+            </TabsTrigger>
+            <TabsTrigger value="deck-engagement" className="gap-2">
+              <FileText className="w-4 h-4" />
+              <span className="hidden sm:inline">Deck Engagement</span>
             </TabsTrigger>
           </TabsList>
 
@@ -190,6 +195,10 @@ const AdminPage = () => {
 
           <TabsContent value="investor-engagement">
             <InvestorEngagementPanel />
+          </TabsContent>
+
+          <TabsContent value="deck-engagement">
+            <DeckEngagementPanel />
           </TabsContent>
         </Tabs>
       </main>
