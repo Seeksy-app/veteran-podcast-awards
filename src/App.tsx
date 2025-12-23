@@ -21,6 +21,7 @@ import PodcasterProfile from "./pages/PodcasterProfile";
 import NotFound from "./pages/NotFound";
 import Opportunity from "./pages/Opportunity";
 import InvestorPortal from "./pages/InvestorPortal";
+import VPADeck from "./pages/VPADeck";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,7 @@ const App = () => (
               <Route path="/opportunity" element={<Opportunity />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/investor" element={<InvestorPortal />} />
+              <Route path="/vpa-deck" element={<VPADeck />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
