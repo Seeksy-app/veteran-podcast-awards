@@ -225,14 +225,17 @@ const VPADeck = () => {
         {/* Video Section */}
         <section ref={videoRef} id="video" className="scroll-mt-20">
           <div className="text-center mb-8">
-            <Badge className="mb-4 bg-amber-100 text-amber-800 border-amber-300">
-              Investment Overview
+            <Badge className="mb-4 bg-teal-100 text-teal-800 border-teal-300">
+              A Recurrent Media Opportunity
             </Badge>
-            <h1 className="text-4xl font-serif font-bold text-slate-900 mb-4">
+            <h1 className="text-4xl font-serif font-bold text-slate-900 mb-2">
               Veteran Podcast Awards
             </h1>
+            <p className="text-sm text-teal-700 font-medium mb-4">
+              brought to you by <span className="font-bold">recurrent</span>
+            </p>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              A flagship recognition platform in the military/veteran media space with proven technology and established brand equity.
+              A flagship recognition platform in the military/veteran media space—expanding Recurrent's portfolio into streaming and podcast advertising.
             </p>
           </div>
 
@@ -423,38 +426,38 @@ const VPADeck = () => {
           </div>
 
           {/* What's Included */}
-          <Card className="mb-8 border-2 border-slate-300">
+          <Card className="mb-8 border-2 border-slate-800 bg-slate-900">
             <CardHeader>
-              <CardTitle className="text-slate-900">What's Included in the Acquisition</CardTitle>
+              <CardTitle className="text-white text-xl font-bold">What's Included in the Acquisition</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-5 h-5 text-green-600" />
-                    <span className="text-slate-700">Complete intellectual property (IP)</span>
+                    <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                    <span className="text-emerald-400">Complete intellectual property (IP)</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-5 h-5 text-green-600" />
-                    <span className="text-slate-700">Front-end & back-end technology stack</span>
+                    <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                    <span className="text-emerald-400">Front-end & back-end technology stack</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-5 h-5 text-green-600" />
-                    <span className="text-slate-700">Veteran Podcast Awards name & branding</span>
+                    <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                    <span className="text-emerald-400">Veteran Podcast Awards name & branding</span>
                   </div>
                 </div>
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-5 h-5 text-green-600" />
-                    <span className="text-slate-700">All URLs and domains</span>
+                    <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                    <span className="text-emerald-400">All URLs and domains</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-5 h-5 text-green-600" />
-                    <span className="text-slate-700">National Military Podcast Day ownership</span>
+                    <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                    <span className="text-emerald-400">National Military Podcast Day ownership</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-5 h-5 text-green-600" />
-                    <span className="text-slate-700">Existing user database & contacts</span>
+                    <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                    <span className="text-emerald-400">Existing user database & contacts</span>
                   </div>
                 </div>
               </div>
@@ -462,9 +465,9 @@ const VPADeck = () => {
           </Card>
 
           {/* Growth Projections */}
-          <Card className="bg-slate-50">
+          <Card className="bg-white border-2 border-slate-200">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-slate-900">
+              <CardTitle className="flex items-center gap-2 text-slate-900 text-xl font-bold">
                 <BarChart3 className="w-6 h-6 text-amber-600" />
                 Growth Projections
               </CardTitle>
