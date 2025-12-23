@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
+import { useDeckTracking } from "@/hooks/useDeckTracking";
 import { 
   Video, 
   FileText, 
@@ -117,11 +118,18 @@ const securityPolicies = [
 const VPADeck = () => {
   const [video, setVideo] = useState<InvestorVideo | null>(null);
   const [activeSection, setActiveSection] = useState("video");
+  const { trackPageView, trackClick, trackVideoPlay, trackVideoProgress } = useDeckTracking();
 
   const videoRef = useRef<HTMLElement>(null);
   const opportunityRef = useRef<HTMLElement>(null);
   const techRef = useRef<HTMLElement>(null);
   const securityRef = useRef<HTMLElement>(null);
+  const videoElementRef = useRef<HTMLIFrameElement>(null);
+
+  // Track page view on mount
+  useEffect(() => {
+    trackPageView();
+  }, [trackPageView]);
 
   useEffect(() => {
     const fetchVideo = async () => {
@@ -173,6 +181,7 @@ const VPADeck = () => {
   };
 
   const handleDownloadPDF = () => {
+    trackClick('download-pdf', 'Download PDF Button');
     window.print();
   };
 
@@ -240,11 +249,15 @@ const VPADeck = () => {
           </div>
 
           {video && (
-            <div className="aspect-video rounded-xl overflow-hidden bg-slate-100 shadow-lg">
+            <div 
+              className="aspect-video rounded-xl overflow-hidden bg-slate-100 shadow-lg cursor-pointer"
+              onClick={() => trackVideoPlay(video.id, video.title)}
+            >
               <iframe
+                ref={videoElementRef}
                 src={video.video_url}
                 title={video.title}
-                className="w-full h-full"
+                className="w-full h-full pointer-events-auto"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
               />
