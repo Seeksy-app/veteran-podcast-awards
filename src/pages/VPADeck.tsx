@@ -223,7 +223,7 @@ const VPADeck = () => {
 
       <main className="max-w-6xl mx-auto px-4 py-8 space-y-16">
         {/* Video Section */}
-        <section ref={videoRef} id="video" className="scroll-mt-20">
+        <section ref={videoRef} id="video" className="scroll-mt-20 print:hidden">
           <div className="text-center mb-8">
             <Badge className="mb-4 bg-teal-100 text-teal-800 border-teal-300">
               A Recurrent Media Opportunity
@@ -252,8 +252,8 @@ const VPADeck = () => {
           )}
         </section>
 
-        {/* Opportunity Section */}
-        <section ref={opportunityRef} id="opportunity" className="scroll-mt-20 print:break-before-page">
+        {/* Opportunity Section - First section in PDF */}
+        <section ref={opportunityRef} id="opportunity" className="scroll-mt-20">
           <div className="mb-8">
             <Badge className="mb-4 bg-amber-100 text-amber-800 border-amber-300">
               Strategic Opportunity
@@ -475,7 +475,7 @@ const VPADeck = () => {
             <CardContent>
               <div className="grid md:grid-cols-3 gap-6">
                 <div className="bg-white rounded-xl p-6 border-t-4 border-blue-500">
-                  <Badge variant="outline" className="mb-2">Year 1</Badge>
+                  <Badge variant="outline" className="mb-2 text-slate-700 border-slate-400">Year 1</Badge>
                   <h3 className="text-xl font-bold text-slate-900 mb-4">2026</h3>
                   <div className="space-y-3">
                     <div>
@@ -489,7 +489,7 @@ const VPADeck = () => {
                   </div>
                 </div>
                 <div className="bg-white rounded-xl p-6 border-t-4 border-purple-500">
-                  <Badge variant="outline" className="mb-2">Year 2</Badge>
+                  <Badge variant="outline" className="mb-2 text-slate-700 border-slate-400">Year 2</Badge>
                   <h3 className="text-xl font-bold text-slate-900 mb-4">2027</h3>
                   <div className="space-y-3">
                     <div>
@@ -669,8 +669,8 @@ const VPADeck = () => {
                     { role: "moderator", description: "content moderation access" },
                   ].map((item) => (
                     <div key={item.role} className="flex items-center gap-2">
-                      <Badge variant="outline" className="font-mono bg-slate-100">{item.role}</Badge>
-                      <span className="text-slate-600">– {item.description}</span>
+                      <Badge variant="outline" className="font-mono bg-slate-100 text-slate-800 border-slate-400">{item.role}</Badge>
+                      <span className="text-slate-700">– {item.description}</span>
                     </div>
                   ))}
                 </div>
