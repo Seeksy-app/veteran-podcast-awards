@@ -23,6 +23,7 @@ import Opportunity from "./pages/Opportunity";
 import InvestorPortal from "./pages/InvestorPortal";
 import VPADeck from "./pages/VPADeck";
 import ExportData from "./pages/ExportData";
+import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
