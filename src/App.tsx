@@ -51,6 +51,7 @@ const App = () => (
               <Route path="/admin" element={<Admin />} />
               <Route path="/investor" element={<InvestorPortal />} />
               <Route path="/vpa-deck" element={<VPADeck />} />
+              <Route path="/export-data" element={<ExportData />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
