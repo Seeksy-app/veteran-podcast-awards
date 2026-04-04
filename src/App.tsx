@@ -23,6 +23,7 @@ import Opportunity from "./pages/Opportunity";
 import InvestorPortal from "./pages/InvestorPortal";
 import VPADeck from "./pages/VPADeck";
 import ExportData from "./pages/ExportData";
+import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
@@ -52,6 +53,7 @@ const App = () => (
               <Route path="/investor" element={<InvestorPortal />} />
               <Route path="/vpa-deck" element={<VPADeck />} />
               <Route path="/export-data" element={<ExportData />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
