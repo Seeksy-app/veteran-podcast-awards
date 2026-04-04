@@ -22,6 +22,7 @@ import NotFound from "./pages/NotFound";
 import Opportunity from "./pages/Opportunity";
 import InvestorPortal from "./pages/InvestorPortal";
 import VPADeck from "./pages/VPADeck";
+import ExportData from "./pages/ExportData";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +51,7 @@ const App = () => (
               <Route path="/admin" element={<Admin />} />
               <Route path="/investor" element={<InvestorPortal />} />
               <Route path="/vpa-deck" element={<VPADeck />} />
+              <Route path="/export-data" element={<ExportData />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
