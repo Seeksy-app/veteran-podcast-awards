@@ -23,18 +23,17 @@ const AuthPage = () => {
   const [userType, setUserType] = useState<UserType | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSendingReset, setIsSendingReset] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; userType?: string }>({});
-  
-  const { signIn, signUp, user, loading } = useAuth();
+
+  const { signIn, signUp, requestPasswordReset, user, loading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Update isLogin when URL changes
   useEffect(() => {
     setIsLogin(searchParams.get("mode") !== "signup");
   }, [searchParams]);
 
-  // Redirect if already logged in
   useEffect(() => {
     if (!loading && user) {
       const from = (location.state as { from?: string })?.from || "/";
@@ -44,12 +43,12 @@ const AuthPage = () => {
 
   const validateForm = () => {
     const newErrors: { email?: string; password?: string; userType?: string } = {};
-    
+
     const emailResult = emailSchema.safeParse(email);
     if (!emailResult.success) {
       newErrors.email = emailResult.error.errors[0].message;
     }
-    
+
     const passwordResult = passwordSchema.safeParse(password);
     if (!passwordResult.success) {
       newErrors.password = passwordResult.error.errors[0].message;
@@ -58,18 +57,42 @@ const AuthPage = () => {
     if (!isLogin && !userType) {
       newErrors.userType = "Please select whether you're a podcaster or fan";
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleForgotPassword = async () => {
+    const emailResult = emailSchema.safeParse(email);
+    if (!emailResult.success) {
+      setErrors((prev) => ({ ...prev, email: emailResult.error.errors[0].message }));
+      toast.error("Enter your email first to reset your password.");
+      return;
+    }
+
+    setIsSendingReset(true);
+    try {
+      const { error } = await requestPasswordReset(email);
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+
+      toast.success("Password reset email sent. Check your inbox.");
+    } catch {
+      toast.error("Unable to send password reset email right now.");
+    } finally {
+      setIsSendingReset(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
-    
+
     setIsLoading(true);
-    
+
     try {
       if (isLogin) {
         const { error } = await signIn(email, password);
@@ -95,7 +118,7 @@ const AuthPage = () => {
           setIsLogin(true);
         }
       }
-    } catch (error) {
+    } catch {
       toast.error("An unexpected error occurred");
     } finally {
       setIsLoading(false);
@@ -114,7 +137,6 @@ const AuthPage = () => {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="bg-card border border-border rounded-xl p-8">
-          {/* Header */}
           <div className="flex flex-col items-center mb-8">
             <img src={logo} alt="VPA Logo" className="w-20 h-20 mb-4 glow-gold rounded-full" />
             <h1 className="font-serif text-2xl font-bold text-foreground">
@@ -124,7 +146,7 @@ const AuthPage = () => {
               {isLogin ? "Sign in to your account" : "Join the Veteran Podcast Awards"}
             </p>
           </div>
-          
+
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
               <>
@@ -143,7 +165,6 @@ const AuthPage = () => {
                   </div>
                 </div>
 
-                {/* User Type Selection */}
                 <div className="space-y-2">
                   <Label>I am a...</Label>
                   <div className="grid grid-cols-2 gap-3">
@@ -151,12 +172,12 @@ const AuthPage = () => {
                       type="button"
                       onClick={() => {
                         setUserType("podcaster");
-                        setErrors(prev => ({ ...prev, userType: undefined }));
+                        setErrors((prev) => ({ ...prev, userType: undefined }));
                       }}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${
+                      className={`flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-all ${
                         userType === "podcaster"
                           ? "border-primary bg-primary/10 text-primary"
-                          : "border-border hover:border-primary/50 text-muted-foreground hover:text-foreground"
+                          : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
                       }`}
                     >
                       <Mic className="w-6 h-6" />
@@ -167,12 +188,12 @@ const AuthPage = () => {
                       type="button"
                       onClick={() => {
                         setUserType("fan");
-                        setErrors(prev => ({ ...prev, userType: undefined }));
+                        setErrors((prev) => ({ ...prev, userType: undefined }));
                       }}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${
+                      className={`flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-all ${
                         userType === "fan"
                           ? "border-primary bg-primary/10 text-primary"
-                          : "border-border hover:border-primary/50 text-muted-foreground hover:text-foreground"
+                          : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
                       }`}
                     >
                       <Heart className="w-6 h-6" />
@@ -180,13 +201,11 @@ const AuthPage = () => {
                       <span className="text-xs text-muted-foreground text-center">Follow & vote</span>
                     </button>
                   </div>
-                  {errors.userType && (
-                    <p className="text-sm text-destructive">{errors.userType}</p>
-                  )}
+                  {errors.userType && <p className="text-sm text-destructive">{errors.userType}</p>}
                 </div>
               </>
             )}
-            
+
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <div className="relative">
@@ -197,18 +216,16 @@ const AuthPage = () => {
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value);
-                    setErrors(prev => ({ ...prev, email: undefined }));
+                    setErrors((prev) => ({ ...prev, email: undefined }));
                   }}
                   placeholder="you@example.com"
                   className={`pl-10 ${errors.email ? "border-destructive" : ""}`}
                   required
                 />
               </div>
-              {errors.email && (
-                <p className="text-sm text-destructive">{errors.email}</p>
-              )}
+              {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
@@ -219,7 +236,7 @@ const AuthPage = () => {
                   value={password}
                   onChange={(e) => {
                     setPassword(e.target.value);
-                    setErrors(prev => ({ ...prev, password: undefined }));
+                    setErrors((prev) => ({ ...prev, password: undefined }));
                   }}
                   placeholder="••••••••"
                   className={`pl-10 pr-10 ${errors.password ? "border-destructive" : ""}`}
@@ -233,16 +250,27 @@ const AuthPage = () => {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-              {errors.password && (
-                <p className="text-sm text-destructive">{errors.password}</p>
-              )}
+              {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
             </div>
-            
+
+            {isLogin && (
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
+                  disabled={isSendingReset}
+                  className="text-sm text-primary hover:underline disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isSendingReset ? "Sending reset..." : "Forgot password?"}
+                </button>
+              </div>
+            )}
+
             <Button type="submit" variant="gold" className="w-full" disabled={isLoading}>
               {isLoading ? "Please wait..." : isLogin ? "Sign In" : "Create Account"}
             </Button>
           </form>
-          
+
           <div className="mt-6 text-center">
             <p className="text-sm text-muted-foreground">
               {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
@@ -252,14 +280,14 @@ const AuthPage = () => {
                   setIsLogin(!isLogin);
                   setErrors({});
                 }}
-                className="text-primary hover:underline font-medium"
+                className="font-medium text-primary hover:underline"
               >
                 {isLogin ? "Sign up" : "Sign in"}
               </button>
             </p>
           </div>
-          
-          <div className="mt-6 pt-6 border-t border-border text-center">
+
+          <div className="mt-6 border-t border-border pt-6 text-center">
             <a href="/" className="text-sm text-muted-foreground hover:text-primary">
               ← Back to home
             </a>

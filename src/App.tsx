@@ -53,6 +53,7 @@ const App = () => (
               <Route path="/investor" element={<InvestorPortal />} />
               <Route path="/vpa-deck" element={<VPADeck />} />
               <Route path="/export-data" element={<ExportData />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

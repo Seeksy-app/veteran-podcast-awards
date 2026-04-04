@@ -12,13 +12,11 @@ export const useAuth = () => {
   const [roles, setRoles] = useState<AppRole[]>([]);
 
   useEffect(() => {
-    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        
-        // Defer role checking to avoid deadlock
+
         if (session?.user) {
           setTimeout(() => {
             checkUserRoles(session.user.id);
@@ -31,7 +29,6 @@ export const useAuth = () => {
       }
     );
 
-    // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -51,13 +48,13 @@ export const useAuth = () => {
         .from('user_roles')
         .select('role')
         .eq('user_id', userId);
-      
+
       if (error) {
         console.error('Error fetching roles:', error);
         setIsAdmin(false);
         setRoles([]);
       } else {
-        const userRoles = data?.map(r => r.role as AppRole) || [];
+        const userRoles = data?.map((roleRecord) => roleRecord.role as AppRole) || [];
         setRoles(userRoles);
         setIsAdmin(userRoles.includes('admin'));
       }
@@ -75,7 +72,7 @@ export const useAuth = () => {
 
   const signUp = async (email: string, password: string, fullName?: string, userType?: string) => {
     const redirectUrl = `${window.location.origin}/`;
-    
+
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -90,6 +87,18 @@ export const useAuth = () => {
     return { error };
   };
 
+  const requestPasswordReset = async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    return { error };
+  };
+
+  const updatePassword = async (password: string) => {
+    const { error } = await supabase.auth.updateUser({ password });
+    return { error };
+  };
+
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
     return { error };
@@ -97,15 +106,17 @@ export const useAuth = () => {
 
   const hasRole = (role: AppRole) => roles.includes(role);
 
-  return { 
-    user, 
-    session, 
-    loading, 
-    isAdmin, 
+  return {
+    user,
+    session,
+    loading,
+    isAdmin,
     roles,
     hasRole,
-    signIn, 
-    signUp, 
-    signOut 
+    signIn,
+    signUp,
+    signOut,
+    requestPasswordReset,
+    updatePassword,
   };
 };
