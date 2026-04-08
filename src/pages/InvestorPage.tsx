@@ -81,6 +81,12 @@ async function touchLastAccessedAt(id: string) {
   if (error) console.warn('investor_access last_accessed_at update failed:', error.message);
 }
 
+/** HeyGen embeds, YouTube, Vimeo — must use iframe, not <video src>. */
+function isEmbedPlayerUrl(url: string): boolean {
+  const u = url.toLowerCase();
+  return u.includes('embeds') || u.includes('youtube') || u.includes('vimeo');
+}
+
 const InvestorPage = () => {
   const [searchParams] = useSearchParams();
   const codeFromUrl = searchParams.get('code')?.trim() ?? '';
@@ -388,26 +394,38 @@ const InvestorPage = () => {
                         )}
                       </CardHeader>
                       <CardContent>
-                        <video
-                          src={video.video_url}
-                          controls
-                          className="w-full rounded-lg border border-[hsl(43_72%_45%/0.2)]"
-                          preload="metadata"
-                          onTimeUpdate={(e) => {
-                            const videoEl = e.currentTarget;
-                            if (videoEl.duration > 0) {
-                              const percent = Math.floor((videoEl.currentTime / videoEl.duration) * 100);
-                              trackVideoProgress(
-                                video.id,
-                                video.title,
-                                percent,
-                                Math.floor(videoEl.duration)
-                              );
-                            }
-                          }}
-                        >
-                          Your browser does not support the video tag.
-                        </video>
+                        {isEmbedPlayerUrl(video.video_url) ? (
+                          <div className="aspect-video w-full overflow-hidden rounded-lg border border-[hsl(43_72%_45%/0.2)]">
+                            <iframe
+                              src={video.video_url}
+                              title={video.title}
+                              className="h-full w-full border-0"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                              allowFullScreen
+                            />
+                          </div>
+                        ) : (
+                          <video
+                            src={video.video_url}
+                            controls
+                            className="w-full rounded-lg border border-[hsl(43_72%_45%/0.2)]"
+                            preload="metadata"
+                            onTimeUpdate={(e) => {
+                              const videoEl = e.currentTarget;
+                              if (videoEl.duration > 0) {
+                                const percent = Math.floor((videoEl.currentTime / videoEl.duration) * 100);
+                                trackVideoProgress(
+                                  video.id,
+                                  video.title,
+                                  percent,
+                                  Math.floor(videoEl.duration)
+                                );
+                              }
+                            }}
+                          >
+                            Your browser does not support the video tag.
+                          </video>
+                        )}
                       </CardContent>
                     </Card>
                   ))}
