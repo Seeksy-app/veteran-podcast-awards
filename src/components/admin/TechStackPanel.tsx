@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -109,7 +110,11 @@ const ipAssets = [
   { name: "Podcaster Profile System", type: "Software", description: "Public profiles with messaging, social links, and podcast integration" },
 ];
 
-export function TechStackPanel() {
+export type TechStackPanelProps = { variant?: "default" | "investor" };
+
+export function TechStackPanel({ variant = "default" }: TechStackPanelProps) {
+  const inv = variant === "investor";
+
   const handlePrint = () => {
     window.print();
   };
@@ -119,51 +124,77 @@ export function TechStackPanel() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div
+      className={cn(
+        "space-y-6",
+        inv &&
+          "tech-stack-investor text-white [&_h2]:!text-[#F59E0B] [&_h3]:!text-[#F59E0B] [&_p]:!text-[#94A3B8] [&_.text-muted-foreground]:!text-[#94A3B8] [&_.bg-card]:!border-[#F59E0B]/25 [&_.bg-card]:!bg-[#0F2035] [&_.text-card-foreground]:!text-white [&_.bg-muted]:!bg-[#0F2035] [&_.bg-muted\\/50]:!bg-[#0F2035] [&_.bg-background]:!bg-[#0A1628] [&_.text-primary]:!text-[#F59E0B] [&_th]:!text-[#F59E0B] [&_td]:!text-white/90 [&_tr]:!border-[#1E293B] [&_svg.text-primary]:!text-[#F59E0B] [&_.border-l-primary]:!border-l-[#F59E0B]",
+      )}
+    >
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h2 className="text-2xl font-serif font-bold text-foreground">Technology & IP Inventory</h2>
-          <p className="text-muted-foreground">Complete intellectual property and technology audit for VPA platform</p>
+          <h2 className={cn("font-serif text-2xl font-bold", inv ? "text-[#F59E0B]" : "text-foreground")}>
+            Technology & IP Inventory
+          </h2>
+          <p className={cn(inv ? "text-[#94A3B8]" : "text-muted-foreground")}>
+            Complete intellectual property and technology audit for VPA platform
+          </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handlePrint}>
-            <Printer className="w-4 h-4 mr-2" />
+          <Button
+            variant="outline"
+            onClick={handlePrint}
+            className={
+              inv
+                ? "border-[#F59E0B]/50 text-[#F59E0B] hover:bg-[#F59E0B]/10 hover:text-[#FBBF24]"
+                : undefined
+            }
+          >
+            <Printer className="mr-2 h-4 w-4" />
             Print
           </Button>
-          <Button onClick={handleDownloadPDF}>
-            <Download className="w-4 h-4 mr-2" />
+          <Button
+            onClick={handleDownloadPDF}
+            className={inv ? "bg-[#F59E0B] font-semibold text-[#0A1628] hover:bg-[#FBBF24]" : undefined}
+          >
+            <Download className="mr-2 h-4 w-4" />
             Download PDF
           </Button>
         </div>
       </div>
 
       <Tabs defaultValue="ip-summary" className="space-y-4">
-        <TabsList className="flex flex-wrap gap-1 h-auto p-1">
-          <TabsTrigger value="ip-summary" className="gap-1.5">
+        <TabsList
+          className={cn(
+            "flex h-auto flex-wrap gap-1 p-1",
+            inv && "rounded-md border border-[#F59E0B]/20 bg-[#0A1628] text-[#94A3B8]",
+          )}
+        >
+          <TabsTrigger value="ip-summary" className={cn("gap-1.5", inv && "data-[state=active]:bg-[#0F2035] data-[state=active]:text-[#F59E0B]")}>
             <FileText className="w-4 h-4" />
             IP Summary
           </TabsTrigger>
-          <TabsTrigger value="frontend" className="gap-1.5">
+          <TabsTrigger value="frontend" className={cn("gap-1.5", inv && "data-[state=active]:bg-[#0F2035] data-[state=active]:text-[#F59E0B]")}>
             <Code className="w-4 h-4" />
             Frontend
           </TabsTrigger>
-          <TabsTrigger value="backend" className="gap-1.5">
+          <TabsTrigger value="backend" className={cn("gap-1.5", inv && "data-[state=active]:bg-[#0F2035] data-[state=active]:text-[#F59E0B]")}>
             <Database className="w-4 h-4" />
             Backend
           </TabsTrigger>
-          <TabsTrigger value="edge-functions" className="gap-1.5">
+          <TabsTrigger value="edge-functions" className={cn("gap-1.5", inv && "data-[state=active]:bg-[#0F2035] data-[state=active]:text-[#F59E0B]")}>
             <Server className="w-4 h-4" />
             Edge Functions
           </TabsTrigger>
-          <TabsTrigger value="apis" className="gap-1.5">
+          <TabsTrigger value="apis" className={cn("gap-1.5", inv && "data-[state=active]:bg-[#0F2035] data-[state=active]:text-[#F59E0B]")}>
             <Globe className="w-4 h-4" />
             External APIs
           </TabsTrigger>
-          <TabsTrigger value="database" className="gap-1.5">
+          <TabsTrigger value="database" className={cn("gap-1.5", inv && "data-[state=active]:bg-[#0F2035] data-[state=active]:text-[#F59E0B]")}>
             <Layers className="w-4 h-4" />
             Database Schema
           </TabsTrigger>
-          <TabsTrigger value="secrets" className="gap-1.5">
+          <TabsTrigger value="secrets" className={cn("gap-1.5", inv && "data-[state=active]:bg-[#0F2035] data-[state=active]:text-[#F59E0B]")}>
             <Key className="w-4 h-4" />
             Secrets & Keys
           </TabsTrigger>
@@ -437,11 +468,23 @@ export function TechStackPanel() {
             </CardContent>
           </Card>
 
-          <Card className="mt-4 border-destructive/50 bg-destructive/5">
+          <Card
+            className={cn(
+              "mt-4",
+              inv ? "border border-[#F59E0B]/40 bg-[#0F2035]" : "border-destructive/50 bg-destructive/5",
+            )}
+          >
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-destructive"><Shield className="w-5 h-5" /> Transfer Notes</CardTitle>
+              <CardTitle
+                className={cn(
+                  "flex items-center gap-2",
+                  inv ? "text-[#F59E0B]" : "text-destructive",
+                )}
+              >
+                <Shield className={cn("w-5 h-5", inv && "text-[#F59E0B]")} /> Transfer Notes
+              </CardTitle>
             </CardHeader>
-            <CardContent className="text-sm text-muted-foreground space-y-2">
+            <CardContent className={cn("space-y-2 text-sm", inv ? "text-[#94A3B8]" : "text-muted-foreground")}>
               <p>• All API keys will need to be transferred or regenerated for the acquiring party.</p>
               <p>• Resend account ownership and sending domain (veteranpodcastawards.com) must be transferred.</p>
               <p>• Lovable Cloud project access and ownership must be transferred.</p>

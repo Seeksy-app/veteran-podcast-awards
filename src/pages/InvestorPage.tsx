@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
 import { Button } from '@/components/ui/button';
@@ -8,14 +8,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ThemeSelector } from '@/components/theme/ThemeToggle';
 import { TechStackPanel } from '@/components/admin/TechStackPanel';
 import { SecurityPanel } from '@/components/admin/SecurityPanel';
 import { InvestorMetricsPanel } from '@/components/investor/InvestorMetricsPanel';
 import { OpportunityContent } from '@/components/investor/OpportunityContent';
 import { useInvestorTracking } from '@/hooks/useInvestorTracking';
 import { useDeckTracking } from '@/hooks/useDeckTracking';
-import { Layers, ShieldCheck, BarChart3, Video, Lock, LogIn, FileText } from 'lucide-react';
+import { Layers, ShieldCheck, BarChart3, Video, Lock, LogIn, FileText, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 import logo from '@/assets/vpa-logo.png';
 
@@ -36,35 +35,15 @@ const TAB_CONFIG = [
   { id: 'security', label: 'Security', icon: ShieldCheck },
 ];
 
-function normalizeAccessCode(raw: string) {
-  return raw.trim().toUpperCase();
-}
+const INVESTOR_VERIFIED_EMAIL_KEY = 'vpa_investor_verified_email';
 
-/** Direct table lookup (requires RLS policies + URL/key for the same Supabase project as the data). */
-async function fetchInvestorAccessByCode(codeRaw: string) {
-  const code = normalizeAccessCode(codeRaw);
-  const nowIso = new Date().toISOString();
-  const { data, error } = await supabase
-    .from('investor_access')
-    .select('*')
-    .eq('access_code', code)
-    .eq('is_active', true)
-    .gt('expires_at', nowIso)
-    .maybeSingle();
-
-  if (error) throw error;
-  return data as InvestorAccessRow | null;
-}
-
-async function fetchInvestorAccessByEmailAndCode(emailRaw: string, codeRaw: string) {
+async function fetchInvestorAccessByEmail(emailRaw: string): Promise<InvestorAccessRow | null> {
   const email = emailRaw.toLowerCase().trim();
-  const code = normalizeAccessCode(codeRaw);
   const nowIso = new Date().toISOString();
   const { data, error } = await supabase
     .from('investor_access')
     .select('*')
     .eq('email', email)
-    .eq('access_code', code)
     .eq('is_active', true)
     .gt('expires_at', nowIso)
     .maybeSingle();
@@ -81,22 +60,26 @@ async function touchLastAccessedAt(id: string) {
   if (error) console.warn('investor_access last_accessed_at update failed:', error.message);
 }
 
-/** HeyGen embeds, YouTube, Vimeo — must use iframe, not <video src>. */
-function isEmbedPlayerUrl(url: string): boolean {
-  const u = url.toLowerCase();
-  return u.includes('embeds') || u.includes('youtube') || u.includes('vimeo');
+/** HeyGen / embed URLs → iframe; `.mp4` → native video; other https pages → iframe. */
+function videoPresentation(url: string): 'iframe' | 'mp4' {
+  const t = url.trim();
+  const lower = t.toLowerCase();
+  const path = lower.split(/[?#]/)[0];
+  if (path.endsWith('.mp4')) return 'mp4';
+  if (lower.includes('embeds') || lower.includes('heygen')) return 'iframe';
+  if (lower.startsWith('http://') || lower.startsWith('https://')) return 'iframe';
+  return 'mp4';
 }
 
 const InvestorPage = () => {
-  const [searchParams] = useSearchParams();
-  const codeFromUrl = searchParams.get('code')?.trim() ?? '';
-  const [accessCode, setAccessCode] = useState(searchParams.get('code') || '');
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [accessData, setAccessData] = useState<InvestorAccessRow | null>(null);
+  const [restoringSession, setRestoringSession] = useState(true);
+  const [notOnList, setNotOnList] = useState(false);
   const hasTrackedOpen = useRef(false);
   const hasTrackedDeckView = useRef(false);
-  const urlAuthApplied = useRef(false);
 
   const { trackPageView: trackDeckPageView } = useDeckTracking();
 
@@ -110,42 +93,64 @@ const InvestorPage = () => {
 
   const { trackPortalOpen, trackTabClick, trackVideoProgress } = useInvestorTracking(trackingContext);
 
-  const urlAccessQuery = useQuery({
-    queryKey: ['investor-access-by-code', codeFromUrl],
-    queryFn: () => fetchInvestorAccessByCode(codeFromUrl),
-    enabled: Boolean(codeFromUrl) && !isAuthenticated,
-    retry: false,
-  });
+  useEffect(() => {
+    let cancelled = false;
+    const stored = localStorage.getItem(INVESTOR_VERIFIED_EMAIL_KEY);
+    if (!stored?.trim()) {
+      setRestoringSession(false);
+      return;
+    }
+    const normalized = stored.toLowerCase().trim();
+    void (async () => {
+      try {
+        const row = await fetchInvestorAccessByEmail(normalized);
+        if (cancelled) return;
+        if (row) {
+          await touchLastAccessedAt(row.id);
+          setAccessData(row);
+          setIsAuthenticated(true);
+        } else {
+          localStorage.removeItem(INVESTOR_VERIFIED_EMAIL_KEY);
+        }
+      } catch (e) {
+        if (!cancelled) {
+          console.warn('investor session restore failed:', e);
+          localStorage.removeItem(INVESTOR_VERIFIED_EMAIL_KEY);
+        }
+      } finally {
+        if (!cancelled) setRestoringSession(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const verifyAccessMutation = useMutation({
-    mutationFn: async ({ email: em, code }: { email: string; code: string }) => {
-      const row = await fetchInvestorAccessByEmailAndCode(em, code);
+    mutationFn: (emailInput: string) => fetchInvestorAccessByEmail(emailInput),
+    onSuccess: async (row, emailInput) => {
       if (!row) {
-        throw new Error('Invalid email or access code, or access has expired.');
+        setNotOnList(true);
+        return;
       }
-      return row;
-    },
-    onSuccess: async (data) => {
-      await touchLastAccessedAt(data.id);
-      setAccessData(data);
+      setNotOnList(false);
+      localStorage.setItem(INVESTOR_VERIFIED_EMAIL_KEY, emailInput.toLowerCase().trim());
+      await touchLastAccessedAt(row.id);
+      setAccessData(row);
       setIsAuthenticated(true);
       toast.success('Access verified');
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      const msg = error.message || '';
+      if (msg.includes('JWT') || msg.includes('Invalid API key')) {
+        toast.error(
+          'Configuration error: Supabase URL and anon key must be for the same project as this app.',
+        );
+        return;
+      }
+      toast.error(msg || 'Unable to verify access. Check your connection and try again.');
     },
   });
-
-  useEffect(() => {
-    const row = urlAccessQuery.data;
-    if (row === undefined || row === null || isAuthenticated || urlAuthApplied.current) return;
-    urlAuthApplied.current = true;
-    void (async () => {
-      await touchLastAccessedAt(row.id);
-      setAccessData(row);
-      setIsAuthenticated(true);
-    })();
-  }, [urlAccessQuery.data, isAuthenticated]);
 
   useEffect(() => {
     if (isAuthenticated && accessData?.id && accessData?.email && !hasTrackedOpen.current) {
@@ -177,75 +182,37 @@ const InvestorPage = () => {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !accessCode) {
-      toast.error('Please enter both email and access code');
+    const trimmed = email.trim();
+    if (!trimmed) {
+      toast.error('Please enter your email address');
       return;
     }
-    verifyAccessMutation.mutate({ email, code: accessCode });
+    setNotOnList(false);
+    verifyAccessMutation.mutate(trimmed);
   };
 
-  useEffect(() => {
-    const c = searchParams.get('code');
-    if (c) setAccessCode(c);
-  }, [searchParams]);
+  const shell = 'min-h-screen bg-[#0A1628] text-white';
+  const cardSurface =
+    'border border-[#F59E0B]/25 bg-[#0F2035] text-white shadow-[0_0_0_1px_rgba(245,158,11,0.08)]';
+  const mutedSecondary = 'text-[#94A3B8]';
+  const goldText = 'text-[#F59E0B]';
 
-  const urlDeniedNoRow =
-    Boolean(codeFromUrl) &&
-    !isAuthenticated &&
-    urlAccessQuery.isSuccess &&
-    urlAccessQuery.data === null;
+  const handleExitPortal = () => {
+    localStorage.removeItem(INVESTOR_VERIFIED_EMAIL_KEY);
+    setIsAuthenticated(false);
+    setAccessData(null);
+    navigate('/', { replace: true });
+  };
 
-  const urlVerifyFailed =
-    Boolean(codeFromUrl) &&
-    !isAuthenticated &&
-    (urlAccessQuery.isError || urlDeniedNoRow);
-
-  const shell = 'min-h-screen bg-[hsl(222_47%_11%)] text-[hsl(45_20%_96%)]';
-  const cardSurface = 'border-[hsl(43_72%_45%/0.35)] bg-[hsl(222_35%_16%)] text-[hsl(45_20%_96%)]';
-  const mutedOnNavy = 'text-[hsl(45_15%_72%)]';
-  const goldText = 'text-[hsl(43_72%_52%)]';
-
-  if (Boolean(codeFromUrl) && !isAuthenticated && urlAccessQuery.isPending) {
+  if (restoringSession) {
     return (
       <div className={`${shell} flex items-center justify-center p-4`}>
         <Card className={`w-full max-w-md ${cardSurface}`}>
           <CardHeader className="text-center">
             <img src={logo} alt="VPA Logo" className="w-16 h-16 mx-auto mb-4" />
-            <CardTitle className={`font-serif text-2xl ${goldText}`}>Verifying access…</CardTitle>
-            <CardDescription className={mutedOnNavy}>Please wait while we validate your link.</CardDescription>
+            <CardTitle className={`font-serif text-2xl ${goldText}`}>Restoring session…</CardTitle>
+            <CardDescription className={mutedSecondary}>Please wait.</CardDescription>
           </CardHeader>
-        </Card>
-      </div>
-    );
-  }
-
-  if (urlVerifyFailed) {
-    let detail = 'Invalid or expired access code.';
-    if (urlAccessQuery.isError) {
-      const err = urlAccessQuery.error as Error & { message?: string };
-      detail =
-        err?.message?.includes('JWT') || err?.message?.includes('Invalid API key')
-          ? 'Configuration error: Supabase URL and anon key must be for the same project (VPA: zkruwrpkfxehbwxtjhdz).'
-          : err?.message || 'Unable to verify access. Check your connection or try again.';
-    }
-
-    return (
-      <div className={`${shell} flex items-center justify-center p-4`}>
-        <Card className={`w-full max-w-md ${cardSurface}`}>
-          <CardHeader className="text-center">
-            <img src={logo} alt="VPA Logo" className="w-16 h-16 mx-auto mb-4" />
-            <CardTitle className={`font-serif text-2xl ${goldText}`}>Access denied</CardTitle>
-            <CardDescription className={mutedOnNavy}>{detail}</CardDescription>
-          </CardHeader>
-          <CardContent className={`text-center text-sm ${mutedOnNavy}`}>
-            <p>
-              If you have an email and code, open{' '}
-              <a href="/investor" className={`${goldText} underline`}>
-                /investor
-              </a>{' '}
-              and sign in manually.
-            </p>
-          </CardContent>
         </Card>
       </div>
     );
@@ -258,14 +225,14 @@ const InvestorPage = () => {
           <CardHeader className="text-center">
             <img src={logo} alt="VPA Logo" className="w-16 h-16 mx-auto mb-4" />
             <CardTitle className={`font-serif text-2xl ${goldText}`}>Investor portal</CardTitle>
-            <CardDescription className={mutedOnNavy}>
-              Enter your email and access code to view platform information
+            <CardDescription className={mutedSecondary}>
+              Enter the email address on file to view platform information
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email" className={mutedOnNavy}>
+                <Label htmlFor="email" className={mutedSecondary}>
                   Email address
                 </Label>
                 <Input
@@ -275,31 +242,26 @@ const InvestorPage = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="bg-[hsl(222_40%_12%)] border-[hsl(43_72%_45%/0.35)] text-[hsl(45_20%_96%)]"
+                  autoComplete="email"
+                  className="border-[#F59E0B]/30 bg-[#0F2035] text-white placeholder:text-[#94A3B8]/50"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="code" className={mutedOnNavy}>
-                  Access code
-                </Label>
-                <Input
-                  id="code"
-                  type="text"
-                  placeholder="XXXXXXXX"
-                  value={accessCode}
-                  onChange={(e) => setAccessCode(e.target.value.toUpperCase())}
-                  className="font-mono tracking-wider bg-[hsl(222_40%_12%)] border-[hsl(43_72%_45%/0.35)] text-[hsl(45_20%_96%)]"
-                  maxLength={8}
-                  required
-                />
-              </div>
+              {notOnList && (
+                <p className="rounded-lg border border-[#F59E0B]/25 bg-[#0A1628] p-3 text-sm text-[#94A3B8]">
+                  Your email is not on the access list. Contact Andrew Appleton at{' '}
+                  <a href="mailto:andrew@podlogix.co" className={`${goldText} font-medium underline`}>
+                    andrew@podlogix.co
+                  </a>{' '}
+                  to request access.
+                </p>
+              )}
               <Button
                 type="submit"
-                className="w-full bg-[hsl(43_72%_45%)] text-[hsl(222_47%_11%)] hover:bg-[hsl(43_72%_52%)]"
+                className="w-full bg-[#F59E0B] font-semibold tracking-wide text-[#0A1628] transition-colors hover:bg-[#FBBF24]"
                 disabled={verifyAccessMutation.isPending}
               >
-                <LogIn className="w-4 h-4 mr-2" />
-                {verifyAccessMutation.isPending ? 'Verifying...' : 'Access portal'}
+                <LogIn className="mr-2 h-4 w-4" />
+                {verifyAccessMutation.isPending ? 'Verifying…' : 'Access portal'}
               </Button>
             </form>
           </CardContent>
@@ -313,19 +275,21 @@ const InvestorPage = () => {
 
   return (
     <div className={`${shell}`}>
-      <header className="sticky top-0 z-50 border-b border-[hsl(43_72%_45%/0.25)] bg-[hsl(222_40%_14%)]/95 backdrop-blur">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src={logo} alt="VPA Logo" className="w-10 h-10" />
-            <div>
-              <h1 className={`font-serif text-lg font-bold ${goldText}`}>Investor portal</h1>
-              <p className={`text-xs ${mutedOnNavy}`}>Veteran Podcast Awards</p>
-            </div>
+      <header className="sticky top-0 z-50 border-b border-[#F59E0B]/40 bg-[#0A1628]/95 backdrop-blur-md">
+        <div className="container mx-auto flex items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <img src={logo} alt="VPA" className="h-10 w-10 object-contain sm:h-11 sm:w-11" />
+            <h1 className="font-serif text-lg font-semibold tracking-tight text-white sm:text-xl">Investor Portal</h1>
           </div>
-          <div className="flex items-center gap-4">
-            <ThemeSelector showLabels={false} />
-            <span className={`text-sm ${mutedOnNavy} hidden md:block`}>{accessData?.email}</span>
-          </div>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleExitPortal}
+            className="border-[#F59E0B]/50 bg-transparent text-[#F59E0B] transition-colors hover:border-[#FBBF24] hover:bg-[#F59E0B]/10 hover:text-[#FBBF24]"
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Exit
+          </Button>
         </div>
       </header>
 
@@ -340,7 +304,7 @@ const InvestorPage = () => {
             }
           }}
         >
-          <TabsList className="inline-flex bg-[hsl(222_35%_18%)] border border-[hsl(43_72%_45%/0.25)]">
+          <TabsList className="flex w-full flex-wrap gap-0 rounded-none border-0 bg-[#0F2035] p-0 shadow-inner">
             {TAB_CONFIG.map((tab) => {
               const isAllowed = accessData?.allowed_tabs?.includes(tab.id);
               const Icon = tab.icon;
@@ -349,36 +313,36 @@ const InvestorPage = () => {
                   key={tab.id}
                   value={tab.id}
                   disabled={!isAllowed}
-                  className={`gap-2 data-[state=active]:bg-[hsl(43_72%_45%/0.2)] data-[state=active]:text-[hsl(43_72%_58%)] ${!isAllowed ? 'opacity-40 cursor-not-allowed' : ''}`}
+                  className={`flex-1 gap-2 rounded-none border-b-2 border-transparent bg-transparent px-3 py-3 text-sm font-medium text-[#94A3B8] transition-colors data-[state=active]:border-[#F59E0B] data-[state=active]:bg-[#0A1628] data-[state=active]:text-[#F59E0B] data-[state=active]:shadow-none sm:flex-none sm:px-5 ${!isAllowed ? 'cursor-not-allowed opacity-35' : 'hover:text-white'}`}
                 >
-                  {isAllowed ? <Icon className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+                  {isAllowed ? <Icon className="h-4 w-4 shrink-0" /> : <Lock className="h-4 w-4 shrink-0" />}
                   <span className="hidden sm:inline">{tab.label}</span>
                 </TabsTrigger>
               );
             })}
           </TabsList>
 
-          <TabsContent value="metrics" className="rounded-lg border border-[hsl(43_72%_45%/0.2)] bg-[hsl(222_35%_14%)]/50 p-4">
+          <TabsContent value="metrics" className="rounded-xl border border-[#F59E0B]/15 bg-[#0A1628] p-4 md:p-6">
             <InvestorMetricsPanel />
           </TabsContent>
 
-          <TabsContent value="tech-stack" className="rounded-lg border border-[hsl(43_72%_45%/0.2)] bg-[hsl(222_35%_14%)]/50 p-4">
-            <TechStackPanel />
+          <TabsContent value="tech-stack" className="rounded-xl border border-[#F59E0B]/15 bg-[#0A1628] p-4 md:p-6">
+            <TechStackPanel variant="investor" />
           </TabsContent>
 
-          <TabsContent value="security" className="rounded-lg border border-[hsl(43_72%_45%/0.2)] bg-[hsl(222_35%_14%)]/50 p-4">
-            <SecurityPanel />
+          <TabsContent value="security" className="rounded-xl border border-[#F59E0B]/15 bg-[#0A1628] p-4 md:p-6">
+            <SecurityPanel variant="investor" />
           </TabsContent>
 
           <TabsContent value="video">
             <div className="space-y-6">
               <div>
                 <h2 className={`font-serif text-2xl font-bold ${goldText}`}>Platform videos</h2>
-                <p className={mutedOnNavy}>Watch platform demos and presentations</p>
+                <p className={mutedSecondary}>Watch platform demos and presentations</p>
               </div>
               {!videos?.length ? (
                 <Card className={cardSurface}>
-                  <CardContent className={`py-12 text-center ${mutedOnNavy}`}>
+                  <CardContent className={`py-12 text-center ${mutedSecondary}`}>
                     <Video className="w-12 h-12 mx-auto mb-4 opacity-50" />
                     <p>No videos available at this time</p>
                   </CardContent>
@@ -390,17 +354,19 @@ const InvestorPage = () => {
                       <CardHeader>
                         <CardTitle className={goldText}>{video.title}</CardTitle>
                         {video.description && (
-                          <CardDescription className={mutedOnNavy}>{video.description}</CardDescription>
+                          <CardDescription className={mutedSecondary}>{video.description}</CardDescription>
                         )}
                       </CardHeader>
                       <CardContent>
-                        {isEmbedPlayerUrl(video.video_url) ? (
-                          <div className="aspect-video w-full overflow-hidden rounded-lg border border-[hsl(43_72%_45%/0.2)]">
+                        {videoPresentation(video.video_url) === 'iframe' ? (
+                          <div className="w-full overflow-hidden rounded-lg border border-[#F59E0B]/25 bg-[#0A1628] shadow-[0_8px_40px_rgba(0,0,0,0.45)]">
                             <iframe
                               src={video.video_url}
                               title={video.title}
-                              className="h-full w-full border-0"
-                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                              width="100%"
+                              height={480}
+                              className="block max-h-[480px] min-h-[240px] w-full border-0"
+                              allow="encrypted-media; fullscreen"
                               allowFullScreen
                             />
                           </div>
@@ -408,7 +374,7 @@ const InvestorPage = () => {
                           <video
                             src={video.video_url}
                             controls
-                            className="w-full rounded-lg border border-[hsl(43_72%_45%/0.2)]"
+                            className="w-full rounded-lg border border-[#F59E0B]/25 bg-black/30"
                             preload="metadata"
                             onTimeUpdate={(e) => {
                               const videoEl = e.currentTarget;
@@ -434,7 +400,7 @@ const InvestorPage = () => {
             </div>
           </TabsContent>
 
-          <TabsContent value="opportunity" className="rounded-lg border border-[hsl(43_72%_45%/0.2)] bg-[hsl(222_35%_14%)]/50 p-4">
+          <TabsContent value="opportunity" className="rounded-xl border border-[#F59E0B]/15 bg-[#0A1628] p-4 md:p-6">
             <OpportunityContent />
           </TabsContent>
         </Tabs>

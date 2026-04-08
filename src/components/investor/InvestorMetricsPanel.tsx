@@ -4,13 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Mic, Vote, Inbox, RefreshCw } from 'lucide-react';
 
-const gold = 'text-[hsl(43_72%_52%)]';
-const muted = 'text-[hsl(45_15%_72%)]';
 const card =
-  'border-[hsl(43_72%_45%/0.35)] bg-[hsl(222_35%_16%)] text-[hsl(45_20%_96%)]';
+  'border border-[#F59E0B]/25 bg-[#0F2035] text-white shadow-[0_8px_32px_rgba(0,0,0,0.35)]';
 
 /**
- * Live platform counts via investor_platform_metrics() (podcasts, votes, podcast_submissions).
+ * Live platform counts via investor_platform_metrics() RPC.
  */
 export function InvestorMetricsPanel() {
   const query = useQuery({
@@ -26,12 +24,12 @@ export function InvestorMetricsPanel() {
         podcast_submissions: number;
       };
     },
-    refetchInterval: 60_000,
+    refetchInterval: 30_000,
   });
 
   if (query.isPending) {
     return (
-      <div className={`rounded-lg border border-[hsl(43_72%_45%/0.2)] p-8 text-center ${muted}`}>
+      <div className="rounded-xl border border-[#F59E0B]/20 bg-[#0F2035] p-8 text-center text-[#94A3B8]">
         Loading platform metrics…
       </div>
     );
@@ -39,15 +37,14 @@ export function InvestorMetricsPanel() {
 
   if (query.isError) {
     return (
-      <div className={`rounded-lg border border-[hsl(43_72%_45%/0.2)] p-6 ${card}`}>
-        <p className={muted}>Could not load metrics. The database may need the latest migration applied.</p>
+      <div className={`rounded-xl border border-[#F59E0B]/20 p-6 ${card}`}>
+        <p className="text-[#94A3B8]">Could not load metrics. The database may need the latest migration applied.</p>
         <Button
           type="button"
-          variant="outline"
-          className="mt-4 border-[hsl(43_72%_45%/0.4)] text-[hsl(43_72%_52%)]"
+          className="mt-4 bg-[#F59E0B] font-semibold text-[#0A1628] transition-colors hover:bg-[#FBBF24]"
           onClick={() => query.refetch()}
         >
-          <RefreshCw className="w-4 h-4 mr-2" />
+          <RefreshCw className="mr-2 h-4 w-4" />
           Retry
         </Button>
       </div>
@@ -58,43 +55,45 @@ export function InvestorMetricsPanel() {
 
   const items = [
     {
-      label: 'Active podcasts',
+      label: 'Active Podcasts',
       value: m.active_podcasts,
-      hint: 'Listed nominees / catalog',
+      hint: 'Listed in catalog',
       icon: Mic,
     },
     {
-      label: 'Votes cast',
+      label: 'Total Votes',
       value: m.total_votes,
-      hint: 'Total rows in votes',
+      hint: 'All cast votes',
       icon: Vote,
     },
     {
-      label: 'Podcast submissions',
+      label: 'Total Submissions',
       value: m.podcast_submissions,
-      hint: 'Inbound submission requests',
+      hint: 'Inbound podcast requests',
       icon: Inbox,
     },
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div>
-        <h2 className={`font-serif text-xl font-semibold ${gold}`}>Platform metrics</h2>
-        <p className={`text-sm ${muted}`}>Live counts (refreshes every minute)</p>
+        <h2 className="font-serif text-xl font-semibold text-[#F59E0B]">Platform metrics</h2>
+        <p className="mt-1 text-sm text-[#94A3B8]">Live data updated in real time</p>
       </div>
       <div className="grid gap-4 sm:grid-cols-3">
         {items.map(({ label, value, hint, icon: Icon }) => (
           <Card key={label} className={card}>
             <CardHeader className="pb-2">
               <div className="flex items-center gap-2">
-                <Icon className={`h-5 w-5 ${gold}`} />
-                <CardTitle className={`text-base ${gold}`}>{label}</CardTitle>
+                <Icon className="h-5 w-5 text-[#F59E0B]" />
+                <CardTitle className="text-base font-semibold text-white">{label}</CardTitle>
               </div>
-              <CardDescription className={muted}>{hint}</CardDescription>
+              <CardDescription className="text-[#94A3B8]">{hint}</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold tabular-nums text-[hsl(45_20%_96%)]">{value.toLocaleString()}</p>
+              <p className="text-4xl font-bold tabular-nums tracking-tight text-[#F59E0B]">
+                {value.toLocaleString()}
+              </p>
             </CardContent>
           </Card>
         ))}
