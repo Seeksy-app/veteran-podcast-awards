@@ -868,6 +868,25 @@ export type Database = {
           status: string
         }[]
       }
+      verify_investor_access_by_code: {
+        Args: { p_access_code: string }
+        Returns: {
+          allowed_tabs: string[]
+          email: string
+          expires_at: string
+          id: string
+          is_active: boolean
+          status: string
+        }[]
+      }
+      investor_platform_metrics: {
+        Args: Record<string, never>
+        Returns: {
+          active_podcasts: number
+          podcast_submissions: number
+          total_votes: number
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
