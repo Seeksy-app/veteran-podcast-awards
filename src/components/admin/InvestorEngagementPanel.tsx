@@ -14,6 +14,7 @@ interface EngagementEvent {
   event_data: {
     tab_id?: string;
     tab_label?: string;
+    tab_name?: string;
     video_id?: string;
     video_title?: string;
     progress_percent?: number;
@@ -52,8 +53,10 @@ export const InvestorEngagementPanel = () => {
   const getEventIcon = (type: string) => {
     switch (type) {
       case 'portal_opened':
+      case 'login':
         return <Eye className="w-4 h-4 text-blue-500" />;
       case 'tab_clicked':
+      case 'tab_view':
         return <MousePointer className="w-4 h-4 text-green-500" />;
       case 'video_progress':
         return <Play className="w-4 h-4 text-purple-500" />;
@@ -66,8 +69,12 @@ export const InvestorEngagementPanel = () => {
     switch (event.event_type) {
       case 'portal_opened':
         return 'Opened Portal';
+      case 'login':
+        return 'Login';
       case 'tab_clicked':
         return `Clicked "${event.event_data.tab_label || event.event_data.tab_id}" tab`;
+      case 'tab_view':
+        return `Viewed "${event.event_data.tab_name || event.event_data.tab_id || 'tab'}"`;
       case 'video_progress':
         return `Video "${event.event_data.video_title}" - ${event.event_data.progress_percent}%`;
       default:
@@ -76,8 +83,12 @@ export const InvestorEngagementPanel = () => {
   };
 
   const getInvestorStats = (events: EngagementEvent[]) => {
-    const portalOpens = events.filter(e => e.event_type === 'portal_opened').length;
-    const tabClicks = events.filter(e => e.event_type === 'tab_clicked').length;
+    const portalOpens = events.filter(
+      (e) => e.event_type === 'portal_opened' || e.event_type === 'login',
+    ).length;
+    const tabClicks = events.filter(
+      (e) => e.event_type === 'tab_clicked' || e.event_type === 'tab_view',
+    ).length;
     const videoProgress = events.filter(e => e.event_type === 'video_progress');
     const maxProgress = videoProgress.length > 0 
       ? Math.max(...videoProgress.map(e => e.event_data.progress_percent || 0))
@@ -127,8 +138,12 @@ export const InvestorEngagementPanel = () => {
                 <Eye className="w-5 h-5 text-green-500" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{events?.filter(e => e.event_type === 'portal_opened').length || 0}</p>
-                <p className="text-sm text-muted-foreground">Total Portal Opens</p>
+                <p className="text-2xl font-bold">
+                  {events?.filter(
+                    (e) => e.event_type === 'portal_opened' || e.event_type === 'login',
+                  ).length || 0}
+                </p>
+                <p className="text-sm text-muted-foreground">Logins / portal opens</p>
               </div>
             </div>
           </CardContent>

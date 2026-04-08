@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
@@ -14,7 +13,7 @@ import { InvestorMetricsPanel } from '@/components/investor/InvestorMetricsPanel
 import { OpportunityContent } from '@/components/investor/OpportunityContent';
 import { useInvestorTracking } from '@/hooks/useInvestorTracking';
 import { useDeckTracking } from '@/hooks/useDeckTracking';
-import { Layers, ShieldCheck, BarChart3, Video, Lock, LogIn, FileText, LogOut } from 'lucide-react';
+import { Layers, ShieldCheck, BarChart3, Video, Lock, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import logo from '@/assets/vpa-logo.png';
 
@@ -35,7 +34,8 @@ const TAB_CONFIG = [
   { id: 'security', label: 'Security', icon: ShieldCheck },
 ];
 
-const INVESTOR_VERIFIED_EMAIL_KEY = 'vpa_investor_verified_email';
+/** Persisted verified email for returning visitors (email-only auth). */
+const INVESTOR_EMAIL_STORAGE_KEY = 'vpa_investor_email';
 
 async function fetchInvestorAccessByEmail(emailRaw: string): Promise<InvestorAccessRow | null> {
   const email = emailRaw.toLowerCase().trim();
@@ -72,13 +72,11 @@ function videoPresentation(url: string): 'iframe' | 'mp4' {
 }
 
 const InvestorPage = () => {
-  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [accessData, setAccessData] = useState<InvestorAccessRow | null>(null);
   const [restoringSession, setRestoringSession] = useState(true);
   const [notOnList, setNotOnList] = useState(false);
-  const hasTrackedOpen = useRef(false);
   const hasTrackedDeckView = useRef(false);
 
   const { trackPageView: trackDeckPageView } = useDeckTracking();
@@ -91,11 +89,11 @@ const InvestorPage = () => {
         }
       : null;
 
-  const { trackPortalOpen, trackTabClick, trackVideoProgress } = useInvestorTracking(trackingContext);
+  const { trackLogin, trackTabView, trackVideoProgress, resetVideoTracking } = useInvestorTracking(trackingContext);
 
   useEffect(() => {
     let cancelled = false;
-    const stored = localStorage.getItem(INVESTOR_VERIFIED_EMAIL_KEY);
+    const stored = localStorage.getItem(INVESTOR_EMAIL_STORAGE_KEY);
     if (!stored?.trim()) {
       setRestoringSession(false);
       return;
@@ -106,16 +104,15 @@ const InvestorPage = () => {
         const row = await fetchInvestorAccessByEmail(normalized);
         if (cancelled) return;
         if (row) {
-          await touchLastAccessedAt(row.id);
           setAccessData(row);
           setIsAuthenticated(true);
         } else {
-          localStorage.removeItem(INVESTOR_VERIFIED_EMAIL_KEY);
+          localStorage.removeItem(INVESTOR_EMAIL_STORAGE_KEY);
         }
       } catch (e) {
         if (!cancelled) {
           console.warn('investor session restore failed:', e);
-          localStorage.removeItem(INVESTOR_VERIFIED_EMAIL_KEY);
+          localStorage.removeItem(INVESTOR_EMAIL_STORAGE_KEY);
         }
       } finally {
         if (!cancelled) setRestoringSession(false);
@@ -134,8 +131,15 @@ const InvestorPage = () => {
         return;
       }
       setNotOnList(false);
-      localStorage.setItem(INVESTOR_VERIFIED_EMAIL_KEY, emailInput.toLowerCase().trim());
+      const normalized = emailInput.toLowerCase().trim();
+      localStorage.setItem(INVESTOR_EMAIL_STORAGE_KEY, normalized);
+
       await touchLastAccessedAt(row.id);
+      await trackLogin({
+        email: row.email,
+        investorAccessId: row.id,
+      });
+
       setAccessData(row);
       setIsAuthenticated(true);
       toast.success('Access verified');
@@ -151,13 +155,6 @@ const InvestorPage = () => {
       toast.error(msg || 'Unable to verify access. Check your connection and try again.');
     },
   });
-
-  useEffect(() => {
-    if (isAuthenticated && accessData?.id && accessData?.email && !hasTrackedOpen.current) {
-      hasTrackedOpen.current = true;
-      trackPortalOpen();
-    }
-  }, [isAuthenticated, accessData, trackPortalOpen]);
 
   useEffect(() => {
     if (!isAuthenticated || !accessData?.id || hasTrackedDeckView.current) return;
@@ -188,7 +185,16 @@ const InvestorPage = () => {
       return;
     }
     setNotOnList(false);
-    verifyAccessMutation.mutate(trimmed);
+    verifyAccessMutation.mutate(trimmed.toLowerCase().trim());
+  };
+
+  const handleSignOut = () => {
+    resetVideoTracking();
+    localStorage.removeItem(INVESTOR_EMAIL_STORAGE_KEY);
+    setIsAuthenticated(false);
+    setAccessData(null);
+    setEmail('');
+    hasTrackedDeckView.current = false;
   };
 
   const shell = 'min-h-screen bg-[#0A1628] text-white';
@@ -197,21 +203,13 @@ const InvestorPage = () => {
   const mutedSecondary = 'text-[#94A3B8]';
   const goldText = 'text-[#F59E0B]';
 
-  const handleExitPortal = () => {
-    localStorage.removeItem(INVESTOR_VERIFIED_EMAIL_KEY);
-    setIsAuthenticated(false);
-    setAccessData(null);
-    navigate('/', { replace: true });
-  };
-
   if (restoringSession) {
     return (
-      <div className={`${shell} flex items-center justify-center p-4`}>
+      <div className={`${shell} flex min-h-screen items-center justify-center p-6`}>
         <Card className={`w-full max-w-md ${cardSurface}`}>
-          <CardHeader className="text-center">
-            <img src={logo} alt="VPA Logo" className="w-16 h-16 mx-auto mb-4" />
-            <CardTitle className={`font-serif text-2xl ${goldText}`}>Restoring session…</CardTitle>
-            <CardDescription className={mutedSecondary}>Please wait.</CardDescription>
+          <CardHeader className="space-y-3 text-center">
+            <img src={logo} alt="VPA" className="mx-auto h-20 w-20 object-contain" />
+            <CardDescription className={`${mutedSecondary} text-base`}>Restoring session…</CardDescription>
           </CardHeader>
         </Card>
       </div>
@@ -220,36 +218,42 @@ const InvestorPage = () => {
 
   if (!isAuthenticated) {
     return (
-      <div className={`${shell} flex items-center justify-center p-4`}>
-        <Card className={`w-full max-w-md ${cardSurface}`}>
-          <CardHeader className="text-center">
-            <img src={logo} alt="VPA Logo" className="w-16 h-16 mx-auto mb-4" />
-            <CardTitle className={`font-serif text-2xl ${goldText}`}>Investor portal</CardTitle>
-            <CardDescription className={mutedSecondary}>
-              Enter the email address on file to view platform information
-            </CardDescription>
+      <div
+        className={`${shell} flex min-h-screen flex-col items-center justify-center px-4 py-12`}
+      >
+        <Card
+          className={`w-full max-w-md border-2 border-[#F59E0B]/20 bg-[#0F2035] shadow-[0_24px_80px_rgba(0,0,0,0.45)]`}
+        >
+          <CardHeader className="space-y-4 pb-2 text-center">
+            <img src={logo} alt="Veteran Podcast Awards" className="mx-auto h-24 w-24 object-contain" />
+            <p className={`font-serif text-lg leading-snug text-white md:text-xl`}>
+              Enter your email to access the investor portal
+            </p>
           </CardHeader>
-          <CardContent>
-            <form onSubmit={handleLogin} className="space-y-4">
+          <CardContent className="space-y-5 pt-2">
+            <form onSubmit={handleLogin} className="space-y-5">
               <div className="space-y-2">
-                <Label htmlFor="email" className={mutedSecondary}>
-                  Email address
+                <Label htmlFor="investor-email" className={`${mutedSecondary} text-sm font-medium`}>
+                  Email
                 </Label>
                 <Input
-                  id="email"
+                  id="investor-email"
                   type="email"
-                  placeholder="your@email.com"
+                  placeholder="you@company.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   autoComplete="email"
-                  className="border-[#F59E0B]/30 bg-[#0F2035] text-white placeholder:text-[#94A3B8]/50"
+                  className="h-11 border-[#F59E0B]/35 bg-[#0A1628] text-white ring-offset-[#0A1628] placeholder:text-[#94A3B8]/60 focus-visible:border-[#F59E0B] focus-visible:ring-[#F59E0B]/30"
                 />
               </div>
               {notOnList && (
-                <p className="rounded-lg border border-[#F59E0B]/25 bg-[#0A1628] p-3 text-sm text-[#94A3B8]">
+                <p
+                  role="alert"
+                  className="rounded-lg border border-[#F59E0B]/20 bg-[#0A1628]/80 p-3 text-sm leading-relaxed text-[#94A3B8]"
+                >
                   Your email is not on the access list. Contact Andrew Appleton at{' '}
-                  <a href="mailto:andrew@podlogix.co" className={`${goldText} font-medium underline`}>
+                  <a href="mailto:andrew@podlogix.co" className={`${goldText} font-medium underline underline-offset-2`}>
                     andrew@podlogix.co
                   </a>{' '}
                   to request access.
@@ -257,11 +261,10 @@ const InvestorPage = () => {
               )}
               <Button
                 type="submit"
-                className="w-full bg-[#F59E0B] font-semibold tracking-wide text-[#0A1628] transition-colors hover:bg-[#FBBF24]"
+                className="h-11 w-full bg-[#F59E0B] text-base font-semibold text-[#0A1628] shadow-sm transition-colors hover:bg-[#FBBF24]"
                 disabled={verifyAccessMutation.isPending}
               >
-                <LogIn className="mr-2 h-4 w-4" />
-                {verifyAccessMutation.isPending ? 'Verifying…' : 'Access portal'}
+                {verifyAccessMutation.isPending ? 'Verifying…' : 'Access Portal'}
               </Button>
             </form>
           </CardContent>
@@ -274,22 +277,22 @@ const InvestorPage = () => {
   const defaultTab = allowedTabs[0]?.id || 'metrics';
 
   return (
-    <div className={`${shell}`}>
+    <div className={shell}>
       <header className="sticky top-0 z-50 border-b border-[#F59E0B]/40 bg-[#0A1628]/95 backdrop-blur-md">
-        <div className="container mx-auto flex items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-3 sm:gap-4">
-            <img src={logo} alt="VPA" className="h-10 w-10 object-contain sm:h-11 sm:w-11" />
-            <h1 className="font-serif text-lg font-semibold tracking-tight text-white sm:text-xl">Investor Portal</h1>
+        <div className="container mx-auto flex items-center justify-between gap-4 px-4 py-3">
+          <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+            <img src={logo} alt="VPA" className="h-10 w-10 shrink-0 object-contain sm:h-11 sm:w-11" />
+            <h1 className="font-serif text-lg font-semibold tracking-tight text-white sm:text-xl">
+              Investor Portal
+            </h1>
           </div>
-          <Button
+          <button
             type="button"
-            variant="outline"
-            onClick={handleExitPortal}
-            className="border-[#F59E0B]/50 bg-transparent text-[#F59E0B] transition-colors hover:border-[#FBBF24] hover:bg-[#F59E0B]/10 hover:text-[#FBBF24]"
+            onClick={handleSignOut}
+            className={`shrink-0 text-sm font-medium ${goldText} underline-offset-4 transition-colors hover:text-[#FBBF24] hover:underline`}
           >
-            <LogOut className="mr-2 h-4 w-4" />
-            Exit
-          </Button>
+            Sign out
+          </button>
         </div>
       </header>
 
@@ -300,7 +303,7 @@ const InvestorPage = () => {
           onValueChange={(value) => {
             const tab = TAB_CONFIG.find((t) => t.id === value);
             if (tab && accessData?.allowed_tabs?.includes(value)) {
-              trackTabClick(value, tab.label);
+              void trackTabView(value, tab.label);
             }
           }}
         >
@@ -343,7 +346,7 @@ const InvestorPage = () => {
               {!videos?.length ? (
                 <Card className={cardSurface}>
                   <CardContent className={`py-12 text-center ${mutedSecondary}`}>
-                    <Video className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <Video className="mx-auto mb-4 h-12 w-12 opacity-50" />
                     <p>No videos available at this time</p>
                   </CardContent>
                 </Card>
@@ -352,7 +355,7 @@ const InvestorPage = () => {
                   {videos.map((video) => (
                     <Card key={video.id} className={cardSurface}>
                       <CardHeader>
-                        <CardTitle className={goldText}>{video.title}</CardTitle>
+                        <CardTitle className={`font-serif text-xl ${goldText}`}>{video.title}</CardTitle>
                         {video.description && (
                           <CardDescription className={mutedSecondary}>{video.description}</CardDescription>
                         )}
@@ -384,7 +387,7 @@ const InvestorPage = () => {
                                   video.id,
                                   video.title,
                                   percent,
-                                  Math.floor(videoEl.duration)
+                                  Math.floor(videoEl.duration),
                                 );
                               }
                             }}
