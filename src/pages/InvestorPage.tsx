@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TechStackPanel } from '@/components/admin/TechStackPanel';
+import { InvestorTechStackPanel } from '@/components/investor/InvestorTechStackPanel';
 import { SecurityPanel } from '@/components/admin/SecurityPanel';
 import { InvestorMetricsPanel } from '@/components/investor/InvestorMetricsPanel';
 import { OpportunityContent } from '@/components/investor/OpportunityContent';
@@ -40,10 +40,11 @@ const INVESTOR_EMAIL_STORAGE_KEY = 'vpa_investor_email';
 async function fetchInvestorAccessByEmail(emailRaw: string): Promise<InvestorAccessRow | null> {
   const email = emailRaw.toLowerCase().trim();
   const nowIso = new Date().toISOString();
+  /** Case-insensitive match so stored email casing does not block login. */
   const { data, error } = await supabase
     .from('investor_access')
     .select('*')
-    .eq('email', email)
+    .ilike('email', email)
     .eq('is_active', true)
     .gt('expires_at', nowIso)
     .maybeSingle();
@@ -252,9 +253,9 @@ const InvestorPage = () => {
                   role="alert"
                   className="rounded-lg border border-[#F59E0B]/20 bg-[#0A1628]/80 p-3 text-sm leading-relaxed text-[#94A3B8]"
                 >
-                  Your email is not on the access list. Contact Andrew Appleton at{' '}
-                  <a href="mailto:andrew@podlogix.co" className={`${goldText} font-medium underline underline-offset-2`}>
-                    andrew@podlogix.co
+                  Your email is not on the access list. Contact us at{' '}
+                  <a href="mailto:hello@empowerify.io" className={`${goldText} font-medium underline underline-offset-2`}>
+                    hello@empowerify.io
                   </a>{' '}
                   to request access.
                 </p>
@@ -330,7 +331,7 @@ const InvestorPage = () => {
           </TabsContent>
 
           <TabsContent value="tech-stack" className="rounded-xl border border-[#F59E0B]/15 bg-[#0A1628] p-4 md:p-6">
-            <TechStackPanel variant="investor" />
+            <InvestorTechStackPanel />
           </TabsContent>
 
           <TabsContent value="security" className="rounded-xl border border-[#F59E0B]/15 bg-[#0A1628] p-4 md:p-6">

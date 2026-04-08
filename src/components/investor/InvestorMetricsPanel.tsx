@@ -7,23 +7,78 @@ import { Mic, Vote, Inbox, RefreshCw } from 'lucide-react';
 const card =
   'border border-[#F59E0B]/25 bg-[#0F2035] text-white shadow-[0_8px_32px_rgba(0,0,0,0.35)]';
 
+export type PlatformMetrics = {
+  active_podcasts: number;
+  total_votes: number;
+  podcast_submissions: number;
+};
+
+async function fetchMetricsViaRpc(): Promise<PlatformMetrics | null> {
+  const { data, error } = await supabase.rpc('investor_platform_metrics');
+  if (error) return null;
+  const row = Array.isArray(data) ? data[0] : data;
+  if (!row || typeof row !== 'object') return null;
+  const m = row as Record<string, unknown>;
+  const a = Number(m.active_podcasts);
+  const v = Number(m.total_votes);
+  const s = Number(m.podcast_submissions);
+  if (!Number.isFinite(a) || !Number.isFinite(v) || !Number.isFinite(s)) return null;
+  return { active_podcasts: a, total_votes: v, podcast_submissions: s };
+}
+
+/** Direct counts when RPC is missing or fails (subject to RLS). */
+async function fetchMetricsDirect(): Promise<PlatformMetrics> {
+  const countOrZero = async (
+    promise: Promise<{ count: number | null; error: { message: string } | null }>,
+  ) => {
+    try {
+      const { count, error } = await promise;
+      if (error) {
+        console.warn('investor metrics direct count:', error.message);
+        return 0;
+      }
+      return count ?? 0;
+    } catch (e) {
+      console.warn('investor metrics direct count failed:', e);
+      return 0;
+    }
+  };
+
+  const active_podcasts = await countOrZero(
+    supabase.from('podcasts').select('*', { count: 'exact', head: true }).eq('is_active', true),
+  );
+  const total_votes = await countOrZero(
+    supabase.from('votes').select('*', { count: 'exact', head: true }),
+  );
+  const podcast_submissions = await countOrZero(
+    supabase.from('podcast_submissions').select('*', { count: 'exact', head: true }),
+  );
+
+  return { active_podcasts, total_votes, podcast_submissions };
+}
+
+async function fetchPlatformMetrics(): Promise<{ metrics: PlatformMetrics; usedFallback: boolean }> {
+  try {
+    const fromRpc = await fetchMetricsViaRpc();
+    if (fromRpc) {
+      return { metrics: fromRpc, usedFallback: false };
+    }
+    const metrics = await fetchMetricsDirect();
+    return { metrics, usedFallback: true };
+  } catch (e) {
+    console.warn('fetchPlatformMetrics:', e);
+    const metrics = await fetchMetricsDirect();
+    return { metrics, usedFallback: true };
+  }
+}
+
 /**
- * Live platform counts via investor_platform_metrics() RPC.
+ * Live platform counts via investor_platform_metrics() RPC, with direct COUNT fallbacks.
  */
 export function InvestorMetricsPanel() {
   const query = useQuery({
     queryKey: ['investor-platform-metrics'],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('investor_platform_metrics');
-      if (error) throw error;
-      const row = Array.isArray(data) ? data[0] : data;
-      if (!row) throw new Error('No metrics returned');
-      return row as {
-        active_podcasts: number;
-        total_votes: number;
-        podcast_submissions: number;
-      };
-    },
+    queryFn: fetchPlatformMetrics,
     refetchInterval: 30_000,
   });
 
@@ -38,7 +93,9 @@ export function InvestorMetricsPanel() {
   if (query.isError) {
     return (
       <div className={`rounded-xl border border-[#F59E0B]/20 p-6 ${card}`}>
-        <p className="text-[#94A3B8]">Could not load metrics. The database may need the latest migration applied.</p>
+        <p className="text-[#94A3B8]">
+          We couldn&apos;t load metrics right now. Please try again.
+        </p>
         <Button
           type="button"
           className="mt-4 bg-[#F59E0B] font-semibold text-[#0A1628] transition-colors hover:bg-[#FBBF24]"
@@ -51,7 +108,7 @@ export function InvestorMetricsPanel() {
     );
   }
 
-  const m = query.data!;
+  const { metrics: m, usedFallback } = query.data!;
 
   const items = [
     {
@@ -79,6 +136,12 @@ export function InvestorMetricsPanel() {
       <div>
         <h2 className="font-serif text-xl font-semibold text-[#F59E0B]">Platform metrics</h2>
         <p className="mt-1 text-sm text-[#94A3B8]">Live data updated in real time</p>
+        {usedFallback && (
+          <p className="mt-2 text-xs text-[#94A3B8]/90">
+            Showing live counts from the database (aggregated RPC unavailable). If numbers look off, your
+            account may have limited read access under row-level security.
+          </p>
+        )}
       </div>
       <div className="grid gap-4 sm:grid-cols-3">
         {items.map(({ label, value, hint, icon: Icon }) => (
