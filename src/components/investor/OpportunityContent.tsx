@@ -427,7 +427,8 @@ export const OpportunityContent = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className={`text-sm ${bodyPrimary}`}>
-                Integration potential across Task & Purpose, MIC, Military Spouse Fest and other Recurrent properties.
+                Cross-promotion potential with the Military & Veteran Awards (MVA Awards, May 2026), VetStream TV, and the
+                broader military/veteran media community — creating a full-year awards calendar no competitor owns.
               </CardContent>
             </Card>
 
