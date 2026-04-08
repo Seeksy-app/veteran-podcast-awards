@@ -127,7 +127,7 @@ export const InvestorAccessManager = () => {
   };
 
   const copyAccessLink = (code: string) => {
-    const url = `${window.location.origin}/investor?code=${code}`;
+    const url = `${window.location.origin}/prospectus?code=${code}`;
     navigator.clipboard.writeText(url);
     toast.success('Access link copied to clipboard');
   };

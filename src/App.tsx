@@ -50,7 +50,7 @@ const App = () => (
               <Route path="/podcaster/:username" element={<PodcasterProfile />} />
               <Route path="/opportunity" element={<Opportunity />} />
               <Route path="/admin" element={<Admin />} />
-              <Route path="/investor" element={<InvestorPage />} />
+              <Route path="/prospectus" element={<InvestorPage />} />
               <Route path="/vpa-deck" element={<VPADeck />} />
               <Route path="/export-data" element={<ExportData />} />
               <Route path="/reset-password" element={<ResetPassword />} />
