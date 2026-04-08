@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import type { Tables } from '@/integrations/supabase/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,15 +19,7 @@ import { Layers, ShieldCheck, BarChart3, Video, Lock, LogIn, FileText } from 'lu
 import { toast } from 'sonner';
 import logo from '@/assets/vpa-logo.png';
 
-/** Row returned by verify_investor_access_by_code (matches investor_access + status). */
-interface InvestorAccess {
-  id: string | null;
-  email: string | null;
-  allowed_tabs: string[] | null;
-  expires_at: string | null;
-  is_active: boolean | null;
-  status: string;
-}
+type InvestorAccessRow = Tables<'investor_access'>;
 
 interface InvestorVideo {
   id: string;
@@ -43,20 +36,61 @@ const TAB_CONFIG = [
   { id: 'security', label: 'Security', icon: ShieldCheck },
 ];
 
-/**
- * Investor portal: ?code= verifies via RPC (equivalent to
- * investor_access WHERE access_code AND is_active AND expires_at > now(); RLS requires RPC).
- * On success: last_accessed_at is updated server-side; engagement is logged in investor_engagement_events.
- */
+function normalizeAccessCode(raw: string) {
+  return raw.trim().toUpperCase();
+}
+
+/** Direct table lookup (requires RLS policies + URL/key for the same Supabase project as the data). */
+async function fetchInvestorAccessByCode(codeRaw: string) {
+  const code = normalizeAccessCode(codeRaw);
+  const nowIso = new Date().toISOString();
+  const { data, error } = await supabase
+    .from('investor_access')
+    .select('*')
+    .eq('access_code', code)
+    .eq('is_active', true)
+    .gt('expires_at', nowIso)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data as InvestorAccessRow | null;
+}
+
+async function fetchInvestorAccessByEmailAndCode(emailRaw: string, codeRaw: string) {
+  const email = emailRaw.toLowerCase().trim();
+  const code = normalizeAccessCode(codeRaw);
+  const nowIso = new Date().toISOString();
+  const { data, error } = await supabase
+    .from('investor_access')
+    .select('*')
+    .eq('email', email)
+    .eq('access_code', code)
+    .eq('is_active', true)
+    .gt('expires_at', nowIso)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data as InvestorAccessRow | null;
+}
+
+async function touchLastAccessedAt(id: string) {
+  const { error } = await supabase
+    .from('investor_access')
+    .update({ last_accessed_at: new Date().toISOString() })
+    .eq('id', id);
+  if (error) console.warn('investor_access last_accessed_at update failed:', error.message);
+}
+
 const InvestorPage = () => {
   const [searchParams] = useSearchParams();
   const codeFromUrl = searchParams.get('code')?.trim() ?? '';
   const [accessCode, setAccessCode] = useState(searchParams.get('code') || '');
   const [email, setEmail] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [accessData, setAccessData] = useState<InvestorAccess | null>(null);
+  const [accessData, setAccessData] = useState<InvestorAccessRow | null>(null);
   const hasTrackedOpen = useRef(false);
   const hasTrackedDeckView = useRef(false);
+  const urlAuthApplied = useRef(false);
 
   const { trackPageView: trackDeckPageView } = useDeckTracking();
 
@@ -71,43 +105,22 @@ const InvestorPage = () => {
   const { trackPortalOpen, trackTabClick, trackVideoProgress } = useInvestorTracking(trackingContext);
 
   const urlAccessQuery = useQuery({
-    queryKey: ['investor-verify-by-url', codeFromUrl],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('verify_investor_access_by_code', {
-        p_access_code: codeFromUrl,
-      });
-      if (error) throw error;
-      return (data?.[0] ?? null) as InvestorAccess | null;
-    },
+    queryKey: ['investor-access-by-code', codeFromUrl],
+    queryFn: () => fetchInvestorAccessByCode(codeFromUrl),
     enabled: Boolean(codeFromUrl) && !isAuthenticated,
     retry: false,
   });
 
   const verifyAccessMutation = useMutation({
     mutationFn: async ({ email: em, code }: { email: string; code: string }) => {
-      const { data, error } = await supabase.rpc('verify_investor_access', {
-        p_email: em.toLowerCase().trim(),
-        p_access_code: code.toUpperCase().trim(),
-      });
-
-      if (error) throw new Error('Unable to verify access. Please try again.');
-      if (!data || data.length === 0) throw new Error('Unable to verify access. Please try again.');
-
-      const access = data[0] as InvestorAccess;
-
-      if (access.status === 'not_found') {
-        throw new Error('Invalid email or access code. Please check your credentials.');
+      const row = await fetchInvestorAccessByEmailAndCode(em, code);
+      if (!row) {
+        throw new Error('Invalid email or access code, or access has expired.');
       }
-      if (access.status === 'disabled') {
-        throw new Error('This access code has been disabled. Please contact the administrator.');
-      }
-      if (access.status === 'expired') {
-        throw new Error('This access code has expired. Please contact the administrator for a new code.');
-      }
-
-      return access;
+      return row;
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
+      await touchLastAccessedAt(data.id);
       setAccessData(data);
       setIsAuthenticated(true);
       toast.success('Access verified');
@@ -119,11 +132,13 @@ const InvestorPage = () => {
 
   useEffect(() => {
     const row = urlAccessQuery.data;
-    if (!row || isAuthenticated) return;
-    if (row.status === 'valid' && row.id && row.email) {
-      setAccessData(row as InvestorAccess);
+    if (row === undefined || row === null || isAuthenticated || urlAuthApplied.current) return;
+    urlAuthApplied.current = true;
+    void (async () => {
+      await touchLastAccessedAt(row.id);
+      setAccessData(row);
       setIsAuthenticated(true);
-    }
+    })();
   }, [urlAccessQuery.data, isAuthenticated]);
 
   useEffect(() => {
@@ -168,11 +183,16 @@ const InvestorPage = () => {
     if (c) setAccessCode(c);
   }, [searchParams]);
 
+  const urlDeniedNoRow =
+    Boolean(codeFromUrl) &&
+    !isAuthenticated &&
+    urlAccessQuery.isSuccess &&
+    urlAccessQuery.data === null;
+
   const urlVerifyFailed =
     Boolean(codeFromUrl) &&
     !isAuthenticated &&
-    (urlAccessQuery.isError ||
-      (urlAccessQuery.isSuccess && urlAccessQuery.data && urlAccessQuery.data.status !== 'valid'));
+    (urlAccessQuery.isError || urlDeniedNoRow);
 
   const shell = 'min-h-screen bg-[hsl(222_47%_11%)] text-[hsl(45_20%_96%)]';
   const cardSurface = 'border-[hsl(43_72%_45%/0.35)] bg-[hsl(222_35%_16%)] text-[hsl(45_20%_96%)]';
@@ -194,16 +214,13 @@ const InvestorPage = () => {
   }
 
   if (urlVerifyFailed) {
-    const status = urlAccessQuery.data?.status;
-    let detail = 'Invalid access code';
+    let detail = 'Invalid or expired access code.';
     if (urlAccessQuery.isError) {
-      detail = 'Unable to verify access. Please try again.';
-    } else if (status === 'disabled') {
-      detail = 'This access code has been disabled. Please contact the administrator.';
-    } else if (status === 'expired') {
-      detail = 'This access code has expired. Please contact the administrator for a new code.';
-    } else if (status === 'not_found') {
-      detail = 'Invalid or expired access code.';
+      const err = urlAccessQuery.error as Error & { message?: string };
+      detail =
+        err?.message?.includes('JWT') || err?.message?.includes('Invalid API key')
+          ? 'Configuration error: Supabase URL and anon key must be for the same project (VPA: zkruwrpkfxehbwxtjhdz).'
+          : err?.message || 'Unable to verify access. Check your connection or try again.';
     }
 
     return (
