@@ -14,6 +14,119 @@ export type Database = {
   }
   public: {
     Tables: {
+      award_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          program_id: string
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          program_id: string
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          program_id?: string
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "award_categories_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "award_programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      award_nominations: {
+        Row: {
+          category_id: string
+          created_at: string
+          id: string
+          podcast_id: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          id?: string
+          podcast_id: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          id?: string
+          podcast_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "award_nominations_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "award_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "award_nominations_podcast_id_fkey"
+            columns: ["podcast_id"]
+            isOneToOne: false
+            referencedRelation: "podcasts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      award_programs: {
+        Row: {
+          ceremony_at: string | null
+          created_at: string
+          id: string
+          name: string
+          nominations_open_at: string | null
+          status: "draft" | "active" | "closed"
+          updated_at: string
+          voting_open_at: string | null
+          year: number
+        }
+        Insert: {
+          ceremony_at?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          nominations_open_at?: string | null
+          status?: "draft" | "active" | "closed"
+          updated_at?: string
+          voting_open_at?: string | null
+          year: number
+        }
+        Update: {
+          ceremony_at?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          nominations_open_at?: string | null
+          status?: "draft" | "active" | "closed"
+          updated_at?: string
+          voting_open_at?: string | null
+          year?: number
+        }
+        Relationships: []
+      }
       awards_config: {
         Row: {
           created_at: string
@@ -890,6 +1003,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      award_program_status: "draft" | "active" | "closed"
       sponsor_tier: "platinum" | "gold" | "silver" | "bronze"
       user_type: "podcaster" | "voter" | "fan"
     }
@@ -1020,6 +1134,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
+      award_program_status: ["draft", "active", "closed"],
       sponsor_tier: ["platinum", "gold", "silver", "bronze"],
       user_type: ["podcaster", "voter", "fan"],
     },

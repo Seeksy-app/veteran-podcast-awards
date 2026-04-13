@@ -13,10 +13,11 @@ import { InvestorAccessManager } from '@/components/admin/InvestorAccessManager'
 import { InvestorVideoManager } from '@/components/admin/InvestorVideoManager';
 import { InvestorEngagementPanel } from '@/components/admin/InvestorEngagementPanel';
 import { DeckEngagementPanel } from '@/components/admin/DeckEngagementPanel';
+import { AwardsManager } from '@/components/admin/AwardsManager';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ThemeSelector } from '@/components/theme/ThemeToggle';
-import { LogOut, Shield, Home, Users, Mic, Handshake, Rss, Mail, Layers, ShieldCheck, BarChart3, KeyRound, Video, Activity, FileText } from 'lucide-react';
+import { LogOut, Shield, Home, Users, Mic, Handshake, Rss, Mail, Layers, ShieldCheck, BarChart3, KeyRound, Video, Activity, FileText, Trophy } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import logo from '@/assets/vpa-logo.png';
 
@@ -119,6 +120,10 @@ const AdminPage = () => {
               <Rss className="w-4 h-4" />
               <span className="hidden sm:inline">Submissions</span>
             </TabsTrigger>
+            <TabsTrigger value="awards" className="gap-2">
+              <Trophy className="w-4 h-4" />
+              <span className="hidden sm:inline">Awards</span>
+            </TabsTrigger>
             <TabsTrigger value="sponsors" className="gap-2">
               <Handshake className="w-4 h-4" />
               <span className="hidden sm:inline">Sponsors</span>
@@ -167,6 +172,10 @@ const AdminPage = () => {
 
           <TabsContent value="submissions">
             <SubmissionManager />
+          </TabsContent>
+
+          <TabsContent value="awards">
+            <AwardsManager />
           </TabsContent>
 
           <TabsContent value="sponsors">
