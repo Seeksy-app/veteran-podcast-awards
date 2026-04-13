@@ -67,6 +67,7 @@ const CategoryDetailPage = () => {
           .select("podcast_id, vote_count")
           .eq("category_id", cat.slug)
           .eq("year", year)
+          .eq("program_id", cat.program_id)
           .in("podcast_id", podIds);
         counts = vc ?? [];
       }

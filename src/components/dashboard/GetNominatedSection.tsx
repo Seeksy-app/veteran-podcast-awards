@@ -46,7 +46,12 @@ export const GetNominatedSection = ({ userId, profile, podcast }: Props) => {
         slug: string;
         name: string;
         description: string | null;
-        award_programs: { id: string; year: number; status: string; nominations_open_at: string | null };
+        award_programs: {
+          id: string;
+          year: number;
+          status: string;
+          nominations_open_at: string | null;
+        };
       }[];
     },
   });
@@ -76,7 +81,7 @@ export const GetNominatedSection = ({ userId, profile, podcast }: Props) => {
       for (const n of existingQuery.data ?? []) {
         const cat = catById.get(n.category_id);
         if (!cat) continue;
-        const r = await rankAmongNominees(podcast!.id, cat.id, cat.slug, cat.award_programs.year);
+        const r = await rankAmongNominees(podcast!.id, cat.id, cat.slug, cat.award_programs.id);
         out.push({
           categoryName: cat.name,
           rank: r.rank,

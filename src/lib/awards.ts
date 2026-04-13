@@ -11,14 +11,14 @@ export function isNominationUuid(param: string | undefined): boolean {
 export async function getNextVoteSlot(
   userId: string,
   categorySlug: string,
-  year: number,
+  programId: string,
 ): Promise<number | null> {
   const { data, error } = await supabase
     .from("votes")
     .select("vote_slot")
     .eq("user_id", userId)
     .eq("category_id", categorySlug)
-    .eq("year", year);
+    .eq("program_id", programId);
   if (error) throw error;
   const used = new Set((data ?? []).map((r) => r.vote_slot));
   for (let s = 1; s <= 3; s++) {
@@ -30,14 +30,14 @@ export async function getNextVoteSlot(
 export async function countVotesForUserInCategory(
   userId: string,
   categorySlug: string,
-  year: number,
+  programId: string,
 ): Promise<number> {
   const { count, error } = await supabase
     .from("votes")
     .select("id", { count: "exact", head: true })
     .eq("user_id", userId)
     .eq("category_id", categorySlug)
-    .eq("year", year);
+    .eq("program_id", programId);
   if (error) throw error;
   return count ?? 0;
 }
@@ -47,7 +47,7 @@ export async function rankAmongNominees(
   podcastId: string,
   categoryUuid: string,
   categorySlug: string,
-  year: number,
+  programId: string,
 ): Promise<{ rank: number; totalNominees: number; votes: number }> {
   const { data: noms, error: e1 } = await supabase
     .from("nominations")
@@ -63,7 +63,7 @@ export async function rankAmongNominees(
     .from("vote_counts")
     .select("podcast_id, vote_count")
     .eq("category_id", categorySlug)
-    .eq("year", year)
+    .eq("program_id", programId)
     .in("podcast_id", ids);
   if (e2) throw e2;
 
@@ -78,4 +78,29 @@ export async function rankAmongNominees(
   const idx = sorted.findIndex(([id]) => id === podcastId);
   const rank = idx >= 0 ? idx + 1 : sorted.length;
   return { rank, totalNominees: ids.length, votes: mine };
+}
+
+/** Emoji for public category cards (VPA + MVA + custom). */
+export function publicCategoryEmoji(slug: string): string {
+  const map: Record<string, string> = {
+    "best-interview-show": "🎤",
+    "best-solo-show": "🎧",
+    "best-comedy": "🎭",
+    "best-educational": "📚",
+    "best-newcomer": "🌟",
+    "best-veteran-storyteller": "🎖️",
+    "best-military-family-show": "👨‍👩‍👧",
+    "best-true-crime": "🔍",
+    "podcaster-of-the-year": "🏆",
+    "lifetime-achievement": "💎",
+    "best-military-news-podcast": "📰",
+    "best-veteran-affairs-show": "🎖️",
+    "best-military-history-series": "📜",
+    "best-active-duty-perspective": "⭐",
+    "best-gold-star-family-show": "💙",
+    "best-military-comedy": "😂",
+    "best-defense-security-show": "🛡️",
+    "media-personality-of-the-year": "🎬",
+  };
+  return map[slug] ?? "✨";
 }

@@ -104,37 +104,167 @@ export type Database = {
         Row: {
           ceremony_at: string | null
           created_at: string
+          external_ticket_url: string | null
           id: string
+          logo_url: string | null
           name: string
           nominations_open_at: string | null
+          organization_name: string | null
+          primary_color: string | null
           status: "draft" | "active" | "closed"
+          tagline: string | null
           updated_at: string
           voting_open_at: string | null
+          website_url: string | null
           year: number
         }
         Insert: {
           ceremony_at?: string | null
           created_at?: string
+          external_ticket_url?: string | null
           id?: string
+          logo_url?: string | null
           name: string
           nominations_open_at?: string | null
+          organization_name?: string | null
+          primary_color?: string | null
           status?: "draft" | "active" | "closed"
+          tagline?: string | null
           updated_at?: string
           voting_open_at?: string | null
+          website_url?: string | null
           year: number
         }
         Update: {
           ceremony_at?: string | null
           created_at?: string
+          external_ticket_url?: string | null
           id?: string
+          logo_url?: string | null
           name?: string
           nominations_open_at?: string | null
+          organization_name?: string | null
+          primary_color?: string | null
           status?: "draft" | "active" | "closed"
+          tagline?: string | null
           updated_at?: string
           voting_open_at?: string | null
+          website_url?: string | null
           year?: number
         }
         Relationships: []
+      }
+      award_ticket_purchases: {
+        Row: {
+          buyer_email: string
+          buyer_name: string
+          checked_in_at: string | null
+          created_at: string
+          id: string
+          line_items: Json
+          program_id: string
+          qr_token: string
+          status: string
+          stripe_checkout_session_id: string | null
+          stripe_event_id: string | null
+          stripe_payment_intent_id: string | null
+          total_amount_cents: number
+          updated_at: string
+        }
+        Insert: {
+          buyer_email: string
+          buyer_name: string
+          checked_in_at?: string | null
+          created_at?: string
+          id?: string
+          line_items: Json
+          program_id: string
+          qr_token?: string
+          status?: string
+          stripe_checkout_session_id?: string | null
+          stripe_event_id?: string | null
+          stripe_payment_intent_id?: string | null
+          total_amount_cents: number
+          updated_at?: string
+        }
+        Update: {
+          buyer_email?: string
+          buyer_name?: string
+          checked_in_at?: string | null
+          created_at?: string
+          id?: string
+          line_items?: Json
+          program_id?: string
+          qr_token?: string
+          status?: string
+          stripe_checkout_session_id?: string | null
+          stripe_event_id?: string | null
+          stripe_payment_intent_id?: string | null
+          total_amount_cents?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "award_ticket_purchases_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "award_programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      award_ticket_types: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          price_cents: number
+          program_id: string
+          quantity_sold: number
+          quantity_total: number | null
+          sort_order: number
+          ticket_kind: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          price_cents: number
+          program_id: string
+          quantity_sold?: number
+          quantity_total?: number | null
+          sort_order?: number
+          ticket_kind?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          price_cents?: number
+          program_id?: string
+          quantity_sold?: number
+          quantity_total?: number | null
+          sort_order?: number
+          ticket_kind?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "award_ticket_types_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "award_programs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       awards_config: {
         Row: {
@@ -894,6 +1024,7 @@ export type Database = {
           category_id: string
           id: string
           podcast_id: string
+          program_id: string
           updated_at: string
           vote_count: number
           year: number
@@ -902,6 +1033,7 @@ export type Database = {
           category_id: string
           id?: string
           podcast_id: string
+          program_id: string
           updated_at?: string
           vote_count?: number
           year?: number
@@ -910,6 +1042,7 @@ export type Database = {
           category_id?: string
           id?: string
           podcast_id?: string
+          program_id?: string
           updated_at?: string
           vote_count?: number
           year?: number
@@ -922,6 +1055,13 @@ export type Database = {
             referencedRelation: "podcasts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "vote_counts_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "award_programs"
+            referencedColumns: ["id"]
+          },
         ]
       }
       votes: {
@@ -930,6 +1070,7 @@ export type Database = {
           created_at: string
           id: string
           nominee_id: string
+          program_id: string
           user_id: string
           vote_slot: number
           year: number
@@ -939,6 +1080,7 @@ export type Database = {
           created_at?: string
           id?: string
           nominee_id: string
+          program_id: string
           user_id: string
           vote_slot?: number
           year?: number
@@ -948,6 +1090,7 @@ export type Database = {
           created_at?: string
           id?: string
           nominee_id?: string
+          program_id?: string
           user_id?: string
           vote_slot?: number
           year?: number
@@ -960,6 +1103,13 @@ export type Database = {
             referencedRelation: "podcasts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "votes_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "award_programs"
+            referencedColumns: ["id"]
+          },
         ]
       }
     }
@@ -968,7 +1118,7 @@ export type Database = {
     }
     Functions: {
       admin_category_votes_flat: {
-        Args: { p_category_slug: string; p_year: number }
+        Args: { p_category_slug: string; p_program_id: string }
         Returns: {
           voter_email: string
           voter_name: string
@@ -977,6 +1127,10 @@ export type Database = {
           vote_slot: number
           voted_at: string
         }[]
+      }
+      get_award_ticket_pass: {
+        Args: { p_token: string }
+        Returns: Json
       }
       has_role: {
         Args: {

@@ -32,10 +32,15 @@ type NomRow = {
     program_id: string;
     award_programs: {
       id: string;
+      name: string;
       year: number;
       status: string;
       voting_open_at: string | null;
       nominations_open_at: string | null;
+      primary_color: string | null;
+      logo_url: string | null;
+      tagline: string | null;
+      organization_name: string | null;
     };
   };
 };
@@ -46,7 +51,9 @@ const VotePage = () => {
   const { user, loading: authLoading } = useAuth();
   const [legacyRedirecting, setLegacyRedirecting] = useState(false);
   const [voteBusy, setVoteBusy] = useState<string | null>(null);
-  const [justVoted, setJustVoted] = useState<Record<string, { rank: number; categoryName: string }>>({});
+  const [justVoted, setJustVoted] = useState<
+    Record<string, { rank: number; total: number; categoryName: string }>
+  >({});
 
   const isUuid = isNominationUuid(nominationId);
 
@@ -71,10 +78,15 @@ const VotePage = () => {
             program_id,
             award_programs (
               id,
+              name,
               year,
               status,
               voting_open_at,
-              nominations_open_at
+              nominations_open_at,
+              primary_color,
+              logo_url,
+              tagline,
+              organization_name
             )
           )
         `,
@@ -105,10 +117,15 @@ const VotePage = () => {
             program_id,
             award_programs (
               id,
+              name,
               year,
               status,
               voting_open_at,
-              nominations_open_at
+              nominations_open_at,
+              primary_color,
+              logo_url,
+              tagline,
+              organization_name
             )
           )
         `,
@@ -165,17 +182,22 @@ const VotePage = () => {
     })();
   }, [nominationId, isUuid, navigate]);
 
-  const programYear = landingQuery.data?.kind === "ok" ? landingQuery.data.anchor.award_categories.award_programs.year : 2026;
+  const programId =
+    landingQuery.data?.kind === "ok" ? landingQuery.data.anchor.award_categories.program_id : null;
+  const programBranding =
+    landingQuery.data?.kind === "ok" ? landingQuery.data.anchor.award_categories.award_programs : null;
+  const accent = programBranding?.primary_color?.trim() || "#B8860B";
 
   const votesUsedByCategory = useQuery({
-    queryKey: ["my-votes-category", user?.id, programYear, nominationId],
-    enabled: Boolean(user && landingQuery.data?.kind === "ok"),
+    queryKey: ["my-votes-category", user?.id, nominationId, programId],
+    enabled: Boolean(user && landingQuery.data?.kind === "ok" && programId),
     queryFn: async () => {
-      if (landingQuery.data?.kind !== "ok" || !user) return {};
+      if (landingQuery.data?.kind !== "ok" || !user || !programId) return {};
       const map: Record<string, number> = {};
       for (const n of landingQuery.data.nominations) {
         const slug = n.award_categories.slug;
-        map[slug] = await countVotesForUserInCategory(user.id, slug, programYear);
+        const pid = n.award_categories.program_id;
+        map[n.category_id] = await countVotesForUserInCategory(user.id, slug, pid);
       }
       return map;
     },
@@ -210,20 +232,22 @@ const VotePage = () => {
     }
     const slug = n.award_categories.slug;
     const year = prog.year;
+    const pid = n.award_categories.program_id;
     setVoteBusy(n.category_id);
     try {
-      const used = votesUsedByCategory.data?.[slug] ?? 0;
+      const used = votesUsedByCategory.data?.[n.category_id] ?? 0;
       if (used >= 3) {
         toast.error("You have already used all 3 votes in this category.");
         return;
       }
-      const slot = await getNextVoteSlot(user.id, slug, year);
+      const slot = await getNextVoteSlot(user.id, slug, pid);
       if (slot === null) {
         toast.error("You have already used all 3 votes in this category.");
         return;
       }
       const { error } = await supabase.from("votes").insert({
         user_id: user.id,
+        program_id: pid,
         category_id: slug,
         nominee_id: n.podcast_id,
         year,
@@ -238,10 +262,10 @@ const VotePage = () => {
         return;
       }
       toast.success("Your vote has been cast!");
-      const r = await rankAmongNominees(n.podcast_id, n.category_id, slug, year);
+      const r = await rankAmongNominees(n.podcast_id, n.category_id, slug, pid);
       setJustVoted((prev) => ({
         ...prev,
-        [n.category_id]: { rank: r.rank, categoryName: n.award_categories.name },
+        [n.category_id]: { rank: r.rank, total: r.totalNominees, categoryName: n.award_categories.name },
       }));
       await votesUsedByCategory.refetch();
     } finally {
@@ -270,7 +294,7 @@ const VotePage = () => {
             This link may be invalid or the nominee has not set up nominations yet.
           </p>
           <Button asChild variant="gold">
-            <Link to="/categories">Browse categories</Link>
+            <Link to={programId ? `/awards/${programId}/categories` : "/awards"}>Browse categories</Link>
           </Button>
         </main>
         <Footer />
@@ -293,7 +317,7 @@ const VotePage = () => {
         <main className="container mx-auto px-4 pt-28 pb-16 text-center">
           <h1 className="font-serif text-2xl font-bold mb-2">Nomination not found</h1>
           <Button asChild className="mt-4" variant="goldOutline">
-            <Link to="/categories">Browse all categories</Link>
+            <Link to="/awards">Browse award programs</Link>
           </Button>
         </main>
         <Footer />
@@ -306,16 +330,50 @@ const VotePage = () => {
 
   const shareUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/vote/${nominationId}`;
   const img = data.podcast?.image_url;
+  const progMeta = data.anchor.award_categories.award_programs;
+  const backToProgram = `/awards/${data.anchor.award_categories.program_id}/categories`;
 
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title={`Vote for ${displayName} — Veteran Podcast Awards`}
-        description={`Support ${displayName} on ${showName} in the Veteran Podcast Awards.`}
+        title={`Vote for ${displayName} — ${progMeta.name}`}
+        description={`Support ${displayName} on ${showName} in ${progMeta.name}.`}
         canonicalUrl={`/vote/${nominationId}`}
       />
       <Header />
       <main className="container mx-auto px-4 pt-24 pb-16 max-w-lg md:max-w-2xl">
+        <div className="mb-8 rounded-2xl border border-border/80 bg-card p-5 shadow-sm">
+          <div className="flex flex-col items-center gap-3 text-center sm:flex-row sm:text-left">
+            {progMeta.logo_url ? (
+              <img
+                src={progMeta.logo_url}
+                alt=""
+                className="h-14 w-auto max-w-[200px] object-contain"
+              />
+            ) : (
+              <div
+                className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl text-2xl"
+                style={{ backgroundColor: `${accent}22`, color: accent }}
+              >
+                🏆
+              </div>
+            )}
+            <div className="min-w-0 flex-1 space-y-1">
+              <p className="font-serif text-lg font-bold leading-tight text-foreground">{progMeta.name}</p>
+              {progMeta.tagline && (
+                <p className="text-sm text-muted-foreground">{progMeta.tagline}</p>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Part of <span className="font-medium text-foreground">{progMeta.name}</span>
+                {progMeta.organization_name ? ` · ${progMeta.organization_name}` : ""}
+              </p>
+            </div>
+          </div>
+          <Button variant="link" className="mt-3 h-auto p-0 text-sm" asChild>
+            <Link to={backToProgram}>← Back to categories</Link>
+          </Button>
+        </div>
+
         <Card className="overflow-hidden border-primary/20 mb-8">
           <CardHeader className="text-center space-y-4 pb-2">
             <Avatar className="w-24 h-24 mx-auto border-4 border-primary/30">
@@ -360,7 +418,7 @@ const VotePage = () => {
           {data.nominations.map((n) => {
             const prog = n.award_categories.award_programs;
             const open = votingOpen(prog);
-            const used = votesUsedByCategory.data?.[n.award_categories.slug] ?? 0;
+            const used = votesUsedByCategory.data?.[n.category_id] ?? 0;
             const votedInfo = justVoted[n.category_id];
             return (
               <Card key={n.id} className="border-border">
@@ -376,8 +434,8 @@ const VotePage = () => {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <Button
-                    className="w-full min-h-12 text-base"
-                    variant="gold"
+                    className="w-full min-h-12 border-0 text-base text-white shadow hover:opacity-90"
+                    style={{ backgroundColor: accent }}
                     disabled={!open || voteBusy === n.category_id || used >= 3}
                     onClick={() => handleVote(n)}
                   >
@@ -393,8 +451,8 @@ const VotePage = () => {
                     {used}/3 votes used in this category (max 3 per voter)
                   </p>
                   {votedInfo && (
-                    <p className="text-sm text-center font-medium text-primary">
-                      They are currently ranked #{votedInfo.rank} in {votedInfo.categoryName}
+                    <p className="text-sm text-center font-medium" style={{ color: accent }}>
+                      Currently ranked #{votedInfo.rank} of {votedInfo.total} nominees in {votedInfo.categoryName}
                     </p>
                   )}
                 </CardContent>
@@ -403,9 +461,14 @@ const VotePage = () => {
           })}
         </div>
 
-        <Button variant="goldOutline" className="w-full min-h-12" asChild>
-          <Link to="/categories">
-            Browse all categories
+        <Button
+          variant="outline"
+          className="w-full min-h-12 border-2 bg-transparent hover:bg-muted/50"
+          style={{ borderColor: accent, color: accent }}
+          asChild
+        >
+          <Link to={backToProgram}>
+            Browse program categories
             <ChevronRight className="w-4 h-4 ml-1" />
           </Link>
         </Button>

@@ -10,6 +10,11 @@ import Livestream from "./pages/Livestream";
 import Categories from "./pages/Categories";
 import CategoryDetailPage from "./pages/CategoryDetailPage";
 import VotePage from "./pages/VotePage";
+import AwardsProgramsPage from "./pages/AwardsProgramsPage";
+import AwardsProgramCategoriesPage from "./pages/AwardsProgramCategoriesPage";
+import AwardsCategoryNomineesPage from "./pages/AwardsCategoryNomineesPage";
+import AwardTicketsPage from "./pages/AwardTicketsPage";
+import TicketPassPage from "./pages/TicketPassPage";
 import About from "./pages/About";
 import Admin from "./pages/Admin";
 import Network from "./pages/Network";
@@ -42,6 +47,11 @@ const App = () => (
               <Route path="/livestream" element={<Livestream />} />
               <Route path="/categories/:categorySlug" element={<CategoryDetailPage />} />
               <Route path="/categories" element={<Categories />} />
+              <Route path="/awards" element={<AwardsProgramsPage />} />
+              <Route path="/awards/:programId/categories" element={<AwardsProgramCategoriesPage />} />
+              <Route path="/awards/:programId/categories/:categoryId" element={<AwardsCategoryNomineesPage />} />
+              <Route path="/awards/:programId/tickets" element={<AwardTicketsPage />} />
+              <Route path="/ticket/:token" element={<TicketPassPage />} />
               <Route path="/vote/:nominationId" element={<VotePage />} />
               <Route path="/network" element={<Network />} />
               <Route path="/sponsors" element={<Sponsors />} />
