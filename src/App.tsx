@@ -8,6 +8,8 @@ import { HelmetProvider } from "react-helmet-async";
 import Index from "./pages/Index";
 import Livestream from "./pages/Livestream";
 import Categories from "./pages/Categories";
+import CategoryDetailPage from "./pages/CategoryDetailPage";
+import VotePage from "./pages/VotePage";
 import About from "./pages/About";
 import Admin from "./pages/Admin";
 import Network from "./pages/Network";
@@ -38,7 +40,9 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/livestream" element={<Livestream />} />
+              <Route path="/categories/:categorySlug" element={<CategoryDetailPage />} />
               <Route path="/categories" element={<Categories />} />
+              <Route path="/vote/:nominationId" element={<VotePage />} />
               <Route path="/network" element={<Network />} />
               <Route path="/sponsors" element={<Sponsors />} />
               <Route path="/podcast-day" element={<PodcastDay />} />

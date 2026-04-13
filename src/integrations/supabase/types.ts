@@ -55,35 +55,44 @@ export type Database = {
           },
         ]
       }
-      award_nominations: {
+      nominations: {
         Row: {
           category_id: string
           created_at: string
           id: string
           podcast_id: string
+          podcast_name: string
+          podcaster_name: string
+          user_id: string
         }
         Insert: {
           category_id: string
           created_at?: string
           id?: string
           podcast_id: string
+          podcast_name: string
+          podcaster_name: string
+          user_id: string
         }
         Update: {
           category_id?: string
           created_at?: string
           id?: string
           podcast_id?: string
+          podcast_name?: string
+          podcaster_name?: string
+          user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "award_nominations_category_id_fkey"
+            foreignKeyName: "nominations_category_id_fkey"
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "award_categories"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "award_nominations_podcast_id_fkey"
+            foreignKeyName: "nominations_podcast_id_fkey"
             columns: ["podcast_id"]
             isOneToOne: false
             referencedRelation: "podcasts"
@@ -922,6 +931,7 @@ export type Database = {
           id: string
           nominee_id: string
           user_id: string
+          vote_slot: number
           year: number
         }
         Insert: {
@@ -930,6 +940,7 @@ export type Database = {
           id?: string
           nominee_id: string
           user_id: string
+          vote_slot?: number
           year?: number
         }
         Update: {
@@ -938,6 +949,7 @@ export type Database = {
           id?: string
           nominee_id?: string
           user_id?: string
+          vote_slot?: number
           year?: number
         }
         Relationships: [
@@ -955,6 +967,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_category_votes_flat: {
+        Args: { p_category_slug: string; p_year: number }
+        Returns: {
+          voter_email: string
+          voter_name: string
+          nominee_podcast: string
+          nominee_id: string
+          vote_slot: number
+          voted_at: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

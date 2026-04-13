@@ -36,10 +36,19 @@ const AuthPage = () => {
 
   useEffect(() => {
     if (!loading && user) {
-      const from = (location.state as { from?: string })?.from || "/";
-      navigate(from, { replace: true });
+      const returnTo = searchParams.get("returnTo");
+      const from = (location.state as { from?: string })?.from;
+      const target = returnTo ? decodeURIComponent(returnTo) : from || "/";
+      navigate(target, { replace: true });
     }
-  }, [user, loading, navigate, location]);
+  }, [user, loading, navigate, location, searchParams]);
+
+  useEffect(() => {
+    if (searchParams.get("intent") === "voter") {
+      setIsLogin(false);
+      setUserType("fan");
+    }
+  }, [searchParams]);
 
   const validateForm = () => {
     const newErrors: { email?: string; password?: string; userType?: string } = {};

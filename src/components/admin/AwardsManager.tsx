@@ -29,7 +29,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Trophy } from "lucide-react";
+import { Download, Plus, Trophy } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -45,6 +45,13 @@ function slugify(name: string): string {
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "") || "category"
   );
+}
+
+function csvEscape(s: string) {
+  if (s.includes(",") || s.includes('"') || s.includes("\n")) {
+    return `"${s.replace(/"/g, '""')}"`;
+  }
+  return s;
 }
 
 function statusBadge(status: ProgramStatus) {
@@ -70,10 +77,28 @@ function formatDateTime(iso: string | null | undefined): string {
 function formatDateOnly(d: string | null | undefined): string {
   if (!d) return "—";
   try {
-    return format(new Date(d + "T12:00:00"), "MMM d, yyyy");
+    const dt = d.length <= 10 ? new Date(`${d}T12:00:00`) : new Date(d);
+    if (Number.isNaN(dt.getTime())) return "—";
+    return format(dt, "MMM d, yyyy");
   } catch {
-    return d;
+    return "—";
   }
+}
+
+/** DB may use *_at or *_date column names depending on migration / manual edits */
+function normalizeAwardProgramRow(raw: Record<string, unknown>): AwardProgram {
+  const n =
+    (raw.nominations_open_at as string | null | undefined) ??
+    (raw.nominations_open_date as string | null | undefined);
+  const v =
+    (raw.voting_open_at as string | null | undefined) ?? (raw.voting_open_date as string | null | undefined);
+  const c = (raw.ceremony_at as string | null | undefined) ?? (raw.ceremony_date as string | null | undefined);
+  return {
+    ...(raw as unknown as AwardProgram),
+    nominations_open_at: n ?? null,
+    voting_open_at: v ?? null,
+    ceremony_at: c ?? null,
+  };
 }
 
 export const AwardsManager = () => {
@@ -105,29 +130,38 @@ export const AwardsManager = () => {
         .order("year", { ascending: false })
         .order("name");
       if (error) throw error;
-      return data as AwardProgram[];
+      return (data ?? []).map((row) => normalizeAwardProgramRow(row as Record<string, unknown>));
     },
   });
 
+  /** Prefer explicit row selection; otherwise active program, then first row */
+  const resolvedProgramId = useMemo(() => {
+    if (selectedProgramId && programs.some((p) => p.id === selectedProgramId)) {
+      return selectedProgramId;
+    }
+    const active = programs.find((p) => p.status === "active");
+    return active?.id ?? programs[0]?.id ?? null;
+  }, [programs, selectedProgramId]);
+
   const selectedProgram = useMemo(
-    () => programs.find((p) => p.id === selectedProgramId) ?? null,
-    [programs, selectedProgramId],
+    () => (resolvedProgramId ? programs.find((p) => p.id === resolvedProgramId) ?? null : null),
+    [programs, resolvedProgramId],
   );
 
   const { data: categories = [], isLoading: loadingCategories } = useQuery({
-    queryKey: ["award-categories", selectedProgramId],
+    queryKey: ["award-categories", resolvedProgramId],
     queryFn: async () => {
-      if (!selectedProgramId) return [];
+      if (!resolvedProgramId) return [];
       const { data, error } = await supabase
         .from("award_categories")
         .select("*")
-        .eq("program_id", selectedProgramId)
+        .eq("program_id", resolvedProgramId)
         .order("sort_order")
         .order("name");
       if (error) throw error;
       return data as AwardCategory[];
     },
-    enabled: !!selectedProgramId,
+    enabled: Boolean(resolvedProgramId && programs.length > 0),
   });
 
   const categorySlugs = useMemo(() => categories.map((c) => c.slug), [categories]);
@@ -144,7 +178,7 @@ export const AwardsManager = () => {
           .select("category_id, vote_count")
           .eq("year", programYear)
           .in("category_id", categorySlugs),
-        supabase.from("award_nominations").select("category_id").in("category_id", categoryIds),
+        supabase.from("nominations").select("category_id").in("category_id", categoryIds),
       ]);
       if (vc.error) throw vc.error;
       if (nom.error) throw nom.error;
@@ -237,6 +271,11 @@ export const AwardsManager = () => {
     enabled: !!leaderboardProgramId,
   });
 
+  const leaderboardCategory = useMemo(
+    () => lbCategories.data?.find((c) => c.id === leaderboardCategoryId) ?? null,
+    [lbCategories.data, leaderboardCategoryId],
+  );
+
   const leaderboardRows = useQuery({
     queryKey: ["vote-leaderboard", leaderboardProgramId, leaderboardCategoryId],
     queryFn: async () => {
@@ -280,6 +319,59 @@ export const AwardsManager = () => {
     refetchInterval: 15_000,
   });
 
+  const adminVotersFlat = useQuery({
+    queryKey: ["admin-voters-flat", lbProgram?.year, leaderboardCategory?.slug],
+    queryFn: async () => {
+      if (!lbProgram || !leaderboardCategory) return [];
+      const { data, error } = await supabase.rpc("admin_category_votes_flat", {
+        p_year: lbProgram.year,
+        p_category_slug: leaderboardCategory.slug,
+      });
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!lbProgram && !!leaderboardCategory,
+    refetchInterval: 15_000,
+  });
+
+  const exportLeaderboardCsv = () => {
+    const rows = leaderboardRows.data ?? [];
+    const voters = adminVotersFlat.data ?? [];
+    if (!rows.length && !voters.length) {
+      toast.error("Nothing to export");
+      return;
+    }
+    const leaderboardLines = [
+      ["rank", "podcast", "podcaster", "votes", "percent"].join(","),
+      ...rows.map((r) =>
+        [r.rank, csvEscape(r.title), csvEscape(r.podcaster), r.votes, r.pct.toFixed(2)].join(","),
+      ),
+    ];
+    const voterLines = [
+      "",
+      "voter_email,voter_name,nominee_podcast,nominee_id,vote_slot,voted_at",
+      ...voters.map((v) =>
+        [
+          csvEscape(v.voter_email ?? ""),
+          csvEscape(v.voter_name ?? ""),
+          csvEscape(v.nominee_podcast ?? ""),
+          v.nominee_id,
+          v.vote_slot,
+          v.voted_at,
+        ].join(","),
+      ),
+    ];
+    const blob = new Blob([[...leaderboardLines, ...voterLines].join("\n")], {
+      type: "text/csv;charset=utf-8",
+    });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `vpa-votes-${lbProgram?.year ?? "year"}-${leaderboardCategory?.slug ?? "category"}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast.success("CSV downloaded");
+  };
+
   const nomineesModal = useQuery({
     queryKey: ["category-nominees", nomineesCategory?.id, selectedProgram?.year, nomineesCategory?.slug],
     queryFn: async () => {
@@ -316,10 +408,13 @@ export const AwardsManager = () => {
   });
 
   useEffect(() => {
-    if (programs.length && !selectedProgramId) {
-      setSelectedProgramId(programs[0].id);
-    }
-  }, [programs, selectedProgramId]);
+    if (!programs.length) return;
+    setSelectedProgramId((prev) => {
+      if (prev && programs.some((p) => p.id === prev)) return prev;
+      const active = programs.find((p) => p.status === "active");
+      return active?.id ?? programs[0].id;
+    });
+  }, [programs]);
 
   useEffect(() => {
     if (!leaderboardProgramId && programs.length) {
@@ -372,7 +467,7 @@ export const AwardsManager = () => {
                 {programs.map((p) => (
                   <TableRow
                     key={p.id}
-                    data-state={selectedProgramId === p.id ? "selected" : undefined}
+                    data-state={resolvedProgramId === p.id ? "selected" : undefined}
                     className="cursor-pointer"
                     onClick={() => setSelectedProgramId(p.id)}
                   >
@@ -455,7 +550,8 @@ export const AwardsManager = () => {
       <div className="border-t border-border pt-8">
         <h3 className="font-serif text-lg font-semibold mb-1">Vote summary</h3>
         <p className="text-sm text-muted-foreground mb-4">
-          Live tally (refreshes every 15s). Filter by program and category; sorted by votes descending.
+          Live tally (refreshes every 15s). Top three ranks are highlighted. Filter by program and category; sorted by
+          votes descending.
         </p>
         <div className="flex flex-wrap gap-4 mb-4">
           <div className="space-y-1">
@@ -500,11 +596,18 @@ export const AwardsManager = () => {
           </div>
         </div>
 
+        <div className="flex justify-end mb-2">
+          <Button type="button" variant="outline" size="sm" onClick={exportLeaderboardCsv}>
+            <Download className="w-4 h-4 mr-1" />
+            Export CSV
+          </Button>
+        </div>
+
         <div className="rounded-lg border border-border overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-14">Rank</TableHead>
+                <TableHead className="w-20">Rank</TableHead>
                 <TableHead>Podcast</TableHead>
                 <TableHead>Podcaster</TableHead>
                 <TableHead className="text-right">Votes</TableHead>
@@ -526,8 +629,26 @@ export const AwardsManager = () => {
                 </TableRow>
               ) : (
                 leaderboardRows.data.map((row) => (
-                  <TableRow key={row.podcastId}>
-                    <TableCell className="font-mono">{row.rank}</TableCell>
+                  <TableRow
+                    key={row.podcastId}
+                    className={
+                      row.rank === 1
+                        ? "bg-amber-500/15"
+                        : row.rank === 2
+                          ? "bg-slate-400/15"
+                          : row.rank === 3
+                            ? "bg-orange-700/15"
+                            : ""
+                    }
+                  >
+                    <TableCell className="font-mono">
+                      <span className="inline-flex items-center gap-1">
+                        {row.rank === 1 && <span aria-hidden>🥇</span>}
+                        {row.rank === 2 && <span aria-hidden>🥈</span>}
+                        {row.rank === 3 && <span aria-hidden>🥉</span>}
+                        {row.rank}
+                      </span>
+                    </TableCell>
                     <TableCell className="font-medium">{row.title}</TableCell>
                     <TableCell className="text-muted-foreground">{row.podcaster}</TableCell>
                     <TableCell className="text-right font-mono tabular-nums">{row.votes}</TableCell>
@@ -539,6 +660,54 @@ export const AwardsManager = () => {
               )}
             </TableBody>
           </Table>
+        </div>
+
+        <div className="mt-6">
+          <h4 className="font-medium text-sm mb-2">Voters (email & name)</h4>
+          <p className="text-xs text-muted-foreground mb-2">
+            One row per vote slot (max 3 per voter per category). Requires admin SQL migration{" "}
+            <code className="text-[11px]">admin_category_votes_flat</code>.
+          </p>
+          <div className="rounded-lg border border-border overflow-x-auto max-h-72 overflow-y-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Voter email</TableHead>
+                  <TableHead>Voter name</TableHead>
+                  <TableHead>Voted for</TableHead>
+                  <TableHead className="w-16">Slot</TableHead>
+                  <TableHead>When</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {adminVotersFlat.isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-muted-foreground">
+                      Loading…
+                    </TableCell>
+                  </TableRow>
+                ) : !adminVotersFlat.data?.length ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-muted-foreground">
+                      No voter rows (or RPC not deployed yet).
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  adminVotersFlat.data.map((v, i) => (
+                    <TableRow key={`${v.nominee_id}-${v.vote_slot}-${i}`}>
+                      <TableCell className="text-xs font-mono">{v.voter_email}</TableCell>
+                      <TableCell className="text-sm">{v.voter_name || "—"}</TableCell>
+                      <TableCell className="text-sm">{v.nominee_podcast}</TableCell>
+                      <TableCell className="font-mono text-sm">{v.vote_slot}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                        {formatDateTime(v.voted_at)}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       </div>
 

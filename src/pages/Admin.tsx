@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { SponsorList } from '@/components/admin/SponsorList';
@@ -15,15 +15,50 @@ import { InvestorEngagementPanel } from '@/components/admin/InvestorEngagementPa
 import { DeckEngagementPanel } from '@/components/admin/DeckEngagementPanel';
 import { AwardsManager } from '@/components/admin/AwardsManager';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { cn } from '@/lib/utils';
 import { ThemeSelector } from '@/components/theme/ThemeToggle';
-import { LogOut, Shield, Home, Users, Mic, Handshake, Rss, Mail, Layers, ShieldCheck, BarChart3, KeyRound, Video, Activity, FileText, Trophy } from 'lucide-react';
+import {
+  LogOut,
+  Shield,
+  Home,
+  Users,
+  Mic,
+  Handshake,
+  Rss,
+  Mail,
+  Layers,
+  ShieldCheck,
+  BarChart3,
+  KeyRound,
+  Video,
+  Activity,
+  FileText,
+  Trophy,
+  ChevronDown,
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
 import logo from '@/assets/vpa-logo.png';
+
+const MORE_TAB_VALUES = new Set([
+  'contacts',
+  'tech-stack',
+  'investor-access',
+  'investor-videos',
+  'investor-engagement',
+  'deck-engagement',
+]);
 
 const AdminPage = () => {
   const { user, loading, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('users');
 
   useEffect(() => {
     if (!loading && !user) {
@@ -102,61 +137,86 @@ const AdminPage = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        <Tabs defaultValue="users" className="space-y-6">
-          <TabsList className="flex flex-wrap gap-1 h-auto p-1">
-            <TabsTrigger value="users" className="gap-2">
-              <Users className="w-4 h-4" />
-              <span className="hidden sm:inline">Users</span>
-            </TabsTrigger>
-            <TabsTrigger value="contacts" className="gap-2">
-              <Mail className="w-4 h-4" />
-              <span className="hidden sm:inline">Contacts</span>
-            </TabsTrigger>
-            <TabsTrigger value="podcasts" className="gap-2">
-              <Mic className="w-4 h-4" />
-              <span className="hidden sm:inline">Podcasts</span>
-            </TabsTrigger>
-            <TabsTrigger value="submissions" className="gap-2">
-              <Rss className="w-4 h-4" />
-              <span className="hidden sm:inline">Submissions</span>
-            </TabsTrigger>
-            <TabsTrigger value="awards" className="gap-2">
-              <Trophy className="w-4 h-4" />
-              <span className="hidden sm:inline">Awards</span>
-            </TabsTrigger>
-            <TabsTrigger value="sponsors" className="gap-2">
-              <Handshake className="w-4 h-4" />
-              <span className="hidden sm:inline">Sponsors</span>
-            </TabsTrigger>
-            <TabsTrigger value="metrics" className="gap-2">
-              <BarChart3 className="w-4 h-4" />
-              <span className="hidden sm:inline">Metrics</span>
-            </TabsTrigger>
-            <TabsTrigger value="tech-stack" className="gap-2">
-              <Layers className="w-4 h-4" />
-              <span className="hidden sm:inline">Tech Stack</span>
-            </TabsTrigger>
-            <TabsTrigger value="security" className="gap-2">
-              <ShieldCheck className="w-4 h-4" />
-              <span className="hidden sm:inline">Security</span>
-            </TabsTrigger>
-            <TabsTrigger value="investor-access" className="gap-2">
-              <KeyRound className="w-4 h-4" />
-              <span className="hidden sm:inline">Investors</span>
-            </TabsTrigger>
-            <TabsTrigger value="investor-videos" className="gap-2">
-              <Video className="w-4 h-4" />
-              <span className="hidden sm:inline">Videos</span>
-            </TabsTrigger>
-            <TabsTrigger value="investor-engagement" className="gap-2">
-              <Activity className="w-4 h-4" />
-              <span className="hidden sm:inline">Investor Engagement</span>
-            </TabsTrigger>
-            <TabsTrigger value="deck-engagement" className="gap-2">
-              <FileText className="w-4 h-4" />
-              <span className="hidden sm:inline">Deck Engagement</span>
-            </TabsTrigger>
-          </TabsList>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <div className="flex flex-wrap items-stretch gap-1">
+            <TabsList className="flex flex-wrap gap-1 h-auto p-1 flex-1 min-w-0 justify-start">
+              <TabsTrigger value="users" className="gap-2">
+                <Users className="w-4 h-4" />
+                <span className="hidden sm:inline">Users</span>
+              </TabsTrigger>
+              <TabsTrigger value="podcasts" className="gap-2">
+                <Mic className="w-4 h-4" />
+                <span className="hidden sm:inline">Podcasts</span>
+              </TabsTrigger>
+              <TabsTrigger value="submissions" className="gap-2">
+                <Rss className="w-4 h-4" />
+                <span className="hidden sm:inline">Submissions</span>
+              </TabsTrigger>
+              <TabsTrigger value="awards" className="gap-2">
+                <Trophy className="w-4 h-4" />
+                <span className="hidden sm:inline">Awards</span>
+              </TabsTrigger>
+              <TabsTrigger value="sponsors" className="gap-2">
+                <Handshake className="w-4 h-4" />
+                <span className="hidden sm:inline">Sponsors</span>
+              </TabsTrigger>
+              <TabsTrigger value="metrics" className="gap-2">
+                <BarChart3 className="w-4 h-4" />
+                <span className="hidden sm:inline">Metrics</span>
+              </TabsTrigger>
+              <TabsTrigger value="security" className="gap-2">
+                <ShieldCheck className="w-4 h-4" />
+                <span className="hidden sm:inline">Security</span>
+              </TabsTrigger>
+            </TabsList>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className={cn(
+                    'inline-flex h-10 shrink-0 items-center justify-center gap-1 rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                    MORE_TAB_VALUES.has(activeTab)
+                      ? 'bg-background text-foreground shadow-sm'
+                      : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground',
+                  )}
+                >
+                  <span className="hidden sm:inline">More</span>
+                  <span className="sm:hidden">⋯</span>
+                  <ChevronDown className="h-4 w-4 opacity-70" aria-hidden />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => setActiveTab('contacts')}>
+                  <Mail className="w-4 h-4" />
+                  Contacts
+                </DropdownMenuItem>
+                <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => setActiveTab('tech-stack')}>
+                  <Layers className="w-4 h-4" />
+                  Tech Stack
+                </DropdownMenuItem>
+                <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => setActiveTab('investor-access')}>
+                  <KeyRound className="w-4 h-4" />
+                  Investors
+                </DropdownMenuItem>
+                <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => setActiveTab('investor-videos')}>
+                  <Video className="w-4 h-4" />
+                  Videos
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="gap-2 cursor-pointer"
+                  onClick={() => setActiveTab('investor-engagement')}
+                >
+                  <Activity className="w-4 h-4" />
+                  Investor Engagement
+                </DropdownMenuItem>
+                <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => setActiveTab('deck-engagement')}>
+                  <FileText className="w-4 h-4" />
+                  Deck Engagement
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
 
           <TabsContent value="users">
             <UserManager />

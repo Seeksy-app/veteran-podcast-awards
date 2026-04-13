@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -39,6 +39,7 @@ import {
   Trash2
 } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
+import { GetNominatedSection } from "@/components/dashboard/GetNominatedSection";
 
 interface Profile {
   id: string;
@@ -73,6 +74,7 @@ interface UserVote {
   category_id: string;
   nominee_id: string;
   year: number;
+  vote_slot: number;
   created_at: string;
   podcast?: {
     title: string;
@@ -91,6 +93,11 @@ const Dashboard = () => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [copied, setCopied] = useState(false);
   const [profileLinkCopied, setProfileLinkCopied] = useState(false);
+  const [linkedPodcast, setLinkedPodcast] = useState<{
+    id: string;
+    title: string;
+    author: string | null;
+  } | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -105,6 +112,21 @@ const Dashboard = () => {
       fetchMessages();
     }
   }, [user]);
+
+  useEffect(() => {
+    if (!profile?.podcast_id) {
+      setLinkedPodcast(null);
+      return;
+    }
+    (async () => {
+      const { data } = await supabase
+        .from("podcasts")
+        .select("id, title, author")
+        .eq("id", profile.podcast_id!)
+        .maybeSingle();
+      setLinkedPodcast(data);
+    })();
+  }, [profile?.podcast_id]);
 
   const fetchMessages = async () => {
     if (!user) return;
@@ -138,6 +160,7 @@ const Dashboard = () => {
         category_id,
         nominee_id,
         year,
+        vote_slot,
         created_at
       `)
       .eq("user_id", user.id)
@@ -280,6 +303,15 @@ const Dashboard = () => {
     }
   };
 
+  const votesByCategory = useMemo(() => {
+    const m = new Map<string, UserVote[]>();
+    for (const v of votes) {
+      const key = `${v.category_id}::${v.year}`;
+      m.set(key, [...(m.get(key) ?? []), v]);
+    }
+    return Array.from(m.entries());
+  }, [votes]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -326,6 +358,8 @@ const Dashboard = () => {
               </Badge>
             </div>
           </div>
+
+          <GetNominatedSection userId={user.id} profile={profile} podcast={linkedPodcast} />
 
           {/* Dashboard Tabs */}
           <Tabs defaultValue="profile" className="space-y-6">
@@ -515,39 +549,51 @@ const Dashboard = () => {
                       <Vote className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                       <h3 className="font-semibold text-foreground mb-2">No Votes Yet</h3>
                       <p className="text-muted-foreground text-sm mb-4">
-                        You haven't voted in any categories yet.
+                        You haven&apos;t voted in any categories yet.
                       </p>
                       <Button variant="gold" onClick={() => navigate("/categories")}>
                         Start Voting
                       </Button>
                     </div>
                   ) : (
-                    <div className="space-y-4">
-                      {votes.map((vote) => (
-                        <div
-                          key={vote.id}
-                          className="flex items-center gap-4 p-4 bg-secondary/30 rounded-lg"
-                        >
-                          <div className="w-12 h-12 rounded-lg bg-secondary flex items-center justify-center overflow-hidden">
-                            {vote.podcast?.image_url ? (
-                              <img
-                                src={vote.podcast.image_url}
-                                alt={vote.podcast.title}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <Mic className="w-6 h-6 text-muted-foreground" />
-                            )}
+                    <div className="space-y-6">
+                      {votesByCategory.map(([key, group]) => (
+                        <div key={key}>
+                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+                            {group[0].category_id} · {group[0].year}{" "}
+                            <span className="normal-case">
+                              ({group.length}/3 votes used in this category)
+                            </span>
+                          </p>
+                          <div className="space-y-2">
+                            {group.map((vote) => (
+                              <div
+                                key={vote.id}
+                                className="flex items-center gap-4 p-4 bg-secondary/30 rounded-lg"
+                              >
+                                <div className="w-12 h-12 rounded-lg bg-secondary flex items-center justify-center overflow-hidden">
+                                  {vote.podcast?.image_url ? (
+                                    <img
+                                      src={vote.podcast.image_url}
+                                      alt={vote.podcast.title}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  ) : (
+                                    <Mic className="w-6 h-6 text-muted-foreground" />
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-medium text-foreground truncate">
+                                    {vote.podcast?.title || "Unknown Podcast"}
+                                  </p>
+                                  <p className="text-sm text-muted-foreground">
+                                    Vote {vote.vote_slot ?? 1} of 3
+                                  </p>
+                                </div>
+                                <CheckCircle className="w-5 h-5 text-green-500 shrink-0" />
+                              </div>
+                            ))}
                           </div>
-                          <div className="flex-1">
-                            <p className="font-medium text-foreground">
-                              {vote.podcast?.title || "Unknown Podcast"}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              {vote.category_id} • {vote.year}
-                            </p>
-                          </div>
-                          <CheckCircle className="w-5 h-5 text-green-500" />
                         </div>
                       ))}
                     </div>
