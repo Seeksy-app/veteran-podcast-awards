@@ -14,6 +14,7 @@ import { InvestorVideoManager } from '@/components/admin/InvestorVideoManager';
 import { InvestorEngagementPanel } from '@/components/admin/InvestorEngagementPanel';
 import { DeckEngagementPanel } from '@/components/admin/DeckEngagementPanel';
 import { AwardsManager } from '@/components/admin/AwardsManager';
+import { EmailMarketingPanel } from '@/components/admin/EmailMarketingPanel';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -42,6 +43,7 @@ import {
   FileText,
   Trophy,
   ChevronDown,
+  Megaphone,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import logo from '@/assets/vpa-logo.png';
@@ -160,6 +162,11 @@ const AdminPage = () => {
                 <Handshake className="w-4 h-4" />
                 <span className="hidden sm:inline">Sponsors</span>
               </TabsTrigger>
+              <TabsTrigger value="email-marketing" className="gap-2">
+                <Megaphone className="w-4 h-4" />
+                <span className="hidden lg:inline">Email Marketing</span>
+                <span className="hidden sm:inline lg:hidden">Email</span>
+              </TabsTrigger>
               <TabsTrigger value="metrics" className="gap-2">
                 <BarChart3 className="w-4 h-4" />
                 <span className="hidden sm:inline">Metrics</span>
@@ -240,6 +247,10 @@ const AdminPage = () => {
 
           <TabsContent value="sponsors">
             <SponsorList />
+          </TabsContent>
+
+          <TabsContent value="email-marketing">
+            <EmailMarketingPanel />
           </TabsContent>
 
           <TabsContent value="metrics">

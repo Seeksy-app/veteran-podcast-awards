@@ -101,6 +101,12 @@ export function publicCategoryEmoji(slug: string): string {
     "best-military-comedy": "😂",
     "best-defense-security-show": "🛡️",
     "media-personality-of-the-year": "🎬",
+    "best-overall-veteran-podcast": "🎖️",
+    "best-army-veteran-podcast": "⭐",
+    "best-navy-veteran-podcast": "⚓",
+    "best-marine-corps-veteran-podcast": "🦅",
+    "best-air-force-veteran-podcast": "✈️",
+    "best-military-transition-podcast": "🌉",
   };
   return map[slug] ?? "✨";
 }

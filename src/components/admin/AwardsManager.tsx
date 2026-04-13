@@ -65,6 +65,12 @@ const SEEDED_CATEGORY_PRESETS: { slug: string; name: string; description: string
   { slug: "best-true-crime", name: "Best True Crime", description: "Investigative and narrative true crime." },
   { slug: "podcaster-of-the-year", name: "Podcaster of the Year", description: "Overall excellence in hosting and production." },
   { slug: "lifetime-achievement", name: "Lifetime Achievement", description: "Sustained impact and contribution to the community." },
+  { slug: "best-overall-veteran-podcast", name: "Best Overall Veteran Podcast", description: "Top veteran-focused podcast across all formats and branches." },
+  { slug: "best-army-veteran-podcast", name: "Best Army Veteran Podcast", description: "Excellence in Army veteran stories, culture, and community." },
+  { slug: "best-navy-veteran-podcast", name: "Best Navy Veteran Podcast", description: "Outstanding Navy veteran voices and maritime military themes." },
+  { slug: "best-marine-corps-veteran-podcast", name: "Best Marine Corps Veteran Podcast", description: "Marine Corps veteran perspective, history, and storytelling." },
+  { slug: "best-air-force-veteran-podcast", name: "Best Air Force Veteran Podcast", description: "Air Force veteran content, aviation, and service life." },
+  { slug: "best-military-transition-podcast", name: "Best Military Transition Podcast", description: "Resources and stories for the transition from service to civilian life." },
 ];
 
 function categoryEmoji(slug: string): string {
@@ -79,6 +85,12 @@ function categoryEmoji(slug: string): string {
     "best-true-crime": "🔍",
     "podcaster-of-the-year": "🏆",
     "lifetime-achievement": "💎",
+    "best-overall-veteran-podcast": "🎖️",
+    "best-army-veteran-podcast": "⭐",
+    "best-navy-veteran-podcast": "⚓",
+    "best-marine-corps-veteran-podcast": "🦅",
+    "best-air-force-veteran-podcast": "✈️",
+    "best-military-transition-podcast": "🌉",
   };
   return map[slug] ?? "✨";
 }
