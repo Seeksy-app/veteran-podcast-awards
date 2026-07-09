@@ -28,6 +28,7 @@ import PodcasterProfile from "./pages/PodcasterProfile";
 import NotFound from "./pages/NotFound";
 import Opportunity from "./pages/Opportunity";
 import InvestorPage from "./pages/InvestorPage";
+import InvestorSharePage from "./pages/InvestorSharePage";
 import VPADeck from "./pages/VPADeck";
 import ExportData from "./pages/ExportData";
 import ResetPassword from "./pages/ResetPassword";
@@ -65,6 +66,7 @@ const App = () => (
               <Route path="/opportunity" element={<Opportunity />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/prospectus" element={<InvestorPage />} />
+              <Route path="/invest/:token" element={<InvestorSharePage />} />
               <Route path="/vpa-deck" element={<VPADeck />} />
               <Route path="/export-data" element={<ExportData />} />
               <Route path="/reset-password" element={<ResetPassword />} />

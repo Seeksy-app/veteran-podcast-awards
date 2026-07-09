@@ -35,7 +35,7 @@ const TAB_CONFIG = [
 ];
 
 /** Persisted verified email for returning visitors (email-only auth). */
-const INVESTOR_EMAIL_STORAGE_KEY = 'vpa_investor_email';
+export const INVESTOR_EMAIL_STORAGE_KEY = 'vpa_investor_email';
 
 async function fetchInvestorAccessByEmail(emailRaw: string): Promise<InvestorAccessRow | null> {
   const email = emailRaw.toLowerCase().trim();

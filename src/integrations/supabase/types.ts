@@ -570,6 +570,65 @@ export type Database = {
           },
         ]
       }
+      investor_share_link_visits: {
+        Row: {
+          email: string
+          id: string
+          share_link_id: string
+          visited_at: string
+        }
+        Insert: {
+          email: string
+          id?: string
+          share_link_id: string
+          visited_at?: string
+        }
+        Update: {
+          email?: string
+          id?: string
+          share_link_id?: string
+          visited_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investor_share_link_visits_share_link_id_fkey"
+            columns: ["share_link_id"]
+            isOneToOne: false
+            referencedRelation: "investor_share_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      investor_share_links: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          expires_at: string
+          id: string
+          is_active: boolean
+          label: string
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          expires_at: string
+          id?: string
+          is_active?: boolean
+          label: string
+          token: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string
+          id?: string
+          is_active?: boolean
+          label?: string
+          token?: string
+        }
+        Relationships: []
+      }
       investor_videos: {
         Row: {
           created_at: string
@@ -1132,6 +1191,13 @@ export type Database = {
         Args: { p_token: string }
         Returns: Json
       }
+      get_investor_share_link_status: {
+        Args: { p_token: string }
+        Returns: {
+          label: string | null
+          status: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1146,6 +1212,13 @@ export type Database = {
       increment_campaign_opened: {
         Args: { campaign_id: string }
         Returns: undefined
+      }
+      redeem_investor_share_link: {
+        Args: { p_email: string; p_token: string }
+        Returns: {
+          email: string | null
+          status: string
+        }[]
       }
       verify_investor_access: {
         Args: { p_access_code: string; p_email: string }

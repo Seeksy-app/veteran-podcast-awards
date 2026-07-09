@@ -10,6 +10,7 @@ import { TechStackPanel } from '@/components/admin/TechStackPanel';
 import { SecurityPanel } from '@/components/admin/SecurityPanel';
 import { BusinessMetricsPanel } from '@/components/admin/BusinessMetricsPanel';
 import { InvestorAccessManager } from '@/components/admin/InvestorAccessManager';
+import { ShareLinkManager } from '@/components/admin/ShareLinkManager';
 import { InvestorVideoManager } from '@/components/admin/InvestorVideoManager';
 import { InvestorEngagementPanel } from '@/components/admin/InvestorEngagementPanel';
 import { DeckEngagementPanel } from '@/components/admin/DeckEngagementPanel';
@@ -265,7 +266,8 @@ const AdminPage = () => {
             <SecurityPanel />
           </TabsContent>
 
-          <TabsContent value="investor-access">
+          <TabsContent value="investor-access" className="space-y-6">
+            <ShareLinkManager />
             <InvestorAccessManager />
           </TabsContent>
 

@@ -27,3 +27,6 @@ dist-ssr
 
 # Env files (contain keys; use vercel env pull)
 .env
+
+# Supabase CLI local artifacts
+supabase/.temp/
