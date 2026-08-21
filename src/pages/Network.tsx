@@ -4,8 +4,6 @@ import { Footer } from "@/components/layout/Footer";
 import { PodcastGrid } from "@/components/podcasts/PodcastGrid";
 import { PodcastSubmissionForm } from "@/components/podcasts/PodcastSubmissionForm";
 import { PodcastDisclaimer } from "@/components/podcasts/PodcastDisclaimer";
-import { PodchaserDiscoverSection } from "@/components/podcasts/PodchaserDiscoverSection";
-import { NominatedPodcastsSection } from "@/components/podcasts/NominatedPodcastsSection";
 import { Radio, Info, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -83,27 +81,10 @@ const NetworkPage = () => {
         </div>
       </section>
 
+      {/* All sections handled inside PodcastGrid */}
       <main className="pb-16">
         <div className="container mx-auto px-4">
-          {/* Section 1: Featured / Registered Podcasts */}
-          <section className="mb-20">
-            <div className="mb-8">
-              <h2 className="font-serif text-2xl md:text-3xl font-bold mb-2">
-                <span className="text-gold-gradient">Featured</span>
-                <span className="text-foreground"> Podcasts</span>
-              </h2>
-              <p className="text-muted-foreground">
-                Registered podcasts competing in the 2026 Veteran Podcast Awards.
-              </p>
-            </div>
-            <PodcastGrid />
-          </section>
-
-          {/* Section 2: Nominated Podcasts */}
-          <NominatedPodcastsSection />
-
-          {/* Section 3: Top Military & Veteran Podcasts via Podchaser */}
-          <PodchaserDiscoverSection />
+          <PodcastGrid />
         </div>
       </main>
       <Footer />
