@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Award, Radio } from "lucide-react";
-import logo from "@/assets/vpa-logo.png";
 import { CountdownTimer } from "./CountdownTimer";
 import { PreRegistrationForm } from "./PreRegistrationForm";
 import { useState } from "react";
@@ -40,21 +39,6 @@ export const Hero = () => {
 
       <div className="relative z-10 container mx-auto px-4 pt-24 pb-16">
         <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
-          <div className="animate-float mb-10">
-            <img
-              src={logo}
-              alt="Veteran Podcast Awards"
-              className="w-32 h-32 md:w-40 md:h-40 glow-gold rounded-full"
-            />
-          </div>
-
-          <div className="inline-flex items-center gap-2 bg-secondary/50 border border-border rounded-full px-4 py-2 mb-8 animate-fade-in">
-            <Award className="w-4 h-4 text-primary" />
-            <span className="text-sm text-muted-foreground">
-              National Military Podcast Day • October 5th, 2026
-            </span>
-          </div>
-
           <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl font-bold mb-8 animate-slide-up leading-tight">
             <span className="text-gold-gradient">Veteran Podcast</span>
             <br />
@@ -62,16 +46,23 @@ export const Hero = () => {
           </h1>
 
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-12 animate-slide-up leading-relaxed" style={{ animationDelay: "0.1s" }}>
-            Celebrating the impactful voices of veteran podcasters. 
-            Join us for the live ceremony on October 5th, 2026.
+            Celebrating the impactful voices of veteran podcasters.
+            Voting on October 5th. Awards show on Veterans Day, November 11th.
           </p>
 
           <div className="mb-12 animate-slide-up" style={{ animationDelay: "0.2s" }}>
-            <CountdownTimer targetDate="2026-10-05T18:00:00" />
+            <CountdownTimer targetDate="2026-11-11T18:00:00" />
           </div>
 
-          <div className="mb-12 animate-slide-up" style={{ animationDelay: "0.3s" }}>
+          <div className="mb-8 animate-slide-up" style={{ animationDelay: "0.3s" }}>
             <PreRegistrationForm />
+          </div>
+
+          <div className="inline-flex items-center gap-2 bg-secondary/50 border border-border rounded-full px-4 py-2 mb-12 animate-fade-in" style={{ animationDelay: "0.35s" }}>
+            <Award className="w-4 h-4 text-primary" />
+            <span className="text-sm text-muted-foreground">
+              National Military Podcast Day • Voting Oct 5th • Awards Show Nov 11th
+            </span>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 animate-slide-up" style={{ animationDelay: "0.4s" }}>
@@ -81,26 +72,26 @@ export const Hero = () => {
                 Watch Live
               </Button>
             </Link>
-            <Link to="/categories">
+            <Link to="/awards">
               <Button variant="goldOutline" size="lg">
                 <Award className="w-5 h-5" />
-                View Categories
+                View Awards
               </Button>
             </Link>
           </div>
 
           <div className="grid grid-cols-3 gap-8 mt-16 animate-fade-in" style={{ animationDelay: "0.5s" }}>
             <div className="text-center">
-              <p className="font-serif text-3xl md:text-4xl text-primary font-bold">20+</p>
-              <p className="text-sm text-muted-foreground">Categories</p>
+              <p className="font-serif text-3xl md:text-4xl text-primary font-bold">Oct 5</p>
+              <p className="text-sm text-muted-foreground">Voting Day</p>
             </div>
             <div className="text-center">
               <p className="font-serif text-3xl md:text-4xl text-primary font-bold">LIVE</p>
               <p className="text-sm text-muted-foreground">Streaming</p>
             </div>
             <div className="text-center">
-              <p className="font-serif text-3xl md:text-4xl text-primary font-bold">Oct 5</p>
-              <p className="text-sm text-muted-foreground">Save the Date</p>
+              <p className="font-serif text-3xl md:text-4xl text-primary font-bold">Nov 11</p>
+              <p className="text-sm text-muted-foreground">Awards Show</p>
             </div>
           </div>
         </div>

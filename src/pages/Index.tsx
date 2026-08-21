@@ -1,7 +1,6 @@
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Hero } from "@/components/home/Hero";
-import { CategoriesPreview } from "@/components/home/CategoriesPreview";
 import { HowItWorks } from "@/components/home/HowItWorks";
 import { CallToAction } from "@/components/home/CallToAction";
 import { SEO } from "@/components/SEO";
@@ -11,15 +10,15 @@ const Index = () => {
     '@context': 'https://schema.org',
     '@type': 'Event',
     name: 'Veteran Podcast Awards 2026',
-    startDate: '2026-10-05',
-    endDate: '2026-10-05',
+    startDate: '2026-11-11',
+    endDate: '2026-11-11',
     eventStatus: 'https://schema.org/EventScheduled',
     eventAttendanceMode: 'https://schema.org/OnlineEventAttendanceMode',
     location: {
       '@type': 'VirtualLocation',
       url: 'https://veteranpodcastawards.com/livestream'
     },
-    description: 'The annual Veteran Podcast Awards ceremony celebrating military podcasters on National Military Podcast Day.',
+    description: 'The annual Veteran Podcast Awards ceremony celebrating military podcasters. Voting on October 5th, Awards Show on Veterans Day, November 11th.',
     organizer: {
       '@type': 'Organization',
       name: 'Veteran Podcast Awards',
@@ -38,7 +37,6 @@ const Index = () => {
       <main>
         <Hero />
         <HowItWorks />
-        <CategoriesPreview />
         <CallToAction />
       </main>
       <Footer />

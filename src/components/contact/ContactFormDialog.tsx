@@ -59,10 +59,9 @@ export const ContactFormDialog = ({ open, onOpenChange, type }: ContactFormDialo
     setIsSubmitting(true);
 
     try {
-      // Store the inquiry in pre_registrations table with interested_in field
       const interestedIn = [type, organization, message];
       if (podcastUrl) interestedIn.push(`RSS/URL: ${podcastUrl}`);
-      
+
       const { error } = await supabase.from("pre_registrations").insert({
         email,
         name,
@@ -70,6 +69,30 @@ export const ContactFormDialog = ({ open, onOpenChange, type }: ContactFormDialo
       });
 
       if (error) throw error;
+
+      const listName =
+        type === "sponsorship" || type === "partnership"
+          ? "Sponsorship Inquiries"
+          : type === "nomination"
+          ? "Nominated Podcasts"
+          : null;
+
+      if (listName) {
+        await supabase.from("podcast_contacts").upsert(
+          {
+            email,
+            name,
+            podcast_name: type === "nomination" ? organization : null,
+            podcast_url: podcastUrl || null,
+            notes: message || null,
+            source: "Website Form",
+            status: "uncontacted",
+            lists: [listName],
+            tags: [type],
+          },
+          { onConflict: "email", ignoreDuplicates: true }
+        );
+      }
 
       toast.success("Thank you! We'll be in touch soon.");
       onOpenChange(false);

@@ -26,7 +26,7 @@ export const CallToAction = () => {
           <div className="max-w-3xl mx-auto text-center">
             <div className="inline-flex items-center gap-2 bg-secondary/50 border border-border rounded-full px-4 py-2 mb-6">
               <Calendar className="w-4 h-4 text-primary" />
-              <span className="text-sm text-muted-foreground">October 5th, 2026</span>
+              <span className="text-sm text-muted-foreground">Awards Show • November 11th, 2026</span>
             </div>
 
             <h2 className="font-serif text-3xl md:text-5xl font-bold mb-6">
@@ -35,8 +35,8 @@ export const CallToAction = () => {
             </h2>
 
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-              The 2026 Veteran Podcast Awards will be streamed live worldwide. 
-              Sign up to get reminders and be the first to know when registration opens.
+              The 2026 Veteran Podcast Awards will be streamed live worldwide on Veterans Day.
+              Voting opens October 5th. Sign up to get reminders and updates.
             </p>
 
             <div className="flex justify-center mb-8">

@@ -16,19 +16,14 @@ export const Footer = () => {
               </div>
             </Link>
             <p className="text-muted-foreground text-sm max-w-md">
-              Celebrating the impactful voices of veteran podcasters. Join us October 5th, 2026
-              for the annual Veteran Podcast Awards livestream ceremony.
+              Celebrating the impactful voices of veteran podcasters. Voting opens October 5th.
+              Awards show live on Veterans Day, November 11th, 2026.
             </p>
           </div>
 
           <div>
             <h4 className="font-serif text-primary mb-4">Quick Links</h4>
             <ul className="space-y-2">
-              <li>
-                <Link to="/categories" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Categories
-                </Link>
-              </li>
               <li>
                 <Link to="/network" className="text-sm text-muted-foreground hover:text-primary transition-colors">
                   Podcast Network

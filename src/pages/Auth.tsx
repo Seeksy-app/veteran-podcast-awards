@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { z } from "zod";
+import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/vpa-logo.png";
 import { Eye, EyeOff, Mail, Lock, User, Mic, Heart } from "lucide-react";
 
@@ -123,6 +124,17 @@ const AuthPage = () => {
             toast.error(error.message);
           }
         } else {
+          await supabase.from("podcast_contacts").upsert(
+            {
+              email,
+              name: fullName || email.split("@")[0],
+              source: "Website Signup",
+              status: "registered",
+              lists: ["Registered Users"],
+              tags: [userType || "fan"],
+            },
+            { onConflict: "email", ignoreDuplicates: true }
+          );
           toast.success("Account created! You can now sign in.");
           setIsLogin(true);
         }
