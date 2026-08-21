@@ -12,12 +12,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  User, 
-  Vote, 
-  Share2, 
-  Trophy, 
+import {
+  User,
+  Vote,
+  Share2,
+  Trophy,
   Camera,
   Link as LinkIcon,
   Twitter,
@@ -34,9 +35,12 @@ import {
   Mail,
   Inbox,
   Eye,
-  EyeOff,
-  ExternalLink,
-  Trash2
+  Heart,
+  Rss,
+  Users,
+  Globe,
+  MessageSquare,
+  AtSign,
 } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { GetNominatedSection } from "@/components/dashboard/GetNominatedSection";
@@ -80,6 +84,26 @@ interface UserVote {
     title: string;
     image_url: string | null;
   };
+  category_name?: string;
+}
+
+interface LinkedPodcast {
+  id: string;
+  title: string;
+  author: string | null;
+  rss_url: string | null;
+  image_url: string | null;
+}
+
+interface FavoritePodcast {
+  id: string;
+  podcast_id: string;
+  created_at: string;
+  podcast: {
+    title: string;
+    image_url: string | null;
+    author: string | null;
+  };
 }
 
 const Dashboard = () => {
@@ -90,14 +114,13 @@ const Dashboard = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [votes, setVotes] = useState<UserVote[]>([]);
   const [messages, setMessages] = useState<PodcasterMessage[]>([]);
+  const [favorites, setFavorites] = useState<FavoritePodcast[]>([]);
+  const [followerCount, setFollowerCount] = useState(0);
   const [isUpdating, setIsUpdating] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [profileLinkCopied, setProfileLinkCopied] = useState(false);
-  const [linkedPodcast, setLinkedPodcast] = useState<{
-    id: string;
-    title: string;
-    author: string | null;
-  } | null>(null);
+  const [linkedPodcast, setLinkedPodcast] = useState<LinkedPodcast | null>(null);
+  const [rssUrl, setRssUrl] = useState("");
+  const [categoryNames, setCategoryNames] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!loading && !user) {
@@ -110,21 +133,33 @@ const Dashboard = () => {
       fetchProfile();
       fetchVotes();
       fetchMessages();
+      fetchFavorites();
+      fetchCategoryNames();
     }
   }, [user]);
 
   useEffect(() => {
     if (!profile?.podcast_id) {
       setLinkedPodcast(null);
+      setFollowerCount(0);
       return;
     }
     (async () => {
       const { data } = await supabase
         .from("podcasts")
-        .select("id, title, author")
+        .select("id, title, author, rss_url, image_url")
         .eq("id", profile.podcast_id!)
         .maybeSingle();
-      setLinkedPodcast(data);
+      if (data) {
+        setLinkedPodcast(data);
+        setRssUrl(data.rss_url || "");
+      }
+
+      const { count } = await supabase
+        .from("favorites")
+        .select("*", { count: "exact", head: true })
+        .eq("podcast_id", profile.podcast_id!);
+      setFollowerCount(count || 0);
     })();
   }, [profile?.podcast_id]);
 
@@ -135,10 +170,8 @@ const Dashboard = () => {
       .select("*")
       .eq("recipient_id", user.id)
       .order("created_at", { ascending: false });
-    
     if (data) setMessages(data as PodcasterMessage[]);
   };
-
 
   const fetchProfile = async () => {
     if (!user) return;
@@ -147,7 +180,6 @@ const Dashboard = () => {
       .select("*")
       .eq("id", user.id)
       .single();
-    
     if (data) setProfile(data as Profile);
   };
 
@@ -155,19 +187,11 @@ const Dashboard = () => {
     if (!user) return;
     const { data } = await supabase
       .from("votes")
-      .select(`
-        id,
-        category_id,
-        nominee_id,
-        year,
-        vote_slot,
-        created_at
-      `)
+      .select("id, category_id, nominee_id, year, vote_slot, created_at")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
-    
+
     if (data) {
-      // Fetch podcast info for each vote
       const votesWithPodcasts = await Promise.all(
         data.map(async (vote) => {
           const { data: podcast } = await supabase
@@ -182,11 +206,50 @@ const Dashboard = () => {
     }
   };
 
+  const fetchFavorites = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("favorites")
+      .select("id, podcast_id, created_at, podcasts(title, image_url, author)" as any)
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+
+    if (data) {
+      setFavorites(
+        (data as any[]).map((f) => ({
+          id: f.id,
+          podcast_id: f.podcast_id,
+          created_at: f.created_at,
+          podcast: f.podcasts || { title: "Unknown", image_url: null, author: null },
+        }))
+      );
+    }
+  };
+
+  const fetchCategoryNames = async () => {
+    const { data } = await supabase
+      .from("award_categories")
+      .select("id, name");
+    if (data) {
+      const map: Record<string, string> = {};
+      data.forEach((cat) => { map[cat.id] = cat.name; });
+      setCategoryNames(map);
+    }
+  };
+
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profile || !user) return;
 
     setIsUpdating(true);
+
+    if (linkedPodcast && rssUrl !== (linkedPodcast.rss_url || "")) {
+      await supabase
+        .from("podcasts")
+        .update({ rss_url: rssUrl })
+        .eq("id", linkedPodcast.id);
+    }
+
     const { error } = await supabase
       .from("profiles")
       .update({
@@ -203,16 +266,9 @@ const Dashboard = () => {
       .eq("id", user.id);
 
     if (error) {
-      toast({
-        title: "Update Failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast({ title: "Update Failed", description: error.message, variant: "destructive" });
     } else {
-      toast({
-        title: "Profile Updated",
-        description: "Your profile has been saved.",
-      });
+      toast({ title: "Profile Updated", description: "Your profile has been saved." });
     }
     setIsUpdating(false);
   };
@@ -229,17 +285,11 @@ const Dashboard = () => {
       .upload(filePath, file, { upsert: true });
 
     if (uploadError) {
-      toast({
-        title: "Upload Failed",
-        description: uploadError.message,
-        variant: "destructive",
-      });
+      toast({ title: "Upload Failed", description: uploadError.message, variant: "destructive" });
       return;
     }
 
-    const { data: { publicUrl } } = supabase.storage
-      .from("avatars")
-      .getPublicUrl(filePath);
+    const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(filePath);
 
     const { error: updateError } = await supabase
       .from("profiles")
@@ -248,16 +298,12 @@ const Dashboard = () => {
 
     if (!updateError) {
       setProfile({ ...profile!, avatar_url: publicUrl });
-      toast({
-        title: "Avatar Updated",
-        description: "Your profile photo has been changed.",
-      });
+      toast({ title: "Avatar Updated", description: "Your profile photo has been changed." });
     }
   };
 
   const generateVotingLink = async () => {
     if (!user) return;
-    
     const link = `vote-${user.id.slice(0, 8)}-${Date.now().toString(36)}`;
     const { error } = await supabase
       .from("profiles")
@@ -266,23 +312,23 @@ const Dashboard = () => {
 
     if (!error) {
       setProfile({ ...profile!, custom_voting_link: link });
-      toast({
-        title: "Voting Link Generated",
-        description: "Your custom voting link is ready to share!",
-      });
+      toast({ title: "Voting Link Generated", description: "Your custom voting link is ready to share!" });
     }
   };
 
-  const copyVotingLink = () => {
-    if (!profile?.custom_voting_link) return;
-    const fullUrl = `${window.location.origin}/vote/${profile.custom_voting_link}`;
-    navigator.clipboard.writeText(fullUrl);
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-    toast({
-      title: "Link Copied!",
-      description: "Share this link with others to vote.",
-    });
+    toast({ title: "Link Copied!", description: "Share this link with others." });
+  };
+
+  const markAsRead = async (msgId: string) => {
+    await supabase
+      .from("podcaster_messages")
+      .update({ is_read: true } as any)
+      .eq("id", msgId);
+    setMessages((prev) => prev.map((m) => m.id === msgId ? { ...m, is_read: true } : m));
   };
 
   const getUserTypeLabel = () => {
@@ -320,9 +366,7 @@ const Dashboard = () => {
     );
   }
 
-  if (!user || !profile) {
-    return null;
-  }
+  if (!user || !profile) return null;
 
   return (
     <div className="min-h-screen bg-background">
@@ -340,22 +384,23 @@ const Dashboard = () => {
               </Avatar>
               <label className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
                 <Camera className="w-6 h-6 text-white" />
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleAvatarUpload}
-                  className="hidden"
-                />
+                <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
               </label>
             </div>
-            <div className="text-center md:text-left">
+            <div className="text-center md:text-left flex-1">
               <h1 className="font-serif text-3xl font-bold text-foreground">
                 {profile.full_name || "Welcome!"}
               </h1>
               <p className="text-muted-foreground">{user.email}</p>
-              <Badge className={`mt-2 ${getUserTypeColor()}`}>
-                {getUserTypeLabel()}
-              </Badge>
+              <div className="flex items-center gap-3 mt-2 justify-center md:justify-start">
+                <Badge className={getUserTypeColor()}>{getUserTypeLabel()}</Badge>
+                {profile.user_type === "podcaster" && followerCount > 0 && (
+                  <span className="flex items-center gap-1 text-sm text-muted-foreground">
+                    <Heart className="w-4 h-4 text-primary" />
+                    {followerCount} {followerCount === 1 ? "follower" : "followers"}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
@@ -391,17 +436,15 @@ const Dashboard = () => {
               </TabsTrigger>
             </TabsList>
 
-            {/* Profile Tab */}
+            {/* ───────── Profile Tab ───────── */}
             <TabsContent value="profile">
               <Card>
                 <CardHeader>
                   <CardTitle>Edit Profile</CardTitle>
-                  <CardDescription>
-                    Update your personal information and social links
-                  </CardDescription>
+                  <CardDescription>Update your personal information and social links</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <form onSubmit={handleUpdateProfile} className="space-y-4">
+                  <form onSubmit={handleUpdateProfile} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="full_name">Full Name</Label>
@@ -425,6 +468,26 @@ const Dashboard = () => {
                         </div>
                       </div>
                     </div>
+
+                    {/* RSS Feed — podcasters only */}
+                    {profile.user_type === "podcaster" && (
+                      <div className="space-y-2">
+                        <Label htmlFor="rss_url">Podcast RSS Feed</Label>
+                        <div className="relative">
+                          <Rss className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                          <Input
+                            id="rss_url"
+                            placeholder="https://feeds.example.com/your-podcast"
+                            className="pl-10"
+                            value={rssUrl}
+                            onChange={(e) => setRssUrl(e.target.value)}
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Your RSS feed URL is essential for syncing episodes and enabling discovery.
+                        </p>
+                      </div>
+                    )}
 
                     <div className="space-y-2">
                       <Label htmlFor="bio">Bio</Label>
@@ -487,7 +550,7 @@ const Dashboard = () => {
               </Card>
             </TabsContent>
 
-            {/* Inbox Tab */}
+            {/* ───────── Inbox Tab ───────── */}
             <TabsContent value="inbox">
               <Card>
                 <CardHeader>
@@ -495,9 +558,7 @@ const Dashboard = () => {
                     <Mail className="w-5 h-5 text-primary" />
                     Messages
                   </CardTitle>
-                  <CardDescription>
-                    Messages from your public profile visitors
-                  </CardDescription>
+                  <CardDescription>Messages from your public profile visitors</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {messages.length === 0 ? (
@@ -511,15 +572,26 @@ const Dashboard = () => {
                   ) : (
                     <div className="space-y-4">
                       {messages.map((msg) => (
-                        <div key={msg.id} className={`p-4 rounded-lg border ${msg.is_read ? 'bg-muted/30' : 'bg-primary/5 border-primary/20'}`}>
+                        <div
+                          key={msg.id}
+                          className={`p-4 rounded-lg border ${msg.is_read ? "bg-muted/30" : "bg-primary/5 border-primary/20"}`}
+                          onClick={() => !msg.is_read && markAsRead(msg.id)}
+                          role={msg.is_read ? undefined : "button"}
+                          tabIndex={msg.is_read ? undefined : 0}
+                        >
                           <div className="flex justify-between items-start mb-2">
                             <div>
                               <p className="font-medium">{msg.sender_name}</p>
                               <p className="text-xs text-muted-foreground">{msg.sender_email}</p>
                             </div>
-                            <span className="text-xs text-muted-foreground">
-                              {new Date(msg.created_at).toLocaleDateString()}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              {!msg.is_read && (
+                                <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">New</span>
+                              )}
+                              <span className="text-xs text-muted-foreground">
+                                {new Date(msg.created_at).toLocaleDateString()}
+                              </span>
+                            </div>
                           </div>
                           <p className="font-semibold text-sm mb-1">{msg.subject}</p>
                           <p className="text-sm text-muted-foreground">{msg.message}</p>
@@ -531,78 +603,118 @@ const Dashboard = () => {
               </Card>
             </TabsContent>
 
-            {/* Votes Tab */}
+            {/* ───────── Votes Tab ───────── */}
             <TabsContent value="votes">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Trophy className="w-5 h-5 text-primary" />
-                    My Voting History
-                  </CardTitle>
-                  <CardDescription>
-                    Track all your votes for the Veteran Podcast Awards
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {votes.length === 0 ? (
-                    <div className="text-center py-12">
-                      <Vote className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="font-semibold text-foreground mb-2">No Votes Yet</h3>
-                      <p className="text-muted-foreground text-sm mb-4">
-                        You haven&apos;t voted in any categories yet.
-                      </p>
-                      <Button variant="gold" onClick={() => navigate("/categories")}>
-                        Start Voting
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-6">
-                      {votesByCategory.map(([key, group]) => (
-                        <div key={key}>
-                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-                            {group[0].category_id} · {group[0].year}{" "}
-                            <span className="normal-case">
-                              ({group.length}/3 votes used in this category)
-                            </span>
-                          </p>
-                          <div className="space-y-2">
-                            {group.map((vote) => (
-                              <div
-                                key={vote.id}
-                                className="flex items-center gap-4 p-4 bg-secondary/30 rounded-lg"
-                              >
-                                <div className="w-12 h-12 rounded-lg bg-secondary flex items-center justify-center overflow-hidden">
-                                  {vote.podcast?.image_url ? (
-                                    <img
-                                      src={vote.podcast.image_url}
-                                      alt={vote.podcast.title}
-                                      className="w-full h-full object-cover"
-                                    />
-                                  ) : (
-                                    <Mic className="w-6 h-6 text-muted-foreground" />
-                                  )}
+              <div className="grid gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Trophy className="w-5 h-5 text-primary" />
+                      My Voting History
+                    </CardTitle>
+                    <CardDescription>Track all your votes for the Veteran Podcast Awards</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {votes.length === 0 ? (
+                      <div className="text-center py-12">
+                        <Vote className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                        <h3 className="font-semibold text-foreground mb-2">No Votes Yet</h3>
+                        <p className="text-muted-foreground text-sm mb-4">
+                          You haven&apos;t voted in any categories yet.
+                        </p>
+                        <Button variant="gold" onClick={() => navigate("/categories")}>
+                          Start Voting
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                        {votesByCategory.map(([key, group]) => (
+                          <div key={key}>
+                            <p className="text-sm font-medium text-foreground mb-2">
+                              {categoryNames[group[0].category_id] || "Category"} · {group[0].year}
+                              <span className="text-muted-foreground font-normal ml-2">
+                                ({group.length}/3 votes used)
+                              </span>
+                            </p>
+                            <div className="space-y-2">
+                              {group.map((vote) => (
+                                <div key={vote.id} className="flex items-center gap-4 p-4 bg-secondary/30 rounded-lg">
+                                  <div className="w-12 h-12 rounded-lg bg-secondary flex items-center justify-center overflow-hidden">
+                                    {vote.podcast?.image_url ? (
+                                      <img src={vote.podcast.image_url} alt={vote.podcast.title} className="w-full h-full object-cover" />
+                                    ) : (
+                                      <Mic className="w-6 h-6 text-muted-foreground" />
+                                    )}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-medium text-foreground truncate">
+                                      {vote.podcast?.title || "Unknown Podcast"}
+                                    </p>
+                                    <p className="text-sm text-muted-foreground">
+                                      Vote {vote.vote_slot ?? 1} of 3
+                                    </p>
+                                  </div>
+                                  <CheckCircle className="w-5 h-5 text-green-500 shrink-0" />
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="font-medium text-foreground truncate">
-                                    {vote.podcast?.title || "Unknown Podcast"}
-                                  </p>
-                                  <p className="text-sm text-muted-foreground">
-                                    Vote {vote.vote_slot ?? 1} of 3
-                                  </p>
-                                </div>
-                                <CheckCircle className="w-5 h-5 text-green-500 shrink-0" />
-                              </div>
-                            ))}
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Following / Favorites */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Heart className="w-5 h-5 text-primary" />
+                      Podcasts I Follow
+                    </CardTitle>
+                    <CardDescription>Shows you've followed from the Podcast Network</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {favorites.length === 0 ? (
+                      <div className="text-center py-8">
+                        <Heart className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+                        <p className="text-muted-foreground text-sm mb-4">
+                          You haven't followed any podcasts yet.
+                        </p>
+                        <Button variant="outline" onClick={() => navigate("/network")}>
+                          Browse Network
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {favorites.map((fav) => (
+                          <div key={fav.id} className="flex items-center gap-4 p-3 rounded-lg hover:bg-secondary/30 transition-colors">
+                            <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center overflow-hidden">
+                              {fav.podcast.image_url ? (
+                                <img src={fav.podcast.image_url} alt={fav.podcast.title} className="w-full h-full object-cover" />
+                              ) : (
+                                <Mic className="w-5 h-5 text-muted-foreground" />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-foreground truncate">{fav.podcast.title}</p>
+                              {fav.podcast.author && (
+                                <p className="text-xs text-muted-foreground truncate">{fav.podcast.author}</p>
+                              )}
+                            </div>
+                            <span className="text-xs text-muted-foreground">
+                              {new Date(fav.created_at).toLocaleDateString()}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
             </TabsContent>
 
-            {/* Share Tab */}
+            {/* ───────── Share Tab ───────── */}
             <TabsContent value="share">
               <div className="grid gap-6">
                 <Card>
@@ -611,9 +723,7 @@ const Dashboard = () => {
                       <Share2 className="w-5 h-5 text-primary" />
                       Custom Voting Link
                     </CardTitle>
-                    <CardDescription>
-                      Share your unique link to invite others to vote
-                    </CardDescription>
+                    <CardDescription>Share your unique link to invite others to vote</CardDescription>
                   </CardHeader>
                   <CardContent>
                     {profile.custom_voting_link ? (
@@ -623,12 +733,12 @@ const Dashboard = () => {
                           value={`${window.location.origin}/vote/${profile.custom_voting_link}`}
                           className="flex-1"
                         />
-                        <Button variant="outline" size="icon" onClick={copyVotingLink}>
-                          {copied ? (
-                            <CheckCircle className="w-4 h-4 text-green-500" />
-                          ) : (
-                            <Copy className="w-4 h-4" />
-                          )}
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => copyToClipboard(`${window.location.origin}/vote/${profile.custom_voting_link}`)}
+                        >
+                          {copied ? <CheckCircle className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
                         </Button>
                       </div>
                     ) : (
@@ -647,27 +757,15 @@ const Dashboard = () => {
                         <BarChart3 className="w-5 h-5 text-primary" />
                         Promotional Assets
                       </CardTitle>
-                      <CardDescription>
-                        Download badges and graphics to promote your nomination
-                      </CardDescription>
+                      <CardDescription>Download badges and graphics to promote your nomination</CardDescription>
                     </CardHeader>
                     <CardContent>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        <div className="aspect-square bg-secondary/50 rounded-lg flex items-center justify-center border border-dashed border-border">
-                          <p className="text-sm text-muted-foreground text-center p-4">
-                            Coming Soon
-                          </p>
-                        </div>
-                        <div className="aspect-square bg-secondary/50 rounded-lg flex items-center justify-center border border-dashed border-border">
-                          <p className="text-sm text-muted-foreground text-center p-4">
-                            Coming Soon
-                          </p>
-                        </div>
-                        <div className="aspect-square bg-secondary/50 rounded-lg flex items-center justify-center border border-dashed border-border">
-                          <p className="text-sm text-muted-foreground text-center p-4">
-                            Coming Soon
-                          </p>
-                        </div>
+                        {[0, 1, 2].map((i) => (
+                          <div key={i} className="aspect-square bg-secondary/50 rounded-lg flex items-center justify-center border border-dashed border-border">
+                            <p className="text-sm text-muted-foreground text-center p-4">Coming Soon</p>
+                          </div>
+                        ))}
                       </div>
                     </CardContent>
                   </Card>
@@ -675,32 +773,86 @@ const Dashboard = () => {
               </div>
             </TabsContent>
 
-            {/* Settings Tab */}
+            {/* ───────── Settings Tab ───────── */}
             <TabsContent value="settings">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Settings className="w-5 h-5 text-primary" />
-                    Preferences
-                  </CardTitle>
-                  <CardDescription>
-                    Customize your experience
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {/* Theme Selection */}
-                  <div className="space-y-3">
-                    <Label className="text-base font-medium">Theme</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Choose how the app looks to you
-                    </p>
+              <div className="grid gap-6">
+                {/* Profile Visibility & Contact */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Globe className="w-5 h-5 text-primary" />
+                      Profile Settings
+                    </CardTitle>
+                    <CardDescription>Control your public profile and how people find you</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label className="text-base">Public Profile</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Make your profile visible at veteranpodcastawards.com/podcaster/{profile.username_slug || "your-name"}
+                        </p>
+                      </div>
+                      <Switch
+                        checked={profile.is_public}
+                        onCheckedChange={(checked) => setProfile({ ...profile, is_public: checked })}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label className="text-base">Allow Messages</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Let visitors send you messages through your public profile
+                        </p>
+                      </div>
+                      <Switch
+                        checked={profile.allow_contact}
+                        onCheckedChange={(checked) => setProfile({ ...profile, allow_contact: checked })}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="username_slug">Profile URL</Label>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground whitespace-nowrap">
+                          veteranpodcastawards.com/podcaster/
+                        </span>
+                        <Input
+                          id="username_slug"
+                          placeholder="your-name"
+                          value={profile.username_slug || ""}
+                          onChange={(e) =>
+                            setProfile({
+                              ...profile,
+                              username_slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""),
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+
+                    <Button onClick={handleUpdateProfile} disabled={isUpdating}>
+                      {isUpdating ? "Saving..." : "Save Settings"}
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {/* Theme */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Settings className="w-5 h-5 text-primary" />
+                      Appearance
+                    </CardTitle>
+                    <CardDescription>Choose how the app looks to you</CardDescription>
+                  </CardHeader>
+                  <CardContent>
                     <div className="grid grid-cols-3 gap-3">
                       <button
                         onClick={() => setTheme("light")}
                         className={`flex flex-col items-center gap-3 p-4 rounded-lg border-2 transition-all ${
-                          theme === "light"
-                            ? "border-primary bg-primary/10"
-                            : "border-border hover:border-primary/50"
+                          theme === "light" ? "border-primary bg-primary/10" : "border-border hover:border-primary/50"
                         }`}
                       >
                         <div className="w-12 h-12 rounded-full bg-amber-50 border-2 border-amber-200 flex items-center justify-center">
@@ -711,9 +863,7 @@ const Dashboard = () => {
                       <button
                         onClick={() => setTheme("dark")}
                         className={`flex flex-col items-center gap-3 p-4 rounded-lg border-2 transition-all ${
-                          theme === "dark"
-                            ? "border-primary bg-primary/10"
-                            : "border-border hover:border-primary/50"
+                          theme === "dark" ? "border-primary bg-primary/10" : "border-border hover:border-primary/50"
                         }`}
                       >
                         <div className="w-12 h-12 rounded-full bg-slate-800 border-2 border-slate-600 flex items-center justify-center">
@@ -724,9 +874,7 @@ const Dashboard = () => {
                       <button
                         onClick={() => setTheme("system")}
                         className={`flex flex-col items-center gap-3 p-4 rounded-lg border-2 transition-all ${
-                          theme === "system"
-                            ? "border-primary bg-primary/10"
-                            : "border-border hover:border-primary/50"
+                          theme === "system" ? "border-primary bg-primary/10" : "border-border hover:border-primary/50"
                         }`}
                       >
                         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-50 to-slate-800 border-2 border-border flex items-center justify-center">
@@ -735,9 +883,9 @@ const Dashboard = () => {
                         <span className="text-sm font-medium">Auto</span>
                       </button>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </div>
             </TabsContent>
           </Tabs>
         </div>
