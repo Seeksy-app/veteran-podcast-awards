@@ -9,7 +9,23 @@ const corsHeaders = {
 
 const PODCHASER_BASE = "https://developers.podchaser.com/api/rest/v1";
 const CACHE_TTL_HOURS = 48;
-const MAX_PER_PAGE = 15;
+const FETCH_PER_PAGE = 25;
+const SERVE_PER_PAGE = 15;
+
+const MILITARY_KEYWORDS = [
+  "veteran", "army", "marine", "navy", "coast guard",
+  "space force", "air force", "military", "combat",
+  "service member", "active duty", "national guard",
+];
+
+function isMilitaryRelevant(podcast: { title?: string; description?: string; categories?: { title?: string; slug?: string }[] }): boolean {
+  const text = `${podcast.title || ""} ${podcast.description || ""}`.toLowerCase();
+  if (MILITARY_KEYWORDS.some((kw) => text.includes(kw))) return true;
+  if (podcast.categories?.some((c) =>
+    /military|government/i.test(c.title || "") || /military|government/i.test(c.slug || "")
+  )) return true;
+  return false;
+}
 
 function supabaseAdmin() {
   return createClient(
@@ -96,13 +112,15 @@ serve(async (req) => {
       }
 
       const result = await podchaserFetch("/search/podcasts", {
-        q: "military veteran",
+        q: "veterans",
         page: String(requestedPage),
-        per_page: String(MAX_PER_PAGE),
+        per_page: String(FETCH_PER_PAGE),
         sort: "power_score",
         sort_direction: "desc",
         status: "active",
       });
+
+      result.data = result.data.filter(isMilitaryRelevant).slice(0, SERVE_PER_PAGE);
 
       await setCache(sb, cacheKey, result);
 
@@ -132,11 +150,13 @@ serve(async (req) => {
       const result = await podchaserFetch("/search/podcasts", {
         q: cleanQuery,
         page: String(requestedPage),
-        per_page: String(MAX_PER_PAGE),
+        per_page: String(FETCH_PER_PAGE),
         sort: "power_score",
         sort_direction: "desc",
         status: "active",
       });
+
+      result.data = result.data.filter(isMilitaryRelevant).slice(0, SERVE_PER_PAGE);
 
       await setCache(sb, cacheKey, result);
 
