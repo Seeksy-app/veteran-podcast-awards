@@ -44,6 +44,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { GetNominatedSection } from "@/components/dashboard/GetNominatedSection";
 import { ShareSection } from "@/components/dashboard/ShareSection";
 import { ConnectorsSection } from "@/components/dashboard/ConnectorsSection";
+import { DashboardHome } from "@/components/dashboard/DashboardHome";
 
 interface Profile {
   id: string;
@@ -106,6 +107,7 @@ interface FollowerContact {
 }
 
 type NavSection =
+  | "home"
   | "profile"
   | "inbox"
   | "votes"
@@ -120,7 +122,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { theme, setTheme } = useTheme();
-  const [activeSection, setActiveSection] = useState<NavSection>("profile");
+  const [activeSection, setActiveSection] = useState<NavSection>("home");
   const [profile, setProfile] = useState<Profile | null>(null);
   const [votes, setVotes] = useState<UserVote[]>([]);
   const [messages, setMessages] = useState<PodcasterMessage[]>([]);
@@ -353,6 +355,7 @@ const Dashboard = () => {
   const isPodcaster = profile?.user_type === "podcaster";
 
   const navItems: { key: NavSection; label: string; icon: typeof User; badge?: number; podcasterOnly?: boolean }[] = [
+    { key: "home", label: "Home", icon: BarChart3 },
     { key: "profile", label: "Profile", icon: User },
     { key: "inbox", label: "Inbox", icon: Inbox, badge: unreadCount },
     { key: "votes", label: "My Votes", icon: Vote },
@@ -438,7 +441,7 @@ const Dashboard = () => {
         <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border px-2 py-1.5 flex justify-around">
           {navItems
             .filter((n) => !n.podcasterOnly || isPodcaster)
-            .filter((n) => ["profile", "inbox", "votes", "favorites", "connectors", "share", "settings"].includes(n.key))
+            .filter((n) => ["home", "profile", "inbox", "votes", "connectors", "share", "settings"].includes(n.key))
             .map((item) => (
               <button
                 key={item.key}
@@ -461,6 +464,20 @@ const Dashboard = () => {
         {/* ─── Main Content ─── */}
         <main className="flex-1 min-w-0 px-6 lg:px-10 py-8 pb-24 md:pb-8">
           <GetNominatedSection userId={user.id} profile={profile} podcast={linkedPodcast} />
+
+          {/* ═══ Home / Overview ═══ */}
+          {activeSection === "home" && (
+            <DashboardHome
+              userId={user.id}
+              userName={profile.full_name || "there"}
+              isPodcaster={isPodcaster}
+              followerCount={followerCount}
+              voteCount={votes.length}
+              unreadMessages={unreadCount}
+              favoritesCount={favorites.length}
+              onNavigate={(section) => setActiveSection(section as NavSection)}
+            />
+          )}
 
           {/* ═══ Profile ═══ */}
           {activeSection === "profile" && (
