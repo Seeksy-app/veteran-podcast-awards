@@ -18,7 +18,7 @@ export const CallToAction = () => {
 
   return (
     <>
-      <section className="py-28 md:py-36 bg-card relative overflow-hidden">
+      <section className="py-32 md:py-40 bg-secondary/40 border-y border-border relative overflow-hidden">
         <div className="absolute top-0 left-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
 
@@ -29,17 +29,17 @@ export const CallToAction = () => {
               <span className="text-sm text-muted-foreground">Awards Show &bull; November 11th, 2026</span>
             </div>
 
-            <h2 className="font-serif text-3xl md:text-5xl font-bold mb-8">
+            <h2 className="font-serif text-4xl md:text-6xl font-bold mb-8">
               <span className="text-foreground">Don't Miss the </span>
               <span className="text-gold-gradient">Ceremony</span>
             </h2>
 
-            <p className="text-lg text-muted-foreground mb-12 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-lg md:text-xl text-muted-foreground mb-14 max-w-2xl mx-auto leading-relaxed">
               The 2026 Veteran Podcast Awards will be streamed live worldwide on Veterans Day.
               Voting opens October 5th. Sign up to get reminders and&nbsp;updates.
             </p>
 
-            <div className="flex justify-center mb-12">
+            <div className="flex justify-center mb-14">
               <PreRegistrationForm />
             </div>
 
