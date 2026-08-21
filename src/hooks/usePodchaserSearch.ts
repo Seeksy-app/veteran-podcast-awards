@@ -17,7 +17,7 @@ export interface PodchaserPodcast {
   latestEpisodeDate: string | null;
 }
 
-interface PodchaserResponse {
+export interface PodchaserResponse {
   data: PodchaserPodcast[];
   pagination: {
     page: number;
@@ -41,18 +41,17 @@ async function callPodchaserProxy(body: Record<string, unknown>): Promise<Podcha
 export const useTopMilitaryPodcasts = (page = 1, enabled = true) => {
   return useQuery({
     queryKey: ["podchaser-top", page],
-    queryFn: () => callPodchaserProxy({ action: "top", page, per_page: 25 }),
+    queryFn: () => callPodchaserProxy({ action: "top", page }),
     enabled,
-    staleTime: 1000 * 60 * 60,
+    staleTime: 1000 * 60 * 60 * 2,
   });
 };
 
 export const usePodchaserSearch = (query: string, page = 1) => {
   return useQuery({
     queryKey: ["podchaser-search", query, page],
-    queryFn: () =>
-      callPodchaserProxy({ action: "search", query, page, per_page: 25 }),
+    queryFn: () => callPodchaserProxy({ action: "search", query, page }),
     enabled: query.trim().length >= 2,
-    staleTime: 1000 * 60 * 30,
+    staleTime: 1000 * 60 * 60,
   });
 };

@@ -8,7 +8,8 @@ const corsHeaders = {
 };
 
 const PODCHASER_BASE = "https://developers.podchaser.com/api/rest/v1";
-const CACHE_TTL_HOURS = 24;
+const CACHE_TTL_HOURS = 48;
+const MAX_PER_PAGE = 15;
 
 function supabaseAdmin() {
   return createClient(
@@ -33,9 +34,12 @@ async function podchaserFetch(path: string, params: Record<string, string>) {
     },
   });
 
+  if (res.status === 429) {
+    throw new Error("Rate limit exceeded — try again later");
+  }
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`Podchaser API ${res.status}: ${text}`);
+    throw new Error(`Podchaser API ${res.status}: ${text.slice(0, 200)}`);
   }
   return res.json();
 }
@@ -49,9 +53,9 @@ async function getCached(sb: ReturnType<typeof supabaseAdmin>, key: string) {
 
   if (!data) return null;
 
-  const age =
+  const ageHours =
     (Date.now() - new Date(data.fetched_at).getTime()) / (1000 * 60 * 60);
-  if (age > CACHE_TTL_HOURS) return null;
+  if (ageHours > CACHE_TTL_HOURS) return null;
 
   return data.response;
 }
@@ -77,20 +81,13 @@ serve(async (req) => {
   }
 
   try {
-    const { action, query, page, per_page, sort, sort_direction, podcast_id } =
-      await req.json();
-
+    const body = await req.json();
+    const { action, query, page, podcast_id } = body;
     const sb = supabaseAdmin();
 
-    if (action === "search") {
-      if (!query) {
-        return new Response(
-          JSON.stringify({ error: "query is required" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      const cacheKey = `search:${query}:${page || 1}:${sort || "relevance"}:${sort_direction || "desc"}`;
+    if (action === "top") {
+      const requestedPage = Math.max(1, Math.min(Number(page) || 1, 3));
+      const cacheKey = `top:military-veteran:${requestedPage}`;
       const cached = await getCached(sb, cacheKey);
       if (cached) {
         return new Response(JSON.stringify({ ...cached, cached: true }), {
@@ -99,11 +96,11 @@ serve(async (req) => {
       }
 
       const result = await podchaserFetch("/search/podcasts", {
-        q: query,
-        page: String(page || 1),
-        per_page: String(per_page || 25),
-        sort: sort || "relevance",
-        sort_direction: sort_direction || "desc",
+        q: "military veteran",
+        page: String(requestedPage),
+        per_page: String(MAX_PER_PAGE),
+        sort: "power_score",
+        sort_direction: "desc",
         status: "active",
       });
 
@@ -114,8 +111,17 @@ serve(async (req) => {
       });
     }
 
-    if (action === "top") {
-      const cacheKey = `top:military-veteran:${page || 1}`;
+    if (action === "search") {
+      if (!query || typeof query !== "string" || query.trim().length < 2) {
+        return new Response(
+          JSON.stringify({ error: "query must be at least 2 characters" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const cleanQuery = query.trim().toLowerCase().slice(0, 100);
+      const requestedPage = Math.max(1, Math.min(Number(page) || 1, 3));
+      const cacheKey = `search:${cleanQuery}:${requestedPage}`;
       const cached = await getCached(sb, cacheKey);
       if (cached) {
         return new Response(JSON.stringify({ ...cached, cached: true }), {
@@ -124,9 +130,9 @@ serve(async (req) => {
       }
 
       const result = await podchaserFetch("/search/podcasts", {
-        q: "military veteran",
-        page: String(page || 1),
-        per_page: String(per_page || 25),
+        q: cleanQuery,
+        page: String(requestedPage),
+        per_page: String(MAX_PER_PAGE),
         sort: "power_score",
         sort_direction: "desc",
         status: "active",
