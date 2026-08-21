@@ -29,29 +29,28 @@ const steps = [
 export const HowItWorks = () => {
   return (
     <section className="relative bg-background overflow-hidden">
-      <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[600px]">
+      <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[700px]">
         {/* Left: Background image */}
         <div className="relative hidden lg:block">
           <img
             src={heroBg}
             alt=""
-            className="absolute inset-0 w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover object-[65%_center]"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-background" />
-          <div className="absolute inset-0 bg-background/20" />
+          <div className="absolute inset-0 bg-gradient-to-r from-background/30 via-transparent to-background" />
         </div>
 
         {/* Right: Content */}
-        <div className="relative z-10 flex flex-col justify-center py-20 lg:py-24 px-6 lg:px-16">
-          <h2 className="font-serif text-3xl md:text-5xl font-bold mb-4">
+        <div className="relative z-10 flex flex-col justify-center py-24 lg:py-32 px-8 lg:px-20">
+          <h2 className="font-serif text-3xl md:text-5xl font-bold mb-5">
             <span className="text-foreground">How It </span>
             <span className="text-gold-gradient">Works</span>
           </h2>
-          <p className="text-lg text-muted-foreground mb-10 max-w-xl">
-            Four simple steps to get your podcast recognized in the veteran community.
+          <p className="text-lg text-muted-foreground mb-12">
+            Register your podcast and get recognized in the veteran community.
           </p>
 
-          <div className="space-y-8 mb-12">
+          <div className="space-y-10 mb-14">
             {steps.map((step, index) => (
               <div key={step.title} className="flex items-start gap-5 group">
                 <div className="relative flex-shrink-0">
