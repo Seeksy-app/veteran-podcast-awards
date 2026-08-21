@@ -32,3 +32,6 @@ verify_jwt = true
 
 [functions.social-post]
 verify_jwt = true
+
+[functions.social-connect]
+verify_jwt = true

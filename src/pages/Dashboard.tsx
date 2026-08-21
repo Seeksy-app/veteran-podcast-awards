@@ -38,10 +38,12 @@ import {
   Users,
   Star,
   Contact,
+  Plug,
 } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { GetNominatedSection } from "@/components/dashboard/GetNominatedSection";
 import { ShareSection } from "@/components/dashboard/ShareSection";
+import { ConnectorsSection } from "@/components/dashboard/ConnectorsSection";
 
 interface Profile {
   id: string;
@@ -108,6 +110,7 @@ type NavSection =
   | "inbox"
   | "votes"
   | "favorites"
+  | "connectors"
   | "contacts"
   | "share"
   | "settings";
@@ -354,6 +357,7 @@ const Dashboard = () => {
     { key: "inbox", label: "Inbox", icon: Inbox, badge: unreadCount },
     { key: "votes", label: "My Votes", icon: Vote },
     { key: "favorites", label: "Podcast Favorites", icon: Star },
+    { key: "connectors", label: "Connectors", icon: Plug, podcasterOnly: true },
     { key: "contacts", label: "Contacts", icon: Contact, podcasterOnly: true },
     { key: "share", label: "Share", icon: Share2 },
     { key: "settings", label: "Settings", icon: Settings },
@@ -434,7 +438,7 @@ const Dashboard = () => {
         <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border px-2 py-1.5 flex justify-around">
           {navItems
             .filter((n) => !n.podcasterOnly || isPodcaster)
-            .filter((n) => ["profile", "inbox", "votes", "favorites", "share", "settings"].includes(n.key))
+            .filter((n) => ["profile", "inbox", "votes", "favorites", "connectors", "share", "settings"].includes(n.key))
             .map((item) => (
               <button
                 key={item.key}
@@ -698,6 +702,11 @@ const Dashboard = () => {
                 )}
               </CardContent>
             </Card>
+          )}
+
+          {/* ═══ Connectors (Podcasters only) ═══ */}
+          {activeSection === "connectors" && isPodcaster && (
+            <ConnectorsSection userId={user.id} />
           )}
 
           {/* ═══ Contacts (Podcasters only) ═══ */}
