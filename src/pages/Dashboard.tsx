@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Header } from "@/components/layout/Header";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -39,8 +38,10 @@ import {
   Star,
   Contact,
   Plug,
+  LogOut,
 } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
+import logo from "@/assets/vpa-logo.png";
 import { GetNominatedSection } from "@/components/dashboard/GetNominatedSection";
 import { ShareSection } from "@/components/dashboard/ShareSection";
 import { ConnectorsSection } from "@/components/dashboard/ConnectorsSection";
@@ -376,13 +377,27 @@ const Dashboard = () => {
 
   if (!user || !profile) return null;
 
-  return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <Header />
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/");
+  };
 
-      <div className="flex-1 flex pt-16">
-        {/* ─── Left Sidebar ─── */}
-        <aside className="hidden md:flex flex-col w-64 shrink-0 border-r border-border bg-card/50 pt-8 pb-6 px-4 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto">
+  return (
+    <div className="min-h-screen bg-background flex">
+      {/* ─── Left Sidebar ─── */}
+      <aside className="hidden md:flex flex-col w-64 shrink-0 border-r border-border bg-card/50 sticky top-0 h-screen overflow-y-auto">
+        {/* Logo */}
+        <div className="px-4 pt-5 pb-4 border-b border-border/50">
+          <Link to="/" className="flex items-center gap-3">
+            <img src={logo} alt="VPA" className="h-9 w-9" />
+            <div>
+              <p className="font-serif text-sm font-semibold text-primary leading-tight">VPA 2026</p>
+              <p className="text-[10px] text-muted-foreground">Dashboard</p>
+            </div>
+          </Link>
+        </div>
+
+        <div className="flex-1 flex flex-col px-4 pt-6 pb-4">
           {/* Profile mini */}
           <div className="flex items-center gap-3 px-2 mb-6">
             <div className="relative group">
@@ -435,34 +450,61 @@ const Dashboard = () => {
                 </button>
               ))}
           </nav>
-        </aside>
 
-        {/* ─── Mobile nav ─── */}
-        <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border px-2 py-1.5 flex justify-around">
-          {navItems
-            .filter((n) => !n.podcasterOnly || isPodcaster)
-            .filter((n) => ["home", "profile", "inbox", "votes", "connectors", "share", "settings"].includes(n.key))
-            .map((item) => (
-              <button
-                key={item.key}
-                onClick={() => setActiveSection(item.key)}
-                className={`flex flex-col items-center gap-0.5 px-2 py-1 rounded text-[10px] transition-colors relative ${
-                  activeSection === item.key ? "text-primary" : "text-muted-foreground"
-                }`}
-              >
-                <item.icon className="w-5 h-5" />
-                {item.label.split(" ")[0]}
-                {item.badge ? (
-                  <span className="absolute -top-0.5 right-0 w-4 h-4 bg-destructive text-destructive-foreground text-[9px] rounded-full flex items-center justify-center">
-                    {item.badge}
-                  </span>
-                ) : null}
-              </button>
-            ))}
+          {/* Logout */}
+          <div className="border-t border-border/50 pt-4 mt-4">
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+            >
+              <LogOut className="w-4 h-4 shrink-0" />
+              Log Out
+            </button>
+          </div>
         </div>
+      </aside>
 
-        {/* ─── Main Content ─── */}
-        <main className="flex-1 min-w-0 px-6 lg:px-10 py-8 pb-24 md:pb-8">
+      {/* ─── Mobile header ─── */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-card border-b border-border px-4 py-3 flex items-center justify-between">
+        <Link to="/" className="flex items-center gap-2">
+          <img src={logo} alt="VPA" className="h-8 w-8" />
+          <span className="font-serif text-sm font-semibold text-primary">VPA 2026</span>
+        </Link>
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-destructive transition-colors"
+        >
+          <LogOut className="w-4 h-4" />
+          Log Out
+        </button>
+      </div>
+
+      {/* ─── Mobile bottom nav ─── */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border px-2 py-1.5 flex justify-around">
+        {navItems
+          .filter((n) => !n.podcasterOnly || isPodcaster)
+          .filter((n) => ["home", "profile", "inbox", "votes", "connectors", "share", "settings"].includes(n.key))
+          .map((item) => (
+            <button
+              key={item.key}
+              onClick={() => setActiveSection(item.key)}
+              className={`flex flex-col items-center gap-0.5 px-2 py-1 rounded text-[10px] transition-colors relative ${
+                activeSection === item.key ? "text-primary" : "text-muted-foreground"
+              }`}
+            >
+              <item.icon className="w-5 h-5" />
+              {item.label.split(" ")[0]}
+              {item.badge ? (
+                <span className="absolute -top-0.5 right-0 w-4 h-4 bg-destructive text-destructive-foreground text-[9px] rounded-full flex items-center justify-center">
+                  {item.badge}
+                </span>
+              ) : null}
+            </button>
+          ))}
+      </div>
+
+      {/* ─── Main Content ─── */}
+      <main className="flex-1 min-w-0 px-6 lg:px-10 py-8 pb-24 md:pb-8 mt-14 md:mt-0">
           <GetNominatedSection userId={user.id} profile={profile} podcast={linkedPodcast} />
 
           {/* ═══ Home / Overview ═══ */}
@@ -871,8 +913,7 @@ const Dashboard = () => {
               </Card>
             </div>
           )}
-        </main>
-      </div>
+      </main>
     </div>
   );
 };
