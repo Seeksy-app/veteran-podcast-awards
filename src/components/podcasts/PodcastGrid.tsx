@@ -4,7 +4,8 @@ import { useNominatedPodcasts } from "@/hooks/useNominatedPodcasts";
 import { useTopMilitaryPodcasts, usePodchaserSearch, type PodchaserPodcast } from "@/hooks/usePodchaserSearch";
 import { PodcastEpisodesModal } from "./PodcastEpisodesModal";
 import { PodcastChatbot } from "./PodcastChatbot";
-import { Mic, Search, Trophy, Users, TrendingUp, Loader2, Plus, Info } from "lucide-react";
+import { useReportPodcast } from "@/hooks/useReportPodcast";
+import { Mic, Search, Trophy, Users, TrendingUp, Loader2, Plus, Info, Flag } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -81,7 +82,54 @@ function RegisterPlaceholderCards() {
   );
 }
 
-function PodchaserCard({ podcast }: { podcast: PodchaserPodcast }) {
+function ReportButton({
+  podcastId,
+  podcastTitle,
+  source,
+  report,
+  reporting,
+}: {
+  podcastId: string;
+  podcastTitle: string;
+  source: "directory" | "podchaser";
+  report: (id: string, title: string, source: "directory" | "podchaser") => Promise<void>;
+  reporting: string | null;
+}) {
+  const [reported, setReported] = useState(false);
+
+  if (reported) {
+    return <p className="text-xs text-muted-foreground/60 mt-1">Reported</p>;
+  }
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              report(podcastId, podcastTitle, source).then(() => setReported(true));
+            }}
+            disabled={reporting === podcastId}
+            className="inline-flex items-center gap-1 text-xs text-muted-foreground/50 hover:text-destructive transition-colors mt-1"
+          >
+            <Flag className="w-3 h-3" />
+            Report
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" className="max-w-xs">
+          <p className="text-xs">
+            Please report if this is not a United States military or veteran-related podcast.
+          </p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
+function PodchaserCard({ podcast, report, reporting }: { podcast: PodchaserPodcast; report: (id: string, title: string, source: "directory" | "podchaser") => Promise<void>; reporting: string | null }) {
   return (
     <a
       href={podcast.webUrl || "#"}
@@ -116,6 +164,13 @@ function PodchaserCard({ podcast }: { podcast: PodchaserPodcast }) {
           {podcast.numberOfEpisodes} episodes
         </p>
       )}
+      <ReportButton
+        podcastId={String(podcast.id)}
+        podcastTitle={podcast.title}
+        source="podchaser"
+        report={report}
+        reporting={reporting}
+      />
     </a>
   );
 }
@@ -256,6 +311,7 @@ export const PodcastGrid = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeSearch, setActiveSearch] = useState("");
   const { data: searchResults, isLoading: searchLoading } = usePodchaserSearch(activeSearch);
+  const { report, reporting } = useReportPodcast();
 
   const filteredPodcasts = useMemo(() => {
     if (!podcasts) return [];
@@ -317,7 +373,7 @@ export const PodcastGrid = () => {
           {searchResults.data.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
               {searchResults.data.map((podcast) => (
-                <PodchaserCard key={podcast.id} podcast={podcast} />
+                <PodchaserCard key={podcast.id} podcast={podcast} report={report} reporting={reporting} />
               ))}
             </div>
           ) : (
@@ -379,33 +435,41 @@ export const PodcastGrid = () => {
           />
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
             {filteredPodcasts.map((podcast) => (
-              <button
-                key={podcast.id}
-                onClick={() => handlePodcastClick(podcast)}
-                className="group text-left focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background rounded-xl"
-              >
-                <div className="aspect-square rounded-xl overflow-hidden mb-3 bg-secondary/30 border border-border group-hover:border-primary/50 transition-all group-hover:shadow-lg group-hover:shadow-primary/10">
-                  {podcast.image_url ? (
-                    <img
-                      src={podcast.image_url}
-                      alt={podcast.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <Mic className="w-12 h-12 text-muted-foreground" />
-                    </div>
+              <div key={podcast.id} className="group">
+                <button
+                  onClick={() => handlePodcastClick(podcast)}
+                  className="text-left w-full focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background rounded-xl"
+                >
+                  <div className="aspect-square rounded-xl overflow-hidden mb-3 bg-secondary/30 border border-border group-hover:border-primary/50 transition-all group-hover:shadow-lg group-hover:shadow-primary/10">
+                    {podcast.image_url ? (
+                      <img
+                        src={podcast.image_url}
+                        alt={podcast.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Mic className="w-12 h-12 text-muted-foreground" />
+                      </div>
+                    )}
+                  </div>
+                  <h3 className="font-medium text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+                    {podcast.title}
+                  </h3>
+                  {podcast.author && (
+                    <p className="text-sm text-muted-foreground line-clamp-1">
+                      {podcast.author}
+                    </p>
                   )}
-                </div>
-                <h3 className="font-medium text-foreground line-clamp-2 group-hover:text-primary transition-colors">
-                  {podcast.title}
-                </h3>
-                {podcast.author && (
-                  <p className="text-sm text-muted-foreground line-clamp-1">
-                    {podcast.author}
-                  </p>
-                )}
-              </button>
+                </button>
+                <ReportButton
+                  podcastId={podcast.id}
+                  podcastTitle={podcast.title}
+                  source="directory"
+                  report={report}
+                  reporting={reporting}
+                />
+              </div>
             ))}
           </div>
         </section>
@@ -432,7 +496,7 @@ export const PodcastGrid = () => {
           ) : topMilitary?.data && topMilitary.data.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
               {topMilitary.data.map((podcast) => (
-                <PodchaserCard key={podcast.id} podcast={podcast} />
+                <PodchaserCard key={podcast.id} podcast={podcast} report={report} reporting={reporting} />
               ))}
             </div>
           ) : (
