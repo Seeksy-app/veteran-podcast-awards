@@ -9,7 +9,7 @@ const NetworkPage = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="Veteran & Military Podcast Network"
+        title="Veteran & Military Podcast Directory"
         description="Discover 4,900+ veteran and military podcasts. Explore shows from veterans sharing stories, insights, business advice, and perspectives that matter."
         keywords="veteran podcast network, military podcasts, veteran podcasters, military veteran shows, podcast directory"
         canonicalUrl="/network"
@@ -28,11 +28,11 @@ const NetworkPage = () => {
           <div className="text-center">
             <div className="inline-flex items-center gap-2 bg-primary/20 border border-primary/50 rounded-full px-4 py-2 mb-6">
               <Radio className="w-4 h-4 text-primary" />
-              <span className="text-sm text-primary font-medium">Podcast Network</span>
+              <span className="text-sm text-primary font-medium">National Military Podcast Day</span>
             </div>
             <h1 className="font-serif text-4xl md:text-5xl font-bold mb-4">
               <span className="text-foreground">Veteran & Military </span>
-              <span className="text-gold-gradient">Podcast Network</span>
+              <span className="text-gold-gradient">Podcast Directory</span>
             </h1>
             <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
               Discover the voices of those who served. Explore podcasts from veterans

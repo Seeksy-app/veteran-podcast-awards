@@ -16,7 +16,7 @@ import {
 const navItems = [
   { label: "Home", href: "/" },
   { label: "Livestream", href: "/livestream" },
-  { label: "Network", href: "/network" },
+  { label: "Podcast Directory", href: "/network" },
   { label: "Podcast Day", href: "/podcast-day" },
   { label: "Sponsors", href: "/sponsors" },
   { label: "About", href: "/about" },

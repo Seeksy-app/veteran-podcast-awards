@@ -189,7 +189,7 @@ const PodcasterProfile = () => {
           <h1 className="text-4xl font-bold mb-4">Profile Not Found</h1>
           <p className="text-muted-foreground mb-8">This podcaster profile doesn't exist or isn't public.</p>
           <Button asChild>
-            <Link to="/network">Browse Podcast Network</Link>
+            <Link to="/network">Browse Podcast Directory</Link>
           </Button>
         </main>
         <Footer />

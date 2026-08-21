@@ -21,7 +21,7 @@ export const Footer = () => {
               About
             </Link>
             <Link to="/network" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-              Podcast Network
+              Podcast Directory
             </Link>
             <Link to="/sponsors" className="text-sm text-muted-foreground hover:text-primary transition-colors">
               Sponsors
