@@ -1,4 +1,7 @@
 import { Mic, Link2, Share2, Trophy } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import heroBg from "@/assets/hero-bg.jpg";
 
 const steps = [
   {
@@ -25,50 +28,70 @@ const steps = [
 
 export const HowItWorks = () => {
   return (
-    <section className="py-20 bg-background">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="font-serif text-3xl md:text-4xl font-bold mb-4">
+    <section className="relative bg-background overflow-hidden">
+      <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[600px]">
+        {/* Left: Background image */}
+        <div className="relative hidden lg:block">
+          <img
+            src={heroBg}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-background" />
+          <div className="absolute inset-0 bg-background/20" />
+        </div>
+
+        {/* Right: Content */}
+        <div className="relative z-10 flex flex-col justify-center py-20 lg:py-24 px-6 lg:px-16">
+          <h2 className="font-serif text-3xl md:text-5xl font-bold mb-4">
             <span className="text-foreground">How It </span>
             <span className="text-gold-gradient">Works</span>
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground mb-10 max-w-xl">
             Four simple steps to get your podcast recognized in the veteran community.
           </p>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {steps.map((step, index) => (
-            <div
-              key={step.title}
-              className="relative group"
-            >
-              {/* Connector Line */}
-              {index < steps.length - 1 && (
-                <div className="hidden lg:block absolute top-12 left-full w-full h-0.5 bg-gradient-to-r from-primary/50 to-transparent -translate-x-4" />
-              )}
-
-              <div className="flex flex-col items-center text-center">
-                {/* Step Number */}
-                <div className="relative mb-6">
-                  <div className="w-24 h-24 rounded-full bg-secondary border-2 border-primary/30 flex items-center justify-center group-hover:border-primary group-hover:glow-gold transition-all duration-300">
-                    <step.icon className="w-10 h-10 text-primary" />
+          <div className="space-y-8 mb-12">
+            {steps.map((step, index) => (
+              <div key={step.title} className="flex items-start gap-5 group">
+                <div className="relative flex-shrink-0">
+                  <div className="w-14 h-14 rounded-full bg-secondary border-2 border-primary/30 flex items-center justify-center group-hover:border-primary group-hover:glow-gold transition-all duration-300">
+                    <step.icon className="w-6 h-6 text-primary" />
                   </div>
-                  <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-gold-gradient flex items-center justify-center text-sm font-bold text-background">
+                  <div className="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full bg-gold-gradient flex items-center justify-center text-xs font-bold text-background">
                     {index + 1}
                   </div>
                 </div>
-
-                <h3 className="font-serif text-xl font-semibold text-foreground mb-2">
-                  {step.title}
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  {step.description}
-                </p>
+                <div className="pt-1">
+                  <h3 className="font-serif text-lg font-semibold text-foreground mb-1">
+                    {step.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {step.description}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+
+          <div>
+            <Link to="/auth?mode=signup">
+              <Button variant="gold" size="lg" className="h-14 px-10 text-base">
+                <Mic className="w-5 h-5 mr-2" />
+                Register Your Podcast
+              </Button>
+            </Link>
+          </div>
         </div>
+      </div>
+
+      {/* Mobile: show image as background behind the whole section */}
+      <div className="absolute inset-0 lg:hidden">
+        <img
+          src={heroBg}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover opacity-10"
+        />
       </div>
     </section>
   );
