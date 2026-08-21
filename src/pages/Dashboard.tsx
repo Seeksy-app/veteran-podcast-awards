@@ -41,6 +41,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { GetNominatedSection } from "@/components/dashboard/GetNominatedSection";
+import { ShareSection } from "@/components/dashboard/ShareSection";
 
 interface Profile {
   id: string;
@@ -743,53 +744,14 @@ const Dashboard = () => {
 
           {/* ═══ Share ═══ */}
           {activeSection === "share" && (
-            <div className="grid gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Share2 className="w-5 h-5 text-primary" />
-                    Custom Voting Link
-                  </CardTitle>
-                  <CardDescription>Share your unique link to invite others to vote</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {profile.custom_voting_link ? (
-                    <div className="flex items-center gap-2">
-                      <Input readOnly value={`${window.location.origin}/vote/${profile.custom_voting_link}`} className="flex-1" />
-                      <Button variant="outline" size="icon" onClick={() => copyToClipboard(`${window.location.origin}/vote/${profile.custom_voting_link}`)}>
-                        {copied ? <CheckCircle className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-                      </Button>
-                    </div>
-                  ) : (
-                    <Button onClick={generateVotingLink} variant="gold">
-                      <LinkIcon className="w-4 h-4 mr-2" />
-                      Generate Voting Link
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-
-              {isPodcaster && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <BarChart3 className="w-5 h-5 text-primary" />
-                      Promotional Assets
-                    </CardTitle>
-                    <CardDescription>Download badges and graphics to promote your nomination</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                      {[0, 1, 2].map((i) => (
-                        <div key={i} className="aspect-square bg-secondary/50 rounded-lg flex items-center justify-center border border-dashed border-border">
-                          <p className="text-sm text-muted-foreground text-center p-4">Coming Soon</p>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
+            <ShareSection
+              profile={profile}
+              linkedPodcast={linkedPodcast}
+              copied={copied}
+              generateVotingLink={generateVotingLink}
+              copyToClipboard={copyToClipboard}
+              isPodcaster={isPodcaster}
+            />
           )}
 
           {/* ═══ Settings ═══ */}

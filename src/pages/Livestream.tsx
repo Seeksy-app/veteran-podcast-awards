@@ -4,34 +4,38 @@ import { Calendar, Bell, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PreRegistrationForm } from "@/components/home/PreRegistrationForm";
 import { Link } from "react-router-dom";
+import { SEO } from "@/components/SEO";
 
 const VIDEO_URL = "https://snhrqbtwahgarxxbizsz.supabase.co/storage/v1/object/public/videos/hero-video.mp4";
 
 const LivestreamPage = () => {
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Live Awards Ceremony"
+        description="Watch the 2026 Veteran Podcast Awards live on Veterans Day, November 11th. Streaming worldwide to celebrate the best in veteran podcasting."
+        keywords="veteran podcast awards livestream, live ceremony, veterans day, military podcast awards"
+        canonicalUrl="/livestream"
+      />
       <Header />
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4">
-          {/* Live Badge Header */}
+          {/* Header */}
           <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 bg-red-500/20 border border-red-500/50 rounded-full px-4 py-2 mb-6">
-              <span className="relative flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
-              </span>
-              <span className="text-sm text-red-400 font-medium uppercase tracking-wider">Live Streaming Event</span>
+            <div className="inline-flex items-center gap-2 bg-primary/20 border border-primary/50 rounded-full px-4 py-2 mb-6">
+              <Calendar className="w-4 h-4 text-primary" />
+              <span className="text-sm text-primary font-medium">November 11th, 2026 &bull; Veterans Day</span>
             </div>
             <h1 className="font-serif text-4xl md:text-5xl font-bold mb-4">
               <span className="text-gold-gradient">Watch Live</span>
             </h1>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Join us on October 5th, 2026 for the live ceremony celebrating 
+              Join us on Veterans Day for the live ceremony celebrating
               the best in veteran podcasting. Streaming worldwide.
             </p>
           </div>
 
-          {/* Video Player Section - Now Playing */}
+          {/* Video Player Section */}
           <div className="max-w-4xl mx-auto mb-12">
             <div className="relative aspect-video bg-card border border-border rounded-xl overflow-hidden">
               <video
@@ -48,7 +52,7 @@ const LivestreamPage = () => {
             </div>
             <div className="flex items-center justify-center gap-2 mt-4 text-muted-foreground text-sm">
               <Calendar className="w-4 h-4 text-primary" />
-              <span>Full ceremony streaming October 5th, 2026 at 6:00 PM ET</span>
+              <span>Full ceremony streaming November 11th, 2026 at 6:00 PM ET</span>
             </div>
           </div>
 
@@ -62,7 +66,7 @@ const LivestreamPage = () => {
                 </h3>
               </div>
               <p className="text-muted-foreground mb-6">
-                Sign up to receive a reminder when the livestream goes live. 
+                Sign up to receive a reminder when the livestream goes live.
                 We'll send you the link directly to your inbox.
               </p>
               <div className="flex justify-center">

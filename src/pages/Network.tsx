@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { PodcastGrid } from "@/components/podcasts/PodcastGrid";
@@ -26,10 +27,10 @@ const NetworkPage = () => {
 
         <div className="relative z-10 container mx-auto px-4">
           <div className="text-center">
-            <div className="inline-flex items-center gap-2 bg-primary/20 border border-primary/50 rounded-full px-4 py-2 mb-6">
+            <Link to="/podcast-day" className="inline-flex items-center gap-2 bg-primary/20 border border-primary/50 rounded-full px-4 py-2 mb-6 hover:bg-primary/30 transition-colors">
               <Radio className="w-4 h-4 text-primary" />
               <span className="text-sm text-primary font-medium">National Military Podcast Day</span>
-            </div>
+            </Link>
             <h1 className="font-serif text-4xl md:text-5xl font-bold mb-4">
               <span className="text-foreground">Veteran & Military </span>
               <span className="text-gold-gradient">Podcast Directory</span>

@@ -98,7 +98,7 @@ const AboutPage = () => {
               </h2>
               <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-8">
                 For the first time, the Veteran Podcast Awards will be streamed live worldwide
-                on October 5th, 2026. Join us from anywhere to celebrate the best in veteran podcasting.
+                on November 11th, 2026 — Veterans Day. Voting opens October 5th on National Military Podcast Day. Join us from anywhere to celebrate the best in veteran podcasting.
               </p>
               <div className="flex justify-center">
                 <PreRegistrationForm />
