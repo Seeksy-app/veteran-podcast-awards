@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calendar, Bell, Users, Award } from "lucide-react";
+import { Calendar, Award, Users, Mic } from "lucide-react";
 import { PreRegistrationForm } from "./PreRegistrationForm";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -44,32 +44,26 @@ export const CallToAction = () => {
             </div>
 
             <div className="flex flex-wrap items-center justify-center gap-4">
-              <Link to="/livestream">
+              <Link to="/auth?mode=signup">
                 <Button variant="goldOutline">
-                  View Livestream Page
+                  <Mic className="w-4 h-4 mr-2" />
+                  Register as Podcaster
                 </Button>
               </Link>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => openContact("nomination")}
               >
                 <Award className="w-4 h-4 mr-2" />
                 Nominate a Podcast
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => openContact("sponsorship")}
               >
                 <Users className="w-4 h-4 mr-2" />
                 Become a Sponsor
               </Button>
-            </div>
-
-            <div className="flex items-center justify-center gap-2 text-muted-foreground mt-6">
-              <Bell className="w-4 h-4" />
-              <p className="text-sm">
-                Registration opens Summer 2026
-              </p>
             </div>
           </div>
         </div>

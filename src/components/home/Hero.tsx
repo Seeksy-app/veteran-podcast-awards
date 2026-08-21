@@ -1,6 +1,4 @@
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Award, Radio } from "lucide-react";
+import { Award } from "lucide-react";
 import { CountdownTimer } from "./CountdownTimer";
 import { PreRegistrationForm } from "./PreRegistrationForm";
 import { useState } from "react";
@@ -47,37 +45,25 @@ export const Hero = () => {
 
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-12 animate-slide-up leading-relaxed" style={{ animationDelay: "0.1s" }}>
             Celebrating the impactful voices of veteran podcasters.
-            Voting on October 5th. Awards show on Veterans Day, November 11th.
+            Register your podcast or sign up to vote.
           </p>
 
           <div className="mb-12 animate-slide-up" style={{ animationDelay: "0.2s" }}>
             <CountdownTimer targetDate="2026-11-11T18:00:00" />
           </div>
 
-          <div className="mb-8 animate-slide-up" style={{ animationDelay: "0.3s" }}>
+          <div className="mb-10 w-full max-w-lg animate-slide-up" style={{ animationDelay: "0.3s" }}>
             <PreRegistrationForm />
           </div>
 
-          <div className="inline-flex items-center gap-2 bg-secondary/50 border border-border rounded-full px-4 py-2 mb-12 animate-fade-in" style={{ animationDelay: "0.35s" }}>
-            <Award className="w-4 h-4 text-primary" />
-            <span className="text-sm text-muted-foreground">
-              National Military Podcast Day • Voting Oct 5th • Awards Show Nov 11th
-            </span>
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-4 animate-slide-up" style={{ animationDelay: "0.4s" }}>
-            <Link to="/livestream">
-              <Button variant="gold" size="lg">
-                <Radio className="w-5 h-5" />
-                Watch Live
-              </Button>
-            </Link>
-            <Link to="/awards">
-              <Button variant="goldOutline" size="lg">
-                <Award className="w-5 h-5" />
-                View Awards
-              </Button>
-            </Link>
+          <div className="flex flex-col items-center gap-2 animate-fade-in" style={{ animationDelay: "0.4s" }}>
+            <div className="inline-flex items-center gap-2 bg-secondary/50 border border-border rounded-full px-5 py-2.5">
+              <Award className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium text-muted-foreground">
+                National Podcast Day, October 5th
+              </span>
+            </div>
+            <p className="text-sm text-muted-foreground/70">Live streaming event</p>
           </div>
 
           <div className="grid grid-cols-3 gap-8 mt-16 animate-fade-in" style={{ animationDelay: "0.5s" }}>

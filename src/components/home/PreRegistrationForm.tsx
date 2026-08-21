@@ -67,10 +67,7 @@ export const PreRegistrationForm = () => {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-md">
-      <p className="text-sm text-muted-foreground mb-3 text-center">
-        Get notified when 2026 registration opens
-      </p>
+    <form onSubmit={handleSubmit} className="w-full max-w-lg">
       <div className="flex flex-col sm:flex-row gap-2">
         <input
           type="email"
@@ -79,21 +76,21 @@ export const PreRegistrationForm = () => {
           placeholder="Enter your email"
           required
           maxLength={255}
-          className="flex-1 h-12 px-4 rounded-lg bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+          className="flex-1 h-14 px-5 text-base rounded-lg bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
         />
         <Button
           type="submit"
           variant="gold"
           size="lg"
           disabled={isLoading}
-          className="h-12"
+          className="h-14 px-6"
         >
           {isLoading ? (
             "Signing up..."
           ) : (
             <>
               <Mail className="w-4 h-4" />
-              Notify Me
+              Notify Me with Updates
             </>
           )}
         </Button>
