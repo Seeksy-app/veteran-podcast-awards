@@ -94,6 +94,17 @@ export const ContactFormDialog = ({ open, onOpenChange, type }: ContactFormDialo
         );
       }
 
+      if (type === "sponsorship" || type === "nomination") {
+        supabase.functions.invoke("send-welcome-email", {
+          body: {
+            type,
+            email,
+            name,
+            podcastName: type === "nomination" ? organization : undefined,
+          },
+        });
+      }
+
       toast.success("Thank you! We'll be in touch soon.");
       onOpenChange(false);
       setName("");

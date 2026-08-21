@@ -135,6 +135,9 @@ const AuthPage = () => {
             },
             { onConflict: "email", ignoreDuplicates: true }
           );
+          supabase.functions.invoke("send-welcome-email", {
+            body: { type: userType || "fan", email, name: fullName || email.split("@")[0] },
+          });
           toast.success("Account created! You can now sign in.");
           setIsLogin(true);
         }
