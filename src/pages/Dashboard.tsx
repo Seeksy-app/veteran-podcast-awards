@@ -386,19 +386,8 @@ const Dashboard = () => {
     <div className="min-h-screen bg-background flex">
       {/* ─── Left Sidebar ─── */}
       <aside className="hidden md:flex flex-col w-64 shrink-0 border-r border-border bg-card/50 sticky top-0 h-screen overflow-y-auto">
-        {/* Logo */}
-        <div className="px-4 pt-5 pb-4 border-b border-border/50">
-          <Link to="/" className="flex items-center gap-3">
-            <img src={logo} alt="VPA" className="h-9 w-9" />
-            <div>
-              <p className="font-serif text-sm font-semibold text-primary leading-tight">VPA 2026</p>
-              <p className="text-[10px] text-muted-foreground">Dashboard</p>
-            </div>
-          </Link>
-        </div>
-
-        <div className="flex-1 flex flex-col px-4 pt-6 pb-4">
-          {/* Profile mini */}
+        <div className="flex-1 flex flex-col px-4 pt-5 pb-4">
+          {/* Profile mini with logo */}
           <div className="flex items-center gap-3 px-2 mb-6">
             <div className="relative group">
               <Avatar className="w-12 h-12 border-2 border-primary/20">
@@ -418,6 +407,9 @@ const Dashboard = () => {
               </p>
               <Badge className={`${getUserTypeColor()} text-[10px] px-1.5 py-0`}>{getUserTypeLabel()}</Badge>
             </div>
+            <Link to="/" className="shrink-0" title="Back to site">
+              <img src={logo} alt="VPA" className="h-8 w-8 opacity-60 hover:opacity-100 transition-opacity" />
+            </Link>
           </div>
 
           {isPodcaster && followerCount > 0 && (
