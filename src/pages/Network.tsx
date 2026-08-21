@@ -4,7 +4,9 @@ import { Footer } from "@/components/layout/Footer";
 import { PodcastGrid } from "@/components/podcasts/PodcastGrid";
 import { PodcastSubmissionForm } from "@/components/podcasts/PodcastSubmissionForm";
 import { PodcastDisclaimer } from "@/components/podcasts/PodcastDisclaimer";
-import { Radio, Headphones, Info, Plus } from "lucide-react";
+import { PodchaserDiscoverSection } from "@/components/podcasts/PodchaserDiscoverSection";
+import { NominatedPodcastsSection } from "@/components/podcasts/NominatedPodcastsSection";
+import { Radio, Info, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,24 +22,23 @@ const NetworkPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO 
+      <SEO
         title="Veteran & Military Podcast Network"
         description="Discover 800+ veteran and military podcasts. Explore shows from veterans sharing stories, insights, business advice, and perspectives that matter."
         keywords="veteran podcast network, military podcasts, veteran podcasters, military veteran shows, podcast directory"
         canonicalUrl="/network"
       />
       <Header />
-      
-      {/* Hero Section with Microphone Background */}
+
+      {/* Hero Section */}
       <section className="relative pt-24 pb-16 overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${heroBg})` }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/80 to-background" />
-        
+
         <div className="relative z-10 container mx-auto px-4">
-          {/* Header */}
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 bg-primary/20 border border-primary/50 rounded-full px-4 py-2 mb-6">
               <Radio className="w-4 h-4 text-primary" />
@@ -49,13 +50,11 @@ const NetworkPage = () => {
               <span className="text-gold-gradient">Podcast Network</span>
             </h1>
             <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
-              Discover the voices of those who served. Explore podcasts from veterans 
+              Discover the voices of those who served. Explore podcasts from veterans
               sharing stories, insights, and perspectives that matter.
             </p>
           </div>
 
-
-          {/* Action Buttons */}
           <div className="flex justify-center gap-4">
             <Dialog open={showDisclaimer} onOpenChange={setShowDisclaimer}>
               <DialogTrigger asChild>
@@ -84,10 +83,27 @@ const NetworkPage = () => {
         </div>
       </section>
 
-      {/* Podcast Grid Section */}
       <main className="pb-16">
         <div className="container mx-auto px-4">
-          <PodcastGrid />
+          {/* Section 1: Featured / Registered Podcasts */}
+          <section className="mb-20">
+            <div className="mb-8">
+              <h2 className="font-serif text-2xl md:text-3xl font-bold mb-2">
+                <span className="text-gold-gradient">Featured</span>
+                <span className="text-foreground"> Podcasts</span>
+              </h2>
+              <p className="text-muted-foreground">
+                Registered podcasts competing in the 2026 Veteran Podcast Awards.
+              </p>
+            </div>
+            <PodcastGrid />
+          </section>
+
+          {/* Section 2: Nominated Podcasts */}
+          <NominatedPodcastsSection />
+
+          {/* Section 3: Top Military & Veteran Podcasts via Podchaser */}
+          <PodchaserDiscoverSection />
         </div>
       </main>
       <Footer />
