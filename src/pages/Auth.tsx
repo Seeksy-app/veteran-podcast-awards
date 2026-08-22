@@ -60,6 +60,8 @@ const AuthPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSendingReset, setIsSendingReset] = useState(false);
   const [showVerify, setShowVerify] = useState(false);
+  const [showResendVerify, setShowResendVerify] = useState(false);
+  const [isResending, setIsResending] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; userType?: string }>({});
 
   const [quote] = useState(() => QUOTES[Math.floor(Math.random() * QUOTES.length)]);
@@ -133,6 +135,26 @@ const AuthPage = () => {
     }
   };
 
+  const handleResendVerification = async () => {
+    if (!email) {
+      toast.error("Enter your email address first.");
+      return;
+    }
+    setIsResending(true);
+    try {
+      const { error } = await supabase.auth.resend({ type: "signup", email });
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success("Verification email resent. Check your inbox.");
+      }
+    } catch {
+      toast.error("Unable to resend verification email right now.");
+    } finally {
+      setIsResending(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -145,7 +167,8 @@ const AuthPage = () => {
         const { error } = await signIn(email, password);
         if (error) {
           if (error.message.includes("Email not confirmed")) {
-            toast.error("Please verify your email first. Check your inbox for the confirmation link.");
+            setShowResendVerify(true);
+            toast.error("Please verify your email first.");
           } else if (error.message.includes("Invalid login credentials")) {
             toast.error("Invalid email or password");
           } else {
@@ -216,16 +239,25 @@ const AuthPage = () => {
               <p className="text-sm text-muted-foreground mb-8">
                 Click the link in the email to verify your account, then come back here to sign in.
               </p>
-              <button
-                onClick={() => {
-                  setShowVerify(false);
-                  setIsLogin(true);
-                  setPassword("");
-                }}
-                className="text-primary font-medium hover:underline"
-              >
-                Back to sign in
-              </button>
+              <div className="flex flex-col items-center gap-3">
+                <button
+                  onClick={handleResendVerification}
+                  disabled={isResending}
+                  className="text-sm text-primary font-medium hover:underline disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isResending ? "Sending..." : "Didn't get it? Resend verification email"}
+                </button>
+                <button
+                  onClick={() => {
+                    setShowVerify(false);
+                    setIsLogin(true);
+                    setPassword("");
+                  }}
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                >
+                  Back to sign in
+                </button>
+              </div>
             </div>
           ) : (
           <>
@@ -267,6 +299,28 @@ const AuthPage = () => {
               <span className="bg-background px-3 text-muted-foreground">or</span>
             </div>
           </div>
+
+          {showResendVerify && (
+            <div className="mb-6 rounded-lg border border-primary/30 bg-primary/5 p-4">
+              <div className="flex items-start gap-3">
+                <Mail className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">Email not verified</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Check your inbox for the verification link, or resend it below.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleResendVerification}
+                    disabled={isResending}
+                    className="mt-2 text-sm font-medium text-primary hover:underline disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {isResending ? "Sending..." : "Resend verification email"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
