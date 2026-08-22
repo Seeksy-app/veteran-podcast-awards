@@ -59,6 +59,7 @@ const AuthPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSendingReset, setIsSendingReset] = useState(false);
+  const [showVerify, setShowVerify] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; userType?: string }>({});
 
   const [quote] = useState(() => QUOTES[Math.floor(Math.random() * QUOTES.length)]);
@@ -143,7 +144,9 @@ const AuthPage = () => {
       if (isLogin) {
         const { error } = await signIn(email, password);
         if (error) {
-          if (error.message.includes("Invalid login credentials")) {
+          if (error.message.includes("Email not confirmed")) {
+            toast.error("Please verify your email first. Check your inbox for the confirmation link.");
+          } else if (error.message.includes("Invalid login credentials")) {
             toast.error("Invalid email or password");
           } else {
             toast.error(error.message);
@@ -171,11 +174,7 @@ const AuthPage = () => {
             },
             { onConflict: "email", ignoreDuplicates: true }
           );
-          supabase.functions.invoke("send-welcome-email", {
-            body: { type: userType || "fan", email, name: fullName || email.split("@")[0] },
-          });
-          toast.success("Account created! You can now sign in.");
-          setIsLogin(true);
+          setShowVerify(true);
         }
       }
     } catch {
@@ -198,13 +197,40 @@ const AuthPage = () => {
       {/* ─── Left: Form ─── */}
       <div className="flex-1 flex flex-col justify-center px-6 sm:px-12 lg:px-20 py-12 bg-background">
         <div className="w-full max-w-md mx-auto">
-          {/* Logo & Title */}
-          <div className="mb-10">
-            <a href="/" className="inline-flex items-center gap-3 mb-8">
-              <img src={logo} alt="VPA" className="h-10 w-10" />
-              <span className="font-serif text-lg font-bold text-primary">Veteran Podcast Awards</span>
-            </a>
+          {/* Logo */}
+          <a href="/" className="inline-flex items-center gap-3 mb-8">
+            <img src={logo} alt="VPA" className="h-10 w-10" />
+            <span className="font-serif text-lg font-bold text-primary">Veteran Podcast Awards</span>
+          </a>
 
+          {showVerify ? (
+            <div className="text-center py-8">
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
+                <Mail className="w-8 h-8 text-primary" />
+              </div>
+              <h1 className="font-serif text-3xl font-bold text-foreground mb-4">Check your email</h1>
+              <p className="text-muted-foreground mb-2">
+                We sent a verification link to
+              </p>
+              <p className="text-foreground font-medium mb-6">{email}</p>
+              <p className="text-sm text-muted-foreground mb-8">
+                Click the link in the email to verify your account, then come back here to sign in.
+              </p>
+              <button
+                onClick={() => {
+                  setShowVerify(false);
+                  setIsLogin(true);
+                  setPassword("");
+                }}
+                className="text-primary font-medium hover:underline"
+              >
+                Back to sign in
+              </button>
+            </div>
+          ) : (
+          <>
+          {/* Title */}
+          <div className="mb-10">
             <h1 className="font-serif text-3xl font-bold text-foreground">
               {isLogin ? "Welcome back" : "Create your account"}
             </h1>
@@ -382,6 +408,8 @@ const AuthPage = () => {
               </button>
             </p>
           </div>
+          </>
+          )}
         </div>
       </div>
 

@@ -42,12 +42,12 @@ function getContent(type: EmailType, name: string, podcastName?: string) {
   switch (type) {
     case "podcaster":
       return {
-        subject: "Welcome to the Veteran Podcast Awards Network",
+        subject: "Welcome to the Veteran Podcast Awards",
         body: `
           <p>Hi ${firstName},</p>
-          <p>Welcome to the Veteran &amp; Military Podcast Network — we're glad to have you${podcastName ? ` and <strong>${podcastName}</strong>` : ""} on board.</p>
+          <p>Welcome to the Veteran &amp; Military Podcast Directory — we're glad to have you${podcastName ? ` and <strong>${podcastName}</strong>` : ""} on board.</p>
           <p>Your podcast is now part of a growing community of over 4,987 military and veteran shows. As a registered podcaster, you'll be eligible for nominations and voting in the 2026 Veteran Podcast Awards.</p>
-          <p>Log in to your <a href="https://veteranpodcastawards.com/dashboard" style="color:#B8860B;font-weight:bold;">dashboard</a> to complete your profile and explore the network.</p>
+          <p>Log in to your <a href="https://veteranpodcastawards.com/dashboard" style="color:#B8860B;font-weight:bold;">dashboard</a> to complete your profile and explore the directory.</p>
         `,
       };
 
@@ -57,7 +57,7 @@ function getContent(type: EmailType, name: string, podcastName?: string) {
         body: `
           <p>Hi ${firstName},</p>
           <p>Thanks for joining the Veteran Podcast Awards community. Your voice matters — fans like you help recognize the podcasters who serve and inspire the military and veteran community.</p>
-          <p>You can now nominate your favorite shows and vote when the 2026 awards season opens. Start exploring the <a href="https://veteranpodcastawards.com/network" style="color:#B8860B;font-weight:bold;">Podcast Network</a> to discover new voices.</p>
+          <p>You can now nominate your favorite shows and vote when the 2026 awards season opens. Start exploring the <a href="https://veteranpodcastawards.com/network" style="color:#B8860B;font-weight:bold;">Podcast Directory</a> to discover new voices.</p>
         `,
       };
 
