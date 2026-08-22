@@ -20,6 +20,7 @@ import {
   Link as LinkIcon,
   Copy,
   Shield,
+  Megaphone,
   CheckCircle,
   BarChart3,
   Mic,
@@ -126,7 +127,7 @@ type NavSection =
   | "favorites"
   | "connectors"
   | "contacts"
-  | "share"
+  | "promotion"
   | "settings";
 
 const Dashboard = () => {
@@ -380,15 +381,16 @@ const Dashboard = () => {
 
   const isPodcaster = profile?.user_type === "podcaster";
 
-  const navItems: { key: NavSection; label: string; icon: typeof User; badge?: number; podcasterOnly?: boolean }[] = [
+  type NavItem = { key: NavSection; label: string; icon: typeof User; badge?: number; podcasterOnly?: boolean; group?: string };
+  const navItems: NavItem[] = [
     { key: "home", label: "Home", icon: BarChart3 },
     { key: "profile", label: "Profile", icon: User },
     { key: "inbox", label: "Inbox", icon: Inbox, badge: unreadCount },
-    { key: "votes", label: "My Votes", icon: Vote },
     { key: "favorites", label: "Podcast Favorites", icon: Star },
     { key: "connectors", label: "Connectors", icon: Plug, podcasterOnly: true },
     { key: "contacts", label: "Contacts", icon: Contact, podcasterOnly: true },
-    { key: "share", label: "Share", icon: Share2 },
+    { key: "votes", label: "My Votes", icon: Vote, group: "Podcast Awards" },
+    { key: "promotion", label: "Promotion", icon: Megaphone, group: "Podcast Awards" },
     { key: "settings", label: "Settings", icon: Settings },
   ];
 
@@ -454,27 +456,39 @@ const Dashboard = () => {
           )}
 
           <nav className="space-y-1 flex-1">
-            {navItems
-              .filter((n) => !n.podcasterOnly || isPodcaster)
-              .map((item) => (
-                <button
-                  key={item.key}
-                  onClick={() => setActiveSection(item.key)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                    activeSection === item.key
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
-                  }`}
-                >
-                  <item.icon className="w-4 h-4 shrink-0" />
-                  {item.label}
-                  {item.badge ? (
-                    <span className="ml-auto w-5 h-5 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center">
-                      {item.badge}
-                    </span>
-                  ) : null}
-                </button>
-              ))}
+            {(() => {
+              const filtered = navItems.filter((n) => !n.podcasterOnly || isPodcaster);
+              let lastGroup: string | undefined;
+              return filtered.map((item) => {
+                const showHeader = item.group && item.group !== lastGroup;
+                lastGroup = item.group;
+                return (
+                  <div key={item.key}>
+                    {showHeader && (
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-primary/60 px-3 pt-5 pb-1">
+                        {item.group}
+                      </p>
+                    )}
+                    <button
+                      onClick={() => setActiveSection(item.key)}
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                        activeSection === item.key
+                          ? "bg-primary/10 text-primary"
+                          : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
+                      }`}
+                    >
+                      <item.icon className="w-4 h-4 shrink-0" />
+                      {item.label}
+                      {item.badge ? (
+                        <span className="ml-auto w-5 h-5 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center">
+                          {item.badge}
+                        </span>
+                      ) : null}
+                    </button>
+                  </div>
+                );
+              });
+            })()}
           </nav>
 
           {/* Logout */}
@@ -509,7 +523,7 @@ const Dashboard = () => {
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border px-2 py-1.5 flex justify-around">
         {navItems
           .filter((n) => !n.podcasterOnly || isPodcaster)
-          .filter((n) => ["home", "profile", "inbox", "votes", "connectors", "share", "settings"].includes(n.key))
+          .filter((n) => ["home", "profile", "inbox", "votes", "connectors", "promotion", "settings"].includes(n.key))
           .map((item) => (
             <button
               key={item.key}
@@ -985,8 +999,8 @@ const Dashboard = () => {
             </Card>
           )}
 
-          {/* ═══ Share ═══ */}
-          {activeSection === "share" && (
+          {/* ═══ Promotion ═══ */}
+          {activeSection === "promotion" && (
             <ShareSection
               profile={profile}
               linkedPodcast={linkedPodcast}

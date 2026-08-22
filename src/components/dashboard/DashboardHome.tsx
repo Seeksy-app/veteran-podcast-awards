@@ -102,8 +102,8 @@ export function DashboardHome({
   ].filter((s) => s.show);
 
   const quickActions = [
-    { label: "Share Voting Link", desc: "Get your unique link to share", icon: Share2, section: "share", show: true },
-    { label: "Create Post", desc: "Publish to your social accounts", icon: Mic, section: "share", show: isPodcaster },
+    { label: "Share Voting Link", desc: "Get your unique link to share", icon: Share2, section: "promotion", show: true },
+    { label: "Create Post", desc: "Publish to your social accounts", icon: Mic, section: "promotion", show: isPodcaster },
     { label: "Connect Accounts", desc: "Link your social media", icon: Plug, section: "connectors", show: isPodcaster },
     { label: "View My Votes", desc: "See your voting history", icon: Trophy, section: "votes", show: true },
   ].filter((a) => a.show);
