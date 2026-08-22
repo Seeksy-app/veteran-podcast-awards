@@ -210,6 +210,41 @@ const OnboardingPage = () => {
     setSearchQuery("");
   };
 
+  const [isFetchingRss, setIsFetchingRss] = useState(false);
+
+  const fetchRssDetails = async (url: string) => {
+    if (!url.match(/^https?:\/\/[^\s]+\.[^\s]+/)) return;
+    setIsFetchingRss(true);
+    try {
+      const res = await fetch(url);
+      if (!res.ok) return;
+      const text = await res.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(text, "text/xml");
+      const title = doc.querySelector("channel > title")?.textContent?.trim();
+      const image =
+        doc.querySelector("channel > itunes\\:image")?.getAttribute("href") ||
+        doc.querySelector("channel > image > url")?.textContent?.trim();
+      if (title) {
+        setPodcastName(title);
+        setSearchQuery(title);
+      }
+      if (image) setPodcastImageUrl(image);
+      if (title || image) {
+        setPodcastRss(url);
+        setSelectedPodcast(null);
+        setSelectedLocalPodcastId(null);
+        setPodchaserId(null);
+        setShowDropdown(false);
+        toast.success("Podcast details pulled from RSS feed!");
+      }
+    } catch {
+      // silently fail — user can still enter manually
+    } finally {
+      setIsFetchingRss(false);
+    }
+  };
+
   useEffect(() => {
     fetchCategories();
   }, []);
@@ -393,10 +428,19 @@ const OnboardingPage = () => {
                           setPodcastName(e.target.value);
                           setShowDropdown(true);
                         }}
+                        onPaste={(e) => {
+                          const pasted = e.clipboardData.getData("text");
+                          if (pasted.match(/^https?:\/\//)) {
+                            e.preventDefault();
+                            setPodcastRss(pasted);
+                            setSearchQuery(pasted);
+                            fetchRssDetails(pasted);
+                          }
+                        }}
                         onFocus={() => {
                           if (searchQuery.length >= 2) setShowDropdown(true);
                         }}
-                        placeholder="Start typing your podcast name..."
+                        placeholder="Start typing your podcast name or paste an RSS URL..."
                         className="pl-10 h-12"
                         autoComplete="off"
                       />
@@ -499,19 +543,27 @@ const OnboardingPage = () => {
                     <Label htmlFor="podcastRss">RSS Feed URL</Label>
                     <div className="relative">
                       <Rss className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      {isFetchingRss && (
+                        <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary animate-spin" />
+                      )}
                       <Input
                         id="podcastRss"
                         value={podcastRss}
-                        onChange={(e) => {
-                          setPodcastRss(e.target.value);
-                          if (!podcastName) setPodcastName(e.target.value);
+                        onChange={(e) => setPodcastRss(e.target.value)}
+                        onPaste={(e) => {
+                          const pasted = e.clipboardData.getData("text");
+                          if (pasted.match(/^https?:\/\//)) {
+                            e.preventDefault();
+                            setPodcastRss(pasted);
+                            fetchRssDetails(pasted);
+                          }
                         }}
                         placeholder="https://feeds.example.com/your-podcast"
                         className="pl-10 h-12"
                       />
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      Can't find your show? Paste your RSS feed and we'll pull in your details.
+                      Can't find your show? Paste your RSS feed and we'll pull in your podcast name and artwork automatically.
                     </p>
                   </div>
                 </>
