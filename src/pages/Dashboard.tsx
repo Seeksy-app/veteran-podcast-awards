@@ -613,6 +613,42 @@ const Dashboard = () => {
                         </div>
                       </div>
                     </div>
+                  </div>
+
+                  {/* Military Affiliation */}
+                  {isPodcaster && (
+                    <div className="border-t border-slate-200 pt-6">
+                      <p className="text-sm font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                        <Shield className="w-4 h-4 text-amber-600" />
+                        Military Affiliation
+                      </p>
+                      <div className="grid grid-cols-2 gap-4 max-w-lg">
+                        <div className="space-y-2">
+                          <Label htmlFor="military_affiliation">Affiliation</Label>
+                          <select id="military_affiliation" className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400" value={profile.military_affiliation || ""} onChange={(e) => setProfile({ ...profile, military_affiliation: e.target.value })}>
+                            <option value="">Select...</option>
+                            <option value="veteran">Veteran</option>
+                            <option value="active_duty">Active Duty</option>
+                            <option value="spouse">Military Spouse</option>
+                            <option value="supporter">Military Supporter</option>
+                            <option value="other">Other</option>
+                          </select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="military_branch">Branch</Label>
+                          <select id="military_branch" className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400" value={profile.military_branch || ""} onChange={(e) => setProfile({ ...profile, military_branch: e.target.value })}>
+                            <option value="">Select...</option>
+                            {["Army","Navy","Marine Corps","Air Force","Coast Guard","Space Force","National Guard"].map((b) => (
+                              <option key={b} value={b}>{b}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Bio */}
+                  <div className="border-t border-slate-200 pt-6">
                     <div className="space-y-2">
                       <Label htmlFor="bio">Bio</Label>
                       <Textarea id="bio" placeholder="Tell us about yourself..." value={profile.bio || ""} onChange={(e) => setProfile({ ...profile, bio: e.target.value })} rows={3} />
@@ -653,38 +689,6 @@ const Dashboard = () => {
                         </div>
                       </div>
                     </>
-                  )}
-
-                  {/* Military */}
-                  {isPodcaster && (
-                    <div className="border-t border-slate-200 pt-6">
-                      <p className="text-sm font-semibold text-slate-900 mb-4 flex items-center gap-2">
-                        <Shield className="w-4 h-4 text-amber-600" />
-                        Military Affiliation
-                      </p>
-                      <div className="grid grid-cols-2 gap-4 max-w-lg">
-                        <div className="space-y-2">
-                          <Label htmlFor="military_affiliation">Affiliation</Label>
-                          <select id="military_affiliation" className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400" value={profile.military_affiliation || ""} onChange={(e) => setProfile({ ...profile, military_affiliation: e.target.value })}>
-                            <option value="">Select...</option>
-                            <option value="veteran">Veteran</option>
-                            <option value="active_duty">Active Duty</option>
-                            <option value="spouse">Military Spouse</option>
-                            <option value="supporter">Military Supporter</option>
-                            <option value="other">Other</option>
-                          </select>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="military_branch">Branch</Label>
-                          <select id="military_branch" className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400" value={profile.military_branch || ""} onChange={(e) => setProfile({ ...profile, military_branch: e.target.value })}>
-                            <option value="">Select...</option>
-                            {["Army","Navy","Marine Corps","Air Force","Coast Guard","Space Force","National Guard"].map((b) => (
-                              <option key={b} value={b}>{b}</option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-                    </div>
                   )}
 
                   {/* Award Categories (read-only) */}
