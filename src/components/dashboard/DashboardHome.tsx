@@ -121,6 +121,30 @@ export function DashboardHome({
         </p>
       </div>
 
+      {/* Connect Social Prompt (no accounts yet) */}
+      {isPodcaster && connectedList.length === 0 && (
+        <div className="rounded-xl border-2 border-primary/30 bg-primary/5 p-5 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <Plug className="w-6 h-6 text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-foreground">Connect your social accounts</p>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Link at least one platform to share your voting link and create posts for your audience.
+            </p>
+          </div>
+          <Button
+            variant="gold"
+            size="sm"
+            className="shrink-0 gap-2"
+            onClick={() => onNavigate("connectors")}
+          >
+            <Plug className="w-4 h-4" />
+            Connect Now
+          </Button>
+        </div>
+      )}
+
       {/* Connected Accounts Bar (podcasters) */}
       {isPodcaster && connectedList.length > 0 && (
         <div>

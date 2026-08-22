@@ -63,6 +63,7 @@ interface Profile {
   is_public: boolean;
   allow_contact: boolean;
   podcast_id: string | null;
+  onboarding_completed: boolean | null;
 }
 
 interface PodcasterMessage {
@@ -150,6 +151,12 @@ const Dashboard = () => {
       fetchContacts();
     }
   }, [user]);
+
+  useEffect(() => {
+    if (profile && profile.user_type === "podcaster" && !profile.onboarding_completed) {
+      navigate("/onboarding", { replace: true });
+    }
+  }, [profile, navigate]);
 
   useEffect(() => {
     if (!profile?.podcast_id) {

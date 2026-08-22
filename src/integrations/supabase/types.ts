@@ -898,11 +898,18 @@ export type Database = {
           bio: string | null
           created_at: string
           custom_voting_link: string | null
+          distribution_platforms: string[] | null
           email: string | null
           full_name: string | null
+          has_ad_agency: boolean | null
+          hosting_platform: string | null
           id: string
+          interested_in_opportunities: boolean | null
           is_public: boolean | null
+          onboarding_completed: boolean | null
           podcast_id: string | null
+          podcast_name: string | null
+          podcast_rss: string | null
           social_instagram: string | null
           social_linkedin: string | null
           social_twitter: string | null
@@ -917,11 +924,18 @@ export type Database = {
           bio?: string | null
           created_at?: string
           custom_voting_link?: string | null
+          distribution_platforms?: string[] | null
           email?: string | null
           full_name?: string | null
+          has_ad_agency?: boolean | null
+          hosting_platform?: string | null
           id: string
+          interested_in_opportunities?: boolean | null
           is_public?: boolean | null
+          onboarding_completed?: boolean | null
           podcast_id?: string | null
+          podcast_name?: string | null
+          podcast_rss?: string | null
           social_instagram?: string | null
           social_linkedin?: string | null
           social_twitter?: string | null
@@ -936,11 +950,18 @@ export type Database = {
           bio?: string | null
           created_at?: string
           custom_voting_link?: string | null
+          distribution_platforms?: string[] | null
           email?: string | null
           full_name?: string | null
+          has_ad_agency?: boolean | null
+          hosting_platform?: string | null
           id?: string
+          interested_in_opportunities?: boolean | null
           is_public?: boolean | null
+          onboarding_completed?: boolean | null
           podcast_id?: string | null
+          podcast_name?: string | null
+          podcast_rss?: string | null
           social_instagram?: string | null
           social_linkedin?: string | null
           social_twitter?: string | null

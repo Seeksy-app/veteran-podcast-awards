@@ -32,6 +32,7 @@ import InvestorSharePage from "./pages/InvestorSharePage";
 import VPADeck from "./pages/VPADeck";
 import ExportData from "./pages/ExportData";
 import ResetPassword from "./pages/ResetPassword";
+import Onboarding from "./pages/Onboarding";
 
 const queryClient = new QueryClient();
 
@@ -62,6 +63,7 @@ const App = () => (
               <Route path="/terms" element={<Terms />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/podcaster/:username" element={<PodcasterProfile />} />
               <Route path="/opportunity" element={<Opportunity />} />
               <Route path="/admin" element={<Admin />} />
