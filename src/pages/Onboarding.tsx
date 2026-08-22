@@ -107,10 +107,12 @@ const OnboardingPage = () => {
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedPodcast, setSelectedPodcast] = useState<PodchaserPodcast | null>(null);
+  const [localResults, setLocalResults] = useState<{ id: string; title: string; author: string | null; image_url: string | null; rss_url: string }[]>([]);
   const [podcastName, setPodcastName] = useState("");
   const [podcastRss, setPodcastRss] = useState("");
   const [podcastImageUrl, setPodcastImageUrl] = useState("");
   const [podchaserId, setPodchaserId] = useState<number | null>(null);
+  const [selectedLocalPodcastId, setSelectedLocalPodcastId] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Step 2: Military Info
@@ -146,7 +148,24 @@ const OnboardingPage = () => {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  const { data: searchResults, isFetching: isSearching } = usePodchaserSearch(debouncedQuery);
+  const { data: searchResults, isFetching: isSearching } = usePodchaserSearch(debouncedQuery, 1, true);
+
+  // Search local podcasts table in parallel
+  useEffect(() => {
+    if (debouncedQuery.trim().length < 2) {
+      setLocalResults([]);
+      return;
+    }
+    (async () => {
+      const { data } = await supabase
+        .from("podcasts")
+        .select("id, title, author, image_url, rss_url")
+        .ilike("title", `%${debouncedQuery}%`)
+        .eq("is_active", true)
+        .limit(5);
+      if (data) setLocalResults(data);
+    })();
+  }, [debouncedQuery]);
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -165,12 +184,25 @@ const OnboardingPage = () => {
     setPodcastRss(podcast.rssUrl || "");
     setPodcastImageUrl(podcast.imageUrl || "");
     setPodchaserId(podcast.id);
+    setSelectedLocalPodcastId(null);
+    setSearchQuery(podcast.title);
+    setShowDropdown(false);
+  };
+
+  const handleSelectLocalPodcast = (podcast: { id: string; title: string; author: string | null; image_url: string | null; rss_url: string }) => {
+    setSelectedPodcast(null);
+    setPodcastName(podcast.title);
+    setPodcastRss(podcast.rss_url);
+    setPodcastImageUrl(podcast.image_url || "");
+    setPodchaserId(null);
+    setSelectedLocalPodcastId(podcast.id);
     setSearchQuery(podcast.title);
     setShowDropdown(false);
   };
 
   const handleClearSelection = () => {
     setSelectedPodcast(null);
+    setSelectedLocalPodcastId(null);
     setPodcastName("");
     setPodcastRss("");
     setPodcastImageUrl("");
@@ -315,7 +347,7 @@ const OnboardingPage = () => {
               </div>
 
               {/* Selected podcast card */}
-              {selectedPodcast ? (
+              {(selectedPodcast || selectedLocalPodcastId) ? (
                 <div className="flex items-center gap-4 rounded-xl border-2 border-primary bg-primary/5 p-4">
                   {podcastImageUrl && (
                     <img
@@ -326,15 +358,13 @@ const OnboardingPage = () => {
                   )}
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-foreground truncate">{podcastName}</p>
-                    {selectedPodcast.author?.name && (
-                      <p className="text-sm text-muted-foreground truncate">
-                        by {selectedPodcast.author.name}
-                      </p>
-                    )}
                     {podcastRss && (
                       <p className="text-xs text-muted-foreground truncate mt-0.5">
                         RSS connected
                       </p>
+                    )}
+                    {selectedLocalPodcastId && (
+                      <p className="text-xs text-primary mt-0.5">Already in our directory</p>
                     )}
                   </div>
                   <button
@@ -373,46 +403,75 @@ const OnboardingPage = () => {
 
                       {/* Dropdown */}
                       {showDropdown && debouncedQuery.length >= 2 && (
-                        <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-[280px] overflow-y-auto">
-                          {searchResults?.data && searchResults.data.length > 0 ? (
+                        <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-[320px] overflow-y-auto">
+                          {/* Local directory results first */}
+                          {localResults.length > 0 && (
                             <>
-                              {searchResults.data.map((podcast) => (
+                              <div className="px-4 py-2 bg-primary/5 border-b border-border">
+                                <p className="text-xs font-semibold text-primary uppercase tracking-wider">In Our Directory</p>
+                              </div>
+                              {localResults.map((podcast) => (
                                 <button
-                                  key={podcast.id}
+                                  key={`local-${podcast.id}`}
                                   type="button"
-                                  onClick={() => handleSelectPodcast(podcast)}
-                                  className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-primary/5 transition-colors border-b border-border/50 last:border-0"
+                                  onClick={() => handleSelectLocalPodcast(podcast)}
+                                  className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-primary/5 transition-colors border-b border-border/50"
                                 >
-                                  {podcast.imageUrl ? (
-                                    <img
-                                      src={podcast.imageUrl}
-                                      alt=""
-                                      className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
-                                    />
+                                  {podcast.image_url ? (
+                                    <img src={podcast.image_url} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
                                   ) : (
                                     <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
                                       <Mic className="w-5 h-5 text-muted-foreground" />
                                     </div>
                                   )}
                                   <div className="min-w-0 flex-1">
-                                    <p className="text-sm font-medium text-foreground truncate">
-                                      {podcast.title}
-                                    </p>
+                                    <p className="text-sm font-medium text-foreground truncate">{podcast.title}</p>
+                                    {podcast.author && (
+                                      <p className="text-xs text-muted-foreground truncate">{podcast.author}</p>
+                                    )}
+                                  </div>
+                                  <span className="text-xs text-primary flex-shrink-0">VPA</span>
+                                </button>
+                              ))}
+                            </>
+                          )}
+
+                          {/* Podchaser results */}
+                          {searchResults?.data && searchResults.data.length > 0 && (
+                            <>
+                              <div className="px-4 py-2 bg-muted/50 border-b border-border">
+                                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">More from Podchaser</p>
+                              </div>
+                              {searchResults.data.map((podcast) => (
+                                <button
+                                  key={`pc-${podcast.id}`}
+                                  type="button"
+                                  onClick={() => handleSelectPodcast(podcast)}
+                                  className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-primary/5 transition-colors border-b border-border/50 last:border-0"
+                                >
+                                  {podcast.imageUrl ? (
+                                    <img src={podcast.imageUrl} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+                                  ) : (
+                                    <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
+                                      <Mic className="w-5 h-5 text-muted-foreground" />
+                                    </div>
+                                  )}
+                                  <div className="min-w-0 flex-1">
+                                    <p className="text-sm font-medium text-foreground truncate">{podcast.title}</p>
                                     {podcast.author?.name && (
-                                      <p className="text-xs text-muted-foreground truncate">
-                                        {podcast.author.name}
-                                      </p>
+                                      <p className="text-xs text-muted-foreground truncate">{podcast.author.name}</p>
                                     )}
                                   </div>
                                   {podcast.numberOfEpisodes > 0 && (
-                                    <span className="text-xs text-muted-foreground flex-shrink-0">
-                                      {podcast.numberOfEpisodes} eps
-                                    </span>
+                                    <span className="text-xs text-muted-foreground flex-shrink-0">{podcast.numberOfEpisodes} eps</span>
                                   )}
                                 </button>
                               ))}
                             </>
-                          ) : !isSearching ? (
+                          )}
+
+                          {/* No results at all */}
+                          {localResults.length === 0 && (!searchResults?.data || searchResults.data.length === 0) && !isSearching && (
                             <div className="px-4 py-6 text-center">
                               <p className="text-sm text-muted-foreground">
                                 No podcasts found for "{debouncedQuery}"
@@ -421,7 +480,7 @@ const OnboardingPage = () => {
                                 You can enter your RSS feed below instead.
                               </p>
                             </div>
-                          ) : null}
+                          )}
                         </div>
                       )}
                     </div>
