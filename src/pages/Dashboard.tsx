@@ -18,10 +18,8 @@ import {
   Trophy,
   Camera,
   Link as LinkIcon,
-  Twitter,
-  Instagram,
-  Linkedin,
   Copy,
+  Shield,
   CheckCircle,
   BarChart3,
   Mic,
@@ -65,6 +63,17 @@ interface Profile {
   allow_contact: boolean;
   podcast_id: string | null;
   onboarding_completed: boolean | null;
+  podcast_name: string | null;
+  podcast_rss: string | null;
+  podcast_image_url: string | null;
+  podchaser_id: number | null;
+  hosting_platform: string | null;
+  distribution_platforms: string[] | null;
+  military_branch: string | null;
+  military_affiliation: string | null;
+  selected_categories: string[] | null;
+  has_ad_agency: boolean | null;
+  interested_in_opportunities: boolean | null;
 }
 
 interface PodcasterMessage {
@@ -165,6 +174,7 @@ const Dashboard = () => {
     if (!profile?.podcast_id) {
       setLinkedPodcast(null);
       setFollowerCount(0);
+      if (profile?.podcast_rss && !rssUrl) setRssUrl(profile.podcast_rss);
       return;
     }
     (async () => {
@@ -277,12 +287,17 @@ const Dashboard = () => {
         full_name: profile.full_name,
         bio: profile.bio,
         website_url: profile.website_url,
-        social_twitter: profile.social_twitter,
-        social_instagram: profile.social_instagram,
-        social_linkedin: profile.social_linkedin,
         username_slug: profile.username_slug,
         is_public: profile.is_public,
         allow_contact: profile.allow_contact,
+        podcast_name: profile.podcast_name,
+        podcast_rss: profile.podcast_rss,
+        military_branch: profile.military_branch,
+        military_affiliation: profile.military_affiliation,
+        hosting_platform: profile.hosting_platform,
+        selected_categories: profile.selected_categories,
+        has_ad_agency: profile.has_ad_agency,
+        interested_in_opportunities: profile.interested_in_opportunities,
       })
       .eq("id", user.id);
 
@@ -534,97 +549,246 @@ const Dashboard = () => {
 
           {/* ═══ Profile ═══ */}
           {activeSection === "profile" && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Edit Profile</CardTitle>
-                <CardDescription>Update your personal information and social links</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleUpdateProfile} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid gap-6">
+              {/* Personal Info */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Edit Profile</CardTitle>
+                  <CardDescription>Update your personal information</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleUpdateProfile} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="full_name">Full Name</Label>
+                        <Input
+                          id="full_name"
+                          value={profile.full_name || ""}
+                          onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="website">Website</Label>
+                        <div className="relative">
+                          <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                          <Input
+                            id="website"
+                            placeholder="https://yoursite.com"
+                            className="pl-10"
+                            value={profile.website_url || ""}
+                            onChange={(e) => setProfile({ ...profile, website_url: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
                     <div className="space-y-2">
-                      <Label htmlFor="full_name">Full Name</Label>
-                      <Input
-                        id="full_name"
-                        value={profile.full_name || ""}
-                        onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
+                      <Label htmlFor="bio">Bio</Label>
+                      <Textarea
+                        id="bio"
+                        placeholder="Tell us about yourself..."
+                        value={profile.bio || ""}
+                        onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
+                        rows={3}
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="website">Website</Label>
-                      <div className="relative">
-                        <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                        <Input
-                          id="website"
-                          placeholder="https://yoursite.com"
-                          className="pl-10"
-                          value={profile.website_url || ""}
-                          onChange={(e) => setProfile({ ...profile, website_url: e.target.value })}
+
+                    <Button type="submit" variant="gold" disabled={isUpdating}>
+                      {isUpdating ? "Saving..." : "Save Changes"}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+
+              {/* Podcast Info */}
+              {isPodcaster && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Mic className="w-5 h-5 text-primary" />
+                      Podcast Details
+                    </CardTitle>
+                    <CardDescription>Your podcast information from registration</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={handleUpdateProfile} className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="podcast_name">Podcast Name</Label>
+                          <div className="relative">
+                            <Mic className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                            <Input
+                              id="podcast_name"
+                              placeholder="Your podcast name"
+                              className="pl-10"
+                              value={profile.podcast_name || linkedPodcast?.title || ""}
+                              onChange={(e) => setProfile({ ...profile, podcast_name: e.target.value })}
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="hosting_platform">Hosting Platform</Label>
+                          <select
+                            id="hosting_platform"
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            value={profile.hosting_platform || ""}
+                            onChange={(e) => setProfile({ ...profile, hosting_platform: e.target.value })}
+                          >
+                            <option value="">Select platform...</option>
+                            {["Buzzsprout","Libsyn","Podbean","Spotify for Podcasters (Anchor)","Transistor","Captivate","RSS.com","Spreaker","Blubrry","Simplecast","Megaphone","Acast","RedCircle","Castos","iHeartRadio","SoundCloud","Audioboom","Podomatic","Other"].map((p) => (
+                              <option key={p} value={p}>{p}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="podcast_rss">Podcast RSS Feed</Label>
+                        <div className="relative">
+                          <Rss className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                          <Input
+                            id="podcast_rss"
+                            placeholder="https://feeds.example.com/your-podcast"
+                            className="pl-10"
+                            value={profile.podcast_rss || rssUrl}
+                            onChange={(e) => {
+                              setProfile({ ...profile, podcast_rss: e.target.value });
+                              setRssUrl(e.target.value);
+                            }}
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Your RSS feed URL is essential for syncing episodes and enabling discovery.
+                        </p>
+                      </div>
+
+                      <Button type="submit" variant="gold" disabled={isUpdating}>
+                        {isUpdating ? "Saving..." : "Save Changes"}
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Military Info */}
+              {isPodcaster && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Shield className="w-5 h-5 text-primary" />
+                      Military Affiliation
+                    </CardTitle>
+                    <CardDescription>Your connection to the military community</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={handleUpdateProfile} className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="military_affiliation">Affiliation</Label>
+                          <select
+                            id="military_affiliation"
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            value={profile.military_affiliation || ""}
+                            onChange={(e) => setProfile({ ...profile, military_affiliation: e.target.value })}
+                          >
+                            <option value="">Select affiliation...</option>
+                            <option value="veteran">Veteran</option>
+                            <option value="active_duty">Active Duty</option>
+                            <option value="spouse">Military Spouse</option>
+                            <option value="supporter">Military Supporter</option>
+                            <option value="other">Other</option>
+                          </select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="military_branch">Branch</Label>
+                          <select
+                            id="military_branch"
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            value={profile.military_branch || ""}
+                            onChange={(e) => setProfile({ ...profile, military_branch: e.target.value })}
+                          >
+                            <option value="">Select branch...</option>
+                            {["Army","Navy","Marine Corps","Air Force","Coast Guard","Space Force","National Guard"].map((b) => (
+                              <option key={b} value={b}>{b}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      <Button type="submit" variant="gold" disabled={isUpdating}>
+                        {isUpdating ? "Saving..." : "Save Changes"}
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Award Categories */}
+              {isPodcaster && (profile.selected_categories?.length ?? 0) > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Trophy className="w-5 h-5 text-primary" />
+                      Award Categories
+                    </CardTitle>
+                    <CardDescription>Categories you're registered for in the 2026 Veteran Podcast Awards</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap gap-2">
+                      {(profile.selected_categories || []).map((catId) => (
+                        <Badge key={catId} variant="secondary" className="px-3 py-1.5 text-sm">
+                          <Trophy className="w-3.5 h-3.5 mr-1.5 text-primary" />
+                          {categoryNames[catId] || catId}
+                        </Badge>
+                      ))}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-3">
+                      To change your categories, please contact us.
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Sponsorship */}
+              {isPodcaster && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <BarChart3 className="w-5 h-5 text-primary" />
+                      Sponsorship & Advertising
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={handleUpdateProfile} className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-foreground">Currently using an ad agency</p>
+                          <p className="text-xs text-muted-foreground">Do you work with an agency for sponsorships?</p>
+                        </div>
+                        <Switch
+                          checked={profile.has_ad_agency ?? false}
+                          onCheckedChange={(v) => setProfile({ ...profile, has_ad_agency: v })}
                         />
                       </div>
-                    </div>
-                  </div>
-
-                  {isPodcaster && (
-                    <div className="space-y-2">
-                      <Label htmlFor="rss_url">Podcast RSS Feed</Label>
-                      <div className="relative">
-                        <Rss className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                        <Input
-                          id="rss_url"
-                          placeholder="https://feeds.example.com/your-podcast"
-                          className="pl-10"
-                          value={rssUrl}
-                          onChange={(e) => setRssUrl(e.target.value)}
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-foreground">Interested in sponsorship opportunities</p>
+                          <p className="text-xs text-muted-foreground">Would you like to hear about new opportunities?</p>
+                        </div>
+                        <Switch
+                          checked={profile.interested_in_opportunities ?? false}
+                          onCheckedChange={(v) => setProfile({ ...profile, interested_in_opportunities: v })}
                         />
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        Your RSS feed URL is essential for syncing episodes and enabling discovery.
-                      </p>
-                    </div>
-                  )}
 
-                  <div className="space-y-2">
-                    <Label htmlFor="bio">Bio</Label>
-                    <Textarea
-                      id="bio"
-                      placeholder="Tell us about yourself..."
-                      value={profile.bio || ""}
-                      onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
-                      rows={3}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="twitter">Twitter/X</Label>
-                      <div className="relative">
-                        <Twitter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                        <Input id="twitter" placeholder="@username" className="pl-10" value={profile.social_twitter || ""} onChange={(e) => setProfile({ ...profile, social_twitter: e.target.value })} />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="instagram">Instagram</Label>
-                      <div className="relative">
-                        <Instagram className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                        <Input id="instagram" placeholder="@username" className="pl-10" value={profile.social_instagram || ""} onChange={(e) => setProfile({ ...profile, social_instagram: e.target.value })} />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="linkedin">LinkedIn</Label>
-                      <div className="relative">
-                        <Linkedin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                        <Input id="linkedin" placeholder="username" className="pl-10" value={profile.social_linkedin || ""} onChange={(e) => setProfile({ ...profile, social_linkedin: e.target.value })} />
-                      </div>
-                    </div>
-                  </div>
-
-                  <Button type="submit" disabled={isUpdating}>
-                    {isUpdating ? "Saving..." : "Save Changes"}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
+                      <Button type="submit" variant="gold" disabled={isUpdating}>
+                        {isUpdating ? "Saving..." : "Save Changes"}
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           )}
 
           {/* ═══ Inbox ═══ */}
