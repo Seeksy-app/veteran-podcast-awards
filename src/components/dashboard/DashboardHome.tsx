@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   Users,
@@ -10,7 +9,6 @@ import {
   Share2,
   Plug,
   Mic,
-  TrendingUp,
   Twitter,
   Instagram,
   Linkedin,
@@ -94,11 +92,11 @@ export function DashboardHome({
   );
 
   const stats = [
-    { label: "Followers", value: followerCount, icon: Heart, color: "text-pink-500", show: isPodcaster },
-    { label: "Connected", value: connectedCount, icon: Plug, color: "text-green-500", show: isPodcaster },
-    { label: "Votes Cast", value: voteCount, icon: Vote, color: "text-primary", show: true },
-    { label: "Unread", value: unreadMessages, icon: Mail, color: "text-blue-500", show: true },
-    { label: "Favorites", value: favoritesCount, icon: Heart, color: "text-amber-500", show: true },
+    { label: "Followers", value: followerCount, icon: Heart, color: "text-pink-500", bg: "bg-pink-50", show: isPodcaster },
+    { label: "Connected", value: connectedCount, icon: Plug, color: "text-emerald-500", bg: "bg-emerald-50", show: isPodcaster },
+    { label: "Votes Cast", value: voteCount, icon: Vote, color: "text-amber-600", bg: "bg-amber-50", show: true },
+    { label: "Unread", value: unreadMessages, icon: Mail, color: "text-blue-500", bg: "bg-blue-50", show: true },
+    { label: "Favorites", value: favoritesCount, icon: Heart, color: "text-orange-500", bg: "bg-orange-50", show: true },
   ].filter((s) => s.show);
 
   const quickActions = [
@@ -111,48 +109,47 @@ export function DashboardHome({
   return (
     <div className="space-y-8">
       {/* Greeting */}
-      <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent rounded-2xl p-8">
-        <p className="text-sm font-medium text-primary uppercase tracking-wider mb-1">Your Dashboard</p>
-        <h1 className="font-serif text-3xl md:text-4xl font-bold text-foreground">
+      <div>
+        <h1 className="text-2xl font-bold text-slate-900">
           {greeting()}, {userName.split(" ")[0]}
         </h1>
-        <p className="text-muted-foreground mt-2">
+        <p className="text-slate-500 mt-1">
           {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
         </p>
       </div>
 
-      {/* Connect Social Prompt (no accounts yet) */}
+      {/* Connect Social Prompt */}
       {isPodcaster && connectedList.length === 0 && (
-        <div className="rounded-xl border-2 border-primary/30 bg-primary/5 p-5 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-            <Plug className="w-6 h-6 text-primary" />
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 flex items-center gap-4">
+          <div className="w-11 h-11 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
+            <Plug className="w-5 h-5 text-amber-600" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-foreground">Connect your social accounts</p>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              Link at least one platform to share your voting link and create posts for your audience.
+            <p className="font-semibold text-slate-900 text-sm">Connect your social accounts</p>
+            <p className="text-sm text-slate-500 mt-0.5">
+              Link at least one platform to share your voting link and create posts.
             </p>
           </div>
           <Button
             variant="gold"
             size="sm"
-            className="shrink-0 gap-2"
+            className="shrink-0 gap-1.5"
             onClick={() => onNavigate("connectors")}
           >
             <Plug className="w-4 h-4" />
-            Connect Now
+            Connect
           </Button>
         </div>
       )}
 
-      {/* Connected Accounts Bar (podcasters) */}
+      {/* Connected Accounts Bar */}
       {isPodcaster && connectedList.length > 0 && (
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">Connected Accounts</h2>
+            <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Connected Accounts</h2>
             <button
               onClick={() => onNavigate("connectors")}
-              className="text-xs text-primary hover:underline flex items-center gap-1"
+              className="text-xs text-amber-600 hover:underline flex items-center gap-1"
             >
               Manage <ArrowRight className="w-3 h-3" />
             </button>
@@ -165,26 +162,26 @@ export function DashboardHome({
               return (
                 <div
                   key={platformId}
-                  className="flex items-center gap-3 bg-card border border-border rounded-xl px-4 py-3 min-w-[180px] shrink-0"
+                  className="flex items-center gap-3 bg-white border border-slate-200 rounded-xl px-4 py-3 min-w-[180px] shrink-0 shadow-sm"
                 >
                   <div className={`w-9 h-9 rounded-lg ${meta.color} flex items-center justify-center`}>
                     <Icon className="w-4 h-4 text-white" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">
+                    <p className="text-sm font-medium text-slate-900 truncate">
                       {account.display_name || account.username || platformId}
                     </p>
-                    <p className="text-xs text-muted-foreground capitalize">{platformId.replace("_", " ")}</p>
+                    <p className="text-xs text-slate-400 capitalize">{platformId.replace("_", " ")}</p>
                   </div>
                 </div>
               );
             })}
             <button
               onClick={() => onNavigate("connectors")}
-              className="flex items-center gap-2 bg-secondary/50 border border-dashed border-border rounded-xl px-5 py-3 min-w-[140px] shrink-0 hover:border-primary/50 transition-colors"
+              className="flex items-center gap-2 bg-white border border-dashed border-slate-300 rounded-xl px-5 py-3 min-w-[140px] shrink-0 hover:border-amber-400 transition-colors"
             >
-              <ExternalLink className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">Add more</span>
+              <ExternalLink className="w-4 h-4 text-slate-400" />
+              <span className="text-sm text-slate-400">Add more</span>
             </button>
           </div>
         </div>
@@ -193,36 +190,36 @@ export function DashboardHome({
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {stats.map((stat) => (
-          <Card key={stat.label} className="bg-card">
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  {stat.label}
-                </span>
+          <div key={stat.label} className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+                {stat.label}
+              </span>
+              <div className={`w-8 h-8 rounded-lg ${stat.bg} flex items-center justify-center`}>
                 <stat.icon className={`w-4 h-4 ${stat.color}`} />
               </div>
-              <p className="text-2xl font-bold text-foreground">{stat.value}</p>
-            </CardContent>
-          </Card>
+            </div>
+            <p className="text-2xl font-bold text-slate-900">{stat.value}</p>
+          </div>
         ))}
       </div>
 
       {/* Quick Actions */}
       <div>
-        <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-3">Quick Actions</h2>
+        <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Quick Actions</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {quickActions.map((action) => (
             <button
               key={action.label}
               onClick={() => onNavigate(action.section)}
-              className="flex items-start gap-4 bg-card border border-border rounded-xl p-5 text-left hover:border-primary/30 hover:bg-primary/5 transition-colors group"
+              className="flex items-start gap-4 bg-white border border-slate-200 rounded-xl p-5 text-left hover:border-amber-300 hover:shadow-md transition-all group shadow-sm"
             >
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
-                <action.icon className="w-5 h-5 text-primary" />
+              <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center shrink-0 group-hover:bg-amber-100 transition-colors">
+                <action.icon className="w-5 h-5 text-amber-600" />
               </div>
               <div>
-                <p className="font-semibold text-sm text-foreground">{action.label}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{action.desc}</p>
+                <p className="font-semibold text-sm text-slate-900">{action.label}</p>
+                <p className="text-xs text-slate-500 mt-0.5">{action.desc}</p>
               </div>
             </button>
           ))}
@@ -230,31 +227,29 @@ export function DashboardHome({
       </div>
 
       {/* Key Dates */}
-      <Card>
-        <CardContent className="p-6">
-          <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-4">Upcoming</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="flex items-center gap-4 p-4 bg-primary/5 rounded-lg border border-primary/10">
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Vote className="w-6 h-6 text-primary" />
-              </div>
-              <div>
-                <p className="font-semibold text-foreground">Voting Opens</p>
-                <p className="text-sm text-muted-foreground">October 5, 2026 &middot; National Military Podcast Day</p>
-              </div>
+      <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+        <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Upcoming</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="flex items-center gap-4 p-4 bg-amber-50 rounded-lg border border-amber-100">
+            <div className="w-12 h-12 rounded-lg bg-amber-100 flex items-center justify-center">
+              <Vote className="w-6 h-6 text-amber-600" />
             </div>
-            <div className="flex items-center gap-4 p-4 bg-primary/5 rounded-lg border border-primary/10">
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Trophy className="w-6 h-6 text-primary" />
-              </div>
-              <div>
-                <p className="font-semibold text-foreground">Awards Ceremony</p>
-                <p className="text-sm text-muted-foreground">November 11, 2026 &middot; Veterans Day &middot; 6 PM ET</p>
-              </div>
+            <div>
+              <p className="font-semibold text-slate-900">Voting Opens</p>
+              <p className="text-sm text-slate-500">October 5, 2026 &middot; National Military Podcast Day</p>
             </div>
           </div>
-        </CardContent>
-      </Card>
+          <div className="flex items-center gap-4 p-4 bg-amber-50 rounded-lg border border-amber-100">
+            <div className="w-12 h-12 rounded-lg bg-amber-100 flex items-center justify-center">
+              <Trophy className="w-6 h-6 text-amber-600" />
+            </div>
+            <div>
+              <p className="font-semibold text-slate-900">Awards Ceremony</p>
+              <p className="text-sm text-slate-500">November 11, 2026 &middot; Veterans Day &middot; 6 PM ET</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

@@ -165,6 +165,18 @@ const Dashboard = () => {
     }
   }, [user]);
 
+  // Force light mode on dashboard
+  useEffect(() => {
+    const root = document.documentElement;
+    const wasDark = root.classList.contains("dark");
+    root.classList.remove("dark");
+    root.classList.add("light");
+    return () => {
+      root.classList.remove("light");
+      if (wasDark) root.classList.add("dark");
+    };
+  }, []);
+
   useEffect(() => {
     if (profile && profile.user_type === "podcaster" && !profile.onboarding_completed) {
       navigate("/onboarding", { replace: true });
@@ -409,7 +421,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-slate-50 flex">
       {showWelcome && (
         <WelcomeCelebration
           userName={profile.full_name || user.email || ""}
@@ -420,41 +432,44 @@ const Dashboard = () => {
         />
       )}
       {/* ─── Left Sidebar ─── */}
-      <aside className="hidden md:flex flex-col w-64 shrink-0 border-r border-border bg-card/50 sticky top-0 h-screen overflow-y-auto">
-        <div className="flex-1 flex flex-col px-4 pt-5 pb-4">
-          {/* Profile mini with logo */}
-          <div className="flex items-center gap-3 px-2 mb-6">
+      <aside className="hidden md:flex flex-col w-64 shrink-0 border-r border-slate-200 bg-white sticky top-0 h-screen overflow-y-auto">
+        <div className="flex-1 flex flex-col px-3 pt-5 pb-4">
+          {/* Brand */}
+          <Link to="/" className="flex items-center gap-2.5 px-3 mb-6">
+            <img src={logo} alt="VPA" className="h-9 w-9" />
+            <span className="font-serif text-base font-bold text-slate-900">VPA 2026</span>
+          </Link>
+
+          {/* User card */}
+          <div className="flex items-center gap-3 px-3 py-3 mb-2 rounded-xl bg-slate-50">
             <div className="relative group">
-              <Avatar className="w-12 h-12 border-2 border-primary/20">
+              <Avatar className="w-10 h-10 border border-slate-200">
                 <AvatarImage src={profile.avatar_url || undefined} />
-                <AvatarFallback className="text-sm bg-secondary">
+                <AvatarFallback className="text-sm bg-slate-100 text-slate-600">
                   {profile.full_name?.charAt(0) || user.email?.charAt(0) || "U"}
                 </AvatarFallback>
               </Avatar>
               <label className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                <Camera className="w-4 h-4 text-white" />
+                <Camera className="w-3.5 h-3.5 text-white" />
                 <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
               </label>
             </div>
             <div className="min-w-0 flex-1">
-              <p className="font-semibold text-sm text-foreground truncate">
+              <p className="font-semibold text-sm text-slate-900 truncate">
                 {profile.full_name || "Welcome!"}
               </p>
-              <Badge className={`${getUserTypeColor()} text-[10px] px-1.5 py-0`}>{getUserTypeLabel()}</Badge>
+              <p className="text-xs text-slate-500">{getUserTypeLabel()}</p>
             </div>
-            <Link to="/" className="shrink-0" title="Back to site">
-              <img src={logo} alt="VPA" className="h-8 w-8 opacity-60 hover:opacity-100 transition-opacity" />
-            </Link>
           </div>
 
           {isPodcaster && followerCount > 0 && (
-            <div className="flex items-center gap-2 px-2 mb-4 text-sm text-muted-foreground">
-              <Heart className="w-4 h-4 text-primary" />
+            <div className="flex items-center gap-2 px-3 mb-3 text-xs text-slate-500">
+              <Heart className="w-3.5 h-3.5 text-amber-500" />
               {followerCount} {followerCount === 1 ? "follower" : "followers"}
             </div>
           )}
 
-          <nav className="space-y-1 flex-1">
+          <nav className="space-y-0.5 flex-1">
             {(() => {
               const filtered = navItems.filter((n) => !n.podcasterOnly || isPodcaster);
               let lastGroup: string | undefined;
@@ -464,22 +479,22 @@ const Dashboard = () => {
                 return (
                   <div key={item.key}>
                     {showHeader && (
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-primary/60 px-3 pt-5 pb-1">
+                      <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 px-3 pt-5 pb-1.5">
                         {item.group}
                       </p>
                     )}
                     <button
                       onClick={() => setActiveSection(item.key)}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
                         activeSection === item.key
-                          ? "bg-primary/10 text-primary"
-                          : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
+                          ? "bg-amber-50 text-amber-700 font-semibold"
+                          : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium"
                       }`}
                     >
-                      <item.icon className="w-4 h-4 shrink-0" />
+                      <item.icon className={`w-[18px] h-[18px] shrink-0 ${activeSection === item.key ? "text-amber-600" : "text-slate-400"}`} />
                       {item.label}
                       {item.badge ? (
-                        <span className="ml-auto w-5 h-5 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center">
+                        <span className="ml-auto w-5 h-5 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center font-semibold">
                           {item.badge}
                         </span>
                       ) : null}
@@ -491,23 +506,23 @@ const Dashboard = () => {
           </nav>
 
           {/* Settings + Logout */}
-          <div className="border-t border-border/50 pt-4 mt-4 space-y-1">
+          <div className="border-t border-slate-100 pt-3 mt-3 space-y-0.5">
             <button
               onClick={() => setActiveSection("settings")}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
                 activeSection === "settings"
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
+                  ? "bg-amber-50 text-amber-700 font-semibold"
+                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium"
               }`}
             >
-              <Settings className="w-4 h-4 shrink-0" />
+              <Settings className={`w-[18px] h-[18px] shrink-0 ${activeSection === "settings" ? "text-amber-600" : "text-slate-400"}`} />
               Settings
             </button>
             <button
               onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-500 hover:bg-red-50 hover:text-red-600 transition-colors"
             >
-              <LogOut className="w-4 h-4 shrink-0" />
+              <LogOut className="w-[18px] h-[18px] shrink-0 text-slate-400" />
               Log Out
             </button>
           </div>
@@ -515,14 +530,14 @@ const Dashboard = () => {
       </aside>
 
       {/* ─── Mobile header ─── */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-card border-b border-border px-4 py-3 flex items-center justify-between">
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between shadow-sm">
         <Link to="/" className="flex items-center gap-2">
           <img src={logo} alt="VPA" className="h-8 w-8" />
-          <span className="font-serif text-sm font-semibold text-primary">VPA 2026</span>
+          <span className="font-serif text-sm font-bold text-slate-900">VPA 2026</span>
         </Link>
         <button
           onClick={handleLogout}
-          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-destructive transition-colors"
+          className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-red-600 transition-colors"
         >
           <LogOut className="w-4 h-4" />
           Log Out
@@ -530,7 +545,7 @@ const Dashboard = () => {
       </div>
 
       {/* ─── Mobile bottom nav ─── */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border px-2 py-1.5 flex justify-around">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-200 px-2 py-1.5 flex justify-around shadow-[0_-1px_3px_rgba(0,0,0,0.05)]">
         {navItems
           .filter((n) => !n.podcasterOnly || isPodcaster)
           .filter((n) => ["home", "profile", "inbox", "votes", "connectors", "promotion", "settings"].includes(n.key))
@@ -539,13 +554,13 @@ const Dashboard = () => {
               key={item.key}
               onClick={() => setActiveSection(item.key)}
               className={`flex flex-col items-center gap-0.5 px-2 py-1 rounded text-[10px] transition-colors relative ${
-                activeSection === item.key ? "text-primary" : "text-muted-foreground"
+                activeSection === item.key ? "text-amber-600 font-semibold" : "text-slate-400"
               }`}
             >
               <item.icon className="w-5 h-5" />
               {item.label.split(" ")[0]}
               {item.badge ? (
-                <span className="absolute -top-0.5 right-0 w-4 h-4 bg-destructive text-destructive-foreground text-[9px] rounded-full flex items-center justify-center">
+                <span className="absolute -top-0.5 right-0 w-4 h-4 bg-red-500 text-white text-[9px] rounded-full flex items-center justify-center">
                   {item.badge}
                 </span>
               ) : null}
