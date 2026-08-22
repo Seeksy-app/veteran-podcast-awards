@@ -652,17 +652,17 @@ export const ContactManager = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "uncontacted":
-        return "bg-secondary text-secondary-foreground";
+        return "bg-slate-100 text-slate-700";
       case "contacted":
         return "bg-blue-500/20 text-blue-700 dark:text-blue-300";
       case "responded":
         return "bg-green-500/20 text-green-700 dark:text-green-300";
       case "registered":
-        return "bg-primary/20 text-primary";
+        return "bg-amber-100 text-amber-600";
       case "declined":
         return "bg-destructive/20 text-destructive";
       default:
-        return "bg-secondary text-secondary-foreground";
+        return "bg-slate-100 text-slate-700";
     }
   };
 
@@ -770,14 +770,14 @@ export const ContactManager = () => {
         <TabsContent value="contacts" className="mt-0">
           <div className="flex flex-col gap-4 mb-4">
             <div className="flex items-center gap-3">
-              <span className="text-sm text-muted-foreground bg-secondary px-2 py-1 rounded-full">{contacts?.length || 0} total</span>
+              <span className="text-sm text-slate-500 bg-slate-100 px-2 py-1 rounded-full">{contacts?.length || 0} total</span>
               <span className="text-sm text-green-600 bg-green-500/20 px-2 py-1 rounded-full">{vpnOnCount} on VPN</span>
             </div>
 
             <div className="flex items-center gap-3 flex-wrap">
               <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input placeholder="Search by name, email, podcast, or tag..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9 bg-secondary/30" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                <Input placeholder="Search by name, email, podcast, or tag..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9 bg-slate-50" />
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-32">
@@ -835,7 +835,7 @@ export const ContactManager = () => {
                       </span>
                     </SelectItem>
                   ))}
-                  <SelectItem value="__create__" className="text-primary font-medium">
+                  <SelectItem value="__create__" className="text-amber-600 font-medium">
                     <span className="flex items-center gap-1">
                       <Plus className="w-3 h-3" />
                       Create Smart List
@@ -844,7 +844,7 @@ export const ContactManager = () => {
                 </SelectContent>
               </Select>
               {(searchQuery || statusFilter !== "all" || vpnFilter !== "all" || listFilter !== "all" || smartListFilter !== "all") && (
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-slate-500">
                   {filteredContacts.length} of {contacts?.length || 0}
                 </span>
               )}
@@ -852,11 +852,11 @@ export const ContactManager = () => {
           </div>
 
           {isLoading ? (
-            <div className="text-center py-8 text-muted-foreground">Loading contacts...</div>
+            <div className="text-center py-8 text-slate-500">Loading contacts...</div>
           ) : !contacts?.length ? (
-            <div className="text-center py-12 bg-card border border-border rounded-lg">
-              <Mail className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground mb-4">No contacts yet</p>
+            <div className="text-center py-12 bg-white border border-slate-200 rounded-lg">
+              <Mail className="w-12 h-12 text-slate-500 mx-auto mb-4" />
+              <p className="text-slate-500 mb-4">No contacts yet</p>
               <Button onClick={() => fileInputRef.current?.click()}>
                 <FileSpreadsheet className="w-4 h-4 mr-2" />
                 Import from Spreadsheet
@@ -865,13 +865,13 @@ export const ContactManager = () => {
           ) : (
             <div className="grid gap-2">
               {filteredContacts.map((contact) => (
-                <div key={contact.id} className="flex items-center gap-3 p-3 bg-card border border-border rounded-lg">
+                <div key={contact.id} className="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-lg">
                   <div className="flex-shrink-0" title={contact.is_on_vpn ? "On VPN" : "Not on VPN"}>
-                    {contact.is_on_vpn ? <CheckCircle2 className="w-5 h-5 text-green-600" /> : <XCircle className="w-5 h-5 text-muted-foreground" />}
+                    {contact.is_on_vpn ? <CheckCircle2 className="w-5 h-5 text-green-600" /> : <XCircle className="w-5 h-5 text-slate-500" />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-semibold text-foreground truncate">{contact.host_name || contact.name}</h3>
+                      <h3 className="font-semibold text-slate-900 truncate">{contact.host_name || contact.name}</h3>
                       <span className={`text-xs px-2 py-0.5 rounded ${getStatusColor(contact.status)}`}>{STATUS_OPTIONS.find((o) => o.value === contact.status)?.label}</span>
                       {contact.lists?.map((list) => (
                         <Badge key={list} variant="outline" className="text-xs">
@@ -879,9 +879,9 @@ export const ContactManager = () => {
                         </Badge>
                       ))}
                     </div>
-                    <p className="text-sm text-muted-foreground truncate">{contact.email}</p>
+                    <p className="text-sm text-slate-500 truncate">{contact.email}</p>
                     <div className="flex items-center gap-2 flex-wrap">
-                      {contact.podcast_name && <span className="text-xs text-primary truncate">{contact.podcast_name}</span>}
+                      {contact.podcast_name && <span className="text-xs text-amber-600 truncate">{contact.podcast_name}</span>}
                       {contact.tags?.map((tag) => (
                         <Badge key={tag} variant="secondary" className="text-xs">
                           <Tag className="w-2 h-2 mr-1" />
@@ -924,16 +924,16 @@ export const ContactManager = () => {
           <div className="space-y-6">
             {/* Regular Mailing Lists */}
             <div>
-              <h3 className="font-semibold text-foreground mb-3">Mailing Lists</h3>
+              <h3 className="font-semibold text-slate-900 mb-3">Mailing Lists</h3>
               <div className="grid gap-2">
                 {mailingLists?.map((list) => (
-                  <div key={list.id} className="flex items-center justify-between p-3 bg-card border border-border rounded-lg">
+                  <div key={list.id} className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg">
                     <div>
-                      <h4 className="font-medium text-foreground">{list.name}</h4>
-                      {list.description && <p className="text-xs text-muted-foreground">{list.description}</p>}
+                      <h4 className="font-medium text-slate-900">{list.name}</h4>
+                      {list.description && <p className="text-xs text-slate-500">{list.description}</p>}
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="text-sm text-muted-foreground">{listCounts[list.name] || 0} contacts</span>
+                      <span className="text-sm text-slate-500">{listCounts[list.name] || 0} contacts</span>
                       <Button variant="outline" size="sm" onClick={() => { setCampaignData({ ...campaignData, targetList: list.name }); setIsCampaignDialogOpen(true); }}>
                         <Send className="w-4 h-4 mr-1" />
                         Email
@@ -947,7 +947,7 @@ export const ContactManager = () => {
             {/* Smart Lists */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-foreground flex items-center gap-2">
+                <h3 className="font-semibold text-slate-900 flex items-center gap-2">
                   <Sparkles className="w-4 h-4" />
                   Smart Lists
                 </h3>
@@ -958,13 +958,13 @@ export const ContactManager = () => {
               </div>
               <div className="grid gap-2">
                 {smartLists?.map((smartList) => (
-                  <div key={smartList.id} className="flex items-center justify-between p-3 bg-card border border-border rounded-lg">
+                  <div key={smartList.id} className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg">
                     <div>
-                      <h4 className="font-medium text-foreground flex items-center gap-2">
-                        <Sparkles className="w-3 h-3 text-primary" />
+                      <h4 className="font-medium text-slate-900 flex items-center gap-2">
+                        <Sparkles className="w-3 h-3 text-amber-600" />
                         {smartList.name}
                       </h4>
-                      {smartList.description && <p className="text-xs text-muted-foreground">{smartList.description}</p>}
+                      {smartList.description && <p className="text-xs text-slate-500">{smartList.description}</p>}
                       <div className="flex flex-wrap gap-1 mt-1">
                         {smartList.filters.status && (
                           <Badge variant="secondary" className="text-xs">Status: {smartList.filters.status}</Badge>
@@ -981,7 +981,7 @@ export const ContactManager = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="text-sm text-muted-foreground">{smartListCounts[smartList.id] || 0} contacts</span>
+                      <span className="text-sm text-slate-500">{smartListCounts[smartList.id] || 0} contacts</span>
                       <Button variant="outline" size="sm" onClick={() => { setSmartListFilter(smartList.id); setActiveTab("contacts"); }}>
                         <Filter className="w-4 h-4 mr-1" />
                         View
@@ -1009,7 +1009,7 @@ export const ContactManager = () => {
                   </div>
                 ))}
                 {!smartLists?.length && (
-                  <p className="text-sm text-muted-foreground text-center py-4">No smart lists yet. Create one to filter contacts dynamically.</p>
+                  <p className="text-sm text-slate-500 text-center py-4">No smart lists yet. Create one to filter contacts dynamically.</p>
                 )}
               </div>
             </div>
@@ -1019,31 +1019,31 @@ export const ContactManager = () => {
         <TabsContent value="campaigns" className="mt-0">
           <div className="space-y-4">
             <div className="flex items-center gap-2 mb-4">
-              <BarChart3 className="w-5 h-5 text-primary" />
-              <h3 className="font-semibold text-foreground">Campaign History</h3>
-              <span className="text-sm text-muted-foreground">({campaigns?.length || 0} campaigns)</span>
+              <BarChart3 className="w-5 h-5 text-amber-600" />
+              <h3 className="font-semibold text-slate-900">Campaign History</h3>
+              <span className="text-sm text-slate-500">({campaigns?.length || 0} campaigns)</span>
             </div>
 
             {!campaigns?.length ? (
-              <div className="text-center py-12 bg-card border border-border rounded-lg">
-                <Mail className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground mb-2">No campaigns sent yet</p>
-                <p className="text-sm text-muted-foreground">Send your first email campaign from the Contacts tab</p>
+              <div className="text-center py-12 bg-white border border-slate-200 rounded-lg">
+                <Mail className="w-12 h-12 text-slate-500 mx-auto mb-4" />
+                <p className="text-slate-500 mb-2">No campaigns sent yet</p>
+                <p className="text-sm text-slate-500">Send your first email campaign from the Contacts tab</p>
               </div>
             ) : (
               <div className="grid gap-4">
                 {campaigns.map((campaign) => (
                   <div
                     key={campaign.id}
-                    className={`p-4 bg-card border rounded-lg cursor-pointer transition-colors ${
-                      selectedCampaign === campaign.id ? "border-primary" : "border-border hover:border-primary/50"
+                    className={`p-4 bg-white border rounded-lg cursor-pointer transition-colors ${
+                      selectedCampaign === campaign.id ? "border-amber-500" : "border-slate-200 hover:border-amber-300"
                     }`}
                     onClick={() => setSelectedCampaign(selectedCampaign === campaign.id ? null : campaign.id)}
                   >
                     <div className="flex items-start justify-between mb-3">
                       <div>
-                        <h4 className="font-medium text-foreground">{campaign.name}</h4>
-                        <p className="text-sm text-muted-foreground">{campaign.subject}</p>
+                        <h4 className="font-medium text-slate-900">{campaign.name}</h4>
+                        <p className="text-sm text-slate-500">{campaign.subject}</p>
                       </div>
                       <Badge variant={campaign.status === "sent" ? "default" : campaign.status === "sending" ? "secondary" : "outline"}>
                         {campaign.status}
@@ -1052,16 +1052,16 @@ export const ContactManager = () => {
 
                     <div className="flex items-center gap-6 text-sm">
                       <div className="flex items-center gap-1.5">
-                        <Send className="w-4 h-4 text-muted-foreground" />
+                        <Send className="w-4 h-4 text-slate-500" />
                         <span className="font-medium">{campaign.sent_count}</span>
-                        <span className="text-muted-foreground">sent</span>
+                        <span className="text-slate-500">sent</span>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <Eye className="w-4 h-4 text-blue-500" />
                         <span className="font-medium">{campaign.opened_count}</span>
-                        <span className="text-muted-foreground">opened</span>
+                        <span className="text-slate-500">opened</span>
                         {campaign.sent_count > 0 && (
-                          <span className="text-muted-foreground">
+                          <span className="text-slate-500">
                             ({Math.round((campaign.opened_count / campaign.sent_count) * 100)}%)
                           </span>
                         )}
@@ -1069,16 +1069,16 @@ export const ContactManager = () => {
                       <div className="flex items-center gap-1.5">
                         <MousePointerClick className="w-4 h-4 text-green-500" />
                         <span className="font-medium">{campaign.clicked_count}</span>
-                        <span className="text-muted-foreground">clicked</span>
+                        <span className="text-slate-500">clicked</span>
                         {campaign.sent_count > 0 && (
-                          <span className="text-muted-foreground">
+                          <span className="text-slate-500">
                             ({Math.round((campaign.clicked_count / campaign.sent_count) * 100)}%)
                           </span>
                         )}
                       </div>
                       <div className="flex items-center gap-1.5 ml-auto">
-                        <Clock className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">
+                        <Clock className="w-4 h-4 text-slate-500" />
+                        <span className="text-slate-500">
                           {campaign.sent_at
                             ? new Date(campaign.sent_at).toLocaleDateString("en-US", {
                                 month: "short",
@@ -1100,18 +1100,18 @@ export const ContactManager = () => {
 
                     {/* Expanded send log */}
                     {selectedCampaign === campaign.id && (
-                      <div className="mt-4 pt-4 border-t border-border">
-                        <h5 className="text-sm font-medium text-foreground mb-3">Send Log</h5>
+                      <div className="mt-4 pt-4 border-t border-slate-200">
+                        <h5 className="text-sm font-medium text-slate-900 mb-3">Send Log</h5>
                         {!campaignSends?.length ? (
-                          <p className="text-sm text-muted-foreground">No send records found</p>
+                          <p className="text-sm text-slate-500">No send records found</p>
                         ) : (
                           <div className="max-h-64 overflow-y-auto space-y-2">
                             {campaignSends.map((send) => (
                               <div
                                 key={send.id}
-                                className="flex items-center justify-between p-2 bg-secondary/30 rounded text-sm"
+                                className="flex items-center justify-between p-2 bg-slate-50 rounded text-sm"
                               >
-                                <span className="text-foreground truncate max-w-[200px]">{send.email}</span>
+                                <span className="text-slate-900 truncate max-w-[200px]">{send.email}</span>
                                 <div className="flex items-center gap-3">
                                   <Badge
                                     variant={send.status === "sent" ? "default" : send.status === "failed" ? "destructive" : "outline"}
@@ -1131,7 +1131,7 @@ export const ContactManager = () => {
                                       Clicked
                                     </span>
                                   )}
-                                  <span className="text-muted-foreground text-xs">
+                                  <span className="text-slate-500 text-xs">
                                     {new Date(send.sent_at).toLocaleTimeString("en-US", {
                                       hour: "numeric",
                                       minute: "2-digit",
@@ -1363,7 +1363,7 @@ export const ContactManager = () => {
             <div className="space-y-2">
               <Label>Subject *</Label>
               <Input value={campaignData.subject} onChange={(e) => setCampaignData({ ...campaignData, subject: e.target.value })} placeholder="Hello {{name}}!" />
-              <p className="text-xs text-muted-foreground">Use {"{{name}}"} for personalization</p>
+              <p className="text-xs text-slate-500">Use {"{{name}}"} for personalization</p>
             </div>
             <div className="space-y-2">
               <Label>Email Content (HTML) *</Label>
@@ -1373,7 +1373,7 @@ export const ContactManager = () => {
                 placeholder="<h1>Hello {{name}}!</h1><p>Thank you for being part of our network...</p>"
                 rows={8}
               />
-              <p className="text-xs text-muted-foreground">Use {"{{name}}"}, {"{{podcast_name}}"}, {"{{email}}"} for personalization</p>
+              <p className="text-xs text-slate-500">Use {"{{name}}"}, {"{{podcast_name}}"}, {"{{email}}"} for personalization</p>
             </div>
             <Button
               onClick={() => {
@@ -1570,7 +1570,7 @@ export const ContactManager = () => {
               )}
               {existingTags.length > 0 && (
                 <div className="space-y-1 mt-2">
-                  <Label className="text-xs text-muted-foreground">Existing tags (click to add)</Label>
+                  <Label className="text-xs text-slate-500">Existing tags (click to add)</Label>
                   <div className="flex flex-wrap gap-1">
                     {existingTags
                       .filter((t) => !smartListForm.tags.includes(t))
@@ -1578,7 +1578,7 @@ export const ContactManager = () => {
                         <Badge
                           key={tag}
                           variant="outline"
-                          className="cursor-pointer hover:bg-primary/10 text-xs"
+                          className="cursor-pointer hover:bg-amber-50 text-xs"
                           onClick={() => setSmartListForm({ ...smartListForm, tags: [...smartListForm.tags, tag] })}
                         >
                           <Plus className="w-2 h-2 mr-1" />

@@ -110,14 +110,14 @@ export function EmailMarketingPanel() {
     <div className="space-y-8">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="font-serif text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+          <h2 className="font-serif text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
             <Megaphone className="h-7 w-7 text-[#B8860B]" />
             Email marketing
           </h2>
-          <p className="text-sm text-muted-foreground max-w-2xl">
+          <p className="text-sm text-slate-500 max-w-2xl">
             Demo tools: quick one-off sends, workflow ideas, and a snapshot of list campaigns. Full list sends and
             tracking live under{" "}
-            <span className="font-medium text-foreground">Contacts → Campaigns</span>.
+            <span className="font-medium text-slate-900">Contacts → Campaigns</span>.
           </p>
         </div>
         <Badge variant="secondary" className="shrink-0 w-fit gap-1">
@@ -127,7 +127,7 @@ export function EmailMarketingPanel() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="rounded-2xl border-border/80 shadow-sm">
+        <Card className="rounded-2xl border-slate-200/80 shadow-sm">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
               <Send className="h-5 w-5 text-[#B8860B]" />
@@ -144,8 +144,8 @@ export function EmailMarketingPanel() {
               <select
                 id="em-template"
                 className={cn(
-                  "mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm",
-                  "ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  "mt-1.5 flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm",
+                  "ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400",
                 )}
                 value={templateIndex}
                 onChange={(e) => setTemplateIndex(Number(e.target.value))}
@@ -205,7 +205,7 @@ export function EmailMarketingPanel() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border-border/80 shadow-sm">
+        <Card className="rounded-2xl border-slate-200/80 shadow-sm">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
               <Workflow className="h-5 w-5 text-[#B8860B]" />
@@ -219,18 +219,18 @@ export function EmailMarketingPanel() {
             {DEMO_WORKFLOWS.map((wf) => (
               <div
                 key={wf.id}
-                className="rounded-xl border border-border/80 bg-muted/20 p-4 transition-colors hover:bg-muted/30"
+                className="rounded-xl border border-slate-200/80 bg-slate-50 p-4 transition-colors hover:bg-slate-50"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <p className="font-semibold text-foreground">{wf.name}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{wf.description}</p>
+                    <p className="font-semibold text-slate-900">{wf.name}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">{wf.description}</p>
                   </div>
                   <Badge variant="outline" className="shrink-0 capitalize">
                     {wf.status}
                   </Badge>
                 </div>
-                <ul className="mt-3 space-y-1.5 text-xs text-muted-foreground border-l-2 border-[#B8860B]/40 pl-3">
+                <ul className="mt-3 space-y-1.5 text-xs text-slate-500 border-l-2 border-[#B8860B]/40 pl-3">
                   {wf.steps.map((s) => (
                     <li key={s} className="flex items-start gap-1.5">
                       <GitBranch className="h-3.5 w-3.5 shrink-0 mt-0.5 opacity-60" />
@@ -238,7 +238,7 @@ export function EmailMarketingPanel() {
                     </li>
                   ))}
                 </ul>
-                <Button variant="ghost" size="sm" className="mt-3 h-8 text-xs text-muted-foreground" disabled>
+                <Button variant="ghost" size="sm" className="mt-3 h-8 text-xs text-slate-500" disabled>
                   Configure (coming soon)
                   <ArrowRight className="ml-1 h-3 w-3" />
                 </Button>
@@ -250,29 +250,29 @@ export function EmailMarketingPanel() {
 
       <Separator />
 
-      <Card className="rounded-2xl border-border/80 shadow-sm">
+      <Card className="rounded-2xl border-slate-200/80 shadow-sm">
         <CardHeader>
           <CardTitle className="text-lg">Recent list campaigns</CardTitle>
           <CardDescription>Broadcasts created from Contacts → Send Campaign (opens / clicks in Metrics).</CardDescription>
         </CardHeader>
         <CardContent>
           {campaignsQuery.isLoading ? (
-            <div className="flex justify-center py-8 text-muted-foreground">
+            <div className="flex justify-center py-8 text-slate-500">
               <Loader2 className="h-8 w-8 animate-spin" />
             </div>
           ) : !(campaignsQuery.data?.length ?? 0) ? (
-            <p className="text-sm text-muted-foreground py-4 text-center border border-dashed rounded-xl">
+            <p className="text-sm text-slate-500 py-4 text-center border border-dashed rounded-xl">
               No campaigns yet. Import contacts and send one from the Contacts tab.
             </p>
           ) : (
-            <ul className="divide-y divide-border/80 rounded-xl border border-border/80 overflow-hidden">
+            <ul className="divide-y divide-border/80 rounded-xl border border-slate-200/80 overflow-hidden">
               {campaignsQuery.data!.map((c) => (
-                <li key={c.id} className="flex flex-col gap-1 px-4 py-3 sm:flex-row sm:items-center sm:justify-between bg-card/50">
+                <li key={c.id} className="flex flex-col gap-1 px-4 py-3 sm:flex-row sm:items-center sm:justify-between bg-white/50">
                   <div>
-                    <p className="font-medium text-foreground">{c.name}</p>
-                    <p className="text-xs text-muted-foreground line-clamp-1">{c.subject}</p>
+                    <p className="font-medium text-slate-900">{c.name}</p>
+                    <p className="text-xs text-slate-500 line-clamp-1">{c.subject}</p>
                   </div>
-                  <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
                     <Badge variant="secondary">{c.status}</Badge>
                     <span>{c.sent_count ?? 0} sent</span>
                     {c.sent_at && (

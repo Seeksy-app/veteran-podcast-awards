@@ -65,13 +65,13 @@ export const SponsorList = () => {
   };
 
   if (isLoading) {
-    return <div className="text-center py-8 text-muted-foreground">Loading sponsors...</div>;
+    return <div className="text-center py-8 text-slate-500">Loading sponsors...</div>;
   }
 
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h2 className="font-serif text-xl font-bold text-foreground">Sponsors</h2>
+        <h2 className="font-serif text-xl font-bold text-slate-900">Sponsors</h2>
         <Button onClick={() => setIsFormOpen(true)}>
           <Plus className="w-4 h-4 mr-2" />
           Add Sponsor
@@ -79,8 +79,8 @@ export const SponsorList = () => {
       </div>
 
       {!sponsors?.length ? (
-        <div className="text-center py-12 bg-card border border-border rounded-lg">
-          <p className="text-muted-foreground mb-4">No sponsors yet</p>
+        <div className="text-center py-12 bg-white border border-slate-200 rounded-lg">
+          <p className="text-slate-500 mb-4">No sponsors yet</p>
           <Button onClick={() => setIsFormOpen(true)}>
             <Plus className="w-4 h-4 mr-2" />
             Add Your First Sponsor
@@ -91,21 +91,21 @@ export const SponsorList = () => {
           {sponsors.map((sponsor) => (
             <div
               key={sponsor.id}
-              className="flex items-center gap-4 p-4 bg-card border border-border rounded-lg"
+              className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-lg"
             >
               <img
                 src={sponsor.logo_url}
                 alt={sponsor.name}
-                className="w-16 h-16 object-contain bg-secondary/50 rounded"
+                className="w-16 h-16 object-contain bg-slate-50 rounded"
               />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-foreground truncate">{sponsor.name}</h3>
+                  <h3 className="font-semibold text-slate-900 truncate">{sponsor.name}</h3>
                   <Badge className={tierColors[sponsor.tier]}>
                     {sponsor.tier}
                   </Badge>
                   {!sponsor.is_active && (
-                    <Badge variant="outline" className="text-muted-foreground">
+                    <Badge variant="outline" className="text-slate-500">
                       Inactive
                     </Badge>
                   )}
@@ -115,7 +115,7 @@ export const SponsorList = () => {
                     href={sponsor.website_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1"
+                    className="text-sm text-slate-500 hover:text-amber-600 flex items-center gap-1"
                   >
                     {sponsor.website_url}
                     <ExternalLink className="w-3 h-3" />

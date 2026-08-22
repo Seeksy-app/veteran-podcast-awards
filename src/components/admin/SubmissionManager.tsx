@@ -100,13 +100,13 @@ export const SubmissionManager = () => {
       <CardContent>
         {isLoading ? (
           <div className="text-center py-8">
-            <RefreshCw className="w-6 h-6 animate-spin text-muted-foreground mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">Loading submissions...</p>
+            <RefreshCw className="w-6 h-6 animate-spin text-slate-500 mx-auto mb-2" />
+            <p className="text-sm text-slate-500">Loading submissions...</p>
           </div>
         ) : submissions.length === 0 ? (
           <div className="text-center py-8">
-            <Rss className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
-            <p className="text-muted-foreground">No submissions yet</p>
+            <Rss className="w-10 h-10 text-slate-500 mx-auto mb-2" />
+            <p className="text-slate-500">No submissions yet</p>
           </div>
         ) : (
           <div className="rounded-md border">
@@ -126,7 +126,7 @@ export const SubmissionManager = () => {
                     <TableCell>
                       <div>
                         <p className="font-medium text-sm">{submission.name}</p>
-                        <p className="text-xs text-muted-foreground">{submission.email}</p>
+                        <p className="text-xs text-slate-500">{submission.email}</p>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -134,14 +134,14 @@ export const SubmissionManager = () => {
                         href={submission.rss_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs text-primary hover:underline flex items-center gap-1 max-w-[200px] truncate"
+                        className="text-xs text-amber-600 hover:underline flex items-center gap-1 max-w-[200px] truncate"
                       >
                         {submission.rss_url}
                         <ExternalLink className="w-3 h-3" />
                       </a>
                     </TableCell>
                     <TableCell>{getStatusBadge(submission.status)}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
+                    <TableCell className="text-sm text-slate-500">
                       {new Date(submission.created_at).toLocaleDateString()}
                     </TableCell>
                     <TableCell>

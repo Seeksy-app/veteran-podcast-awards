@@ -215,7 +215,7 @@ export function AwardTicketsAdmin({ program, programId }: Props) {
 
   return (
     <section className="space-y-4">
-      <div className={cn("flex flex-col gap-3 border-b border-border/60 pb-3 sm:flex-row sm:items-center sm:justify-between", GOLD_RING, "pl-4")}>
+      <div className={cn("flex flex-col gap-3 border-b border-slate-200/60 pb-3 sm:flex-row sm:items-center sm:justify-between", GOLD_RING, "pl-4")}>
         <div className="flex items-center gap-2">
           <Ticket className="h-5 w-5 text-[#B8860B]" />
           <h3 className="text-base font-semibold tracking-tight">Ceremony tickets</h3>
@@ -229,11 +229,11 @@ export function AwardTicketsAdmin({ program, programId }: Props) {
         </Button>
       </div>
 
-      <Card className="rounded-2xl border-border/80">
+      <Card className="rounded-2xl border-slate-200/80">
         <CardContent className="space-y-3 p-5">
           <div>
             <Label>External ticket URL (Eventbrite fallback)</Label>
-            <p className="mb-2 text-xs text-muted-foreground">
+            <p className="mb-2 text-xs text-slate-500">
               Shown when Stripe is not configured or as an alternate option on the public tickets page.
             </p>
             <div className="flex flex-col gap-2 sm:flex-row">
@@ -257,13 +257,13 @@ export function AwardTicketsAdmin({ program, programId }: Props) {
 
       <div className="pt-2">
         {typesQuery.isLoading ? (
-          <p className="text-muted-foreground">Loading ticket types…</p>
+          <p className="text-slate-500">Loading ticket types…</p>
         ) : !(typesQuery.data?.length ?? 0) ? (
-          <p className="rounded-xl border border-dashed border-border py-8 text-center text-sm text-muted-foreground">
+          <p className="rounded-xl border border-dashed border-slate-200 py-8 text-center text-sm text-slate-500">
             No ticket types yet. Add General Admission, VIP, or Sponsor Table.
           </p>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-border/80">
+          <div className="overflow-x-auto rounded-xl border border-slate-200/80">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -278,7 +278,7 @@ export function AwardTicketsAdmin({ program, programId }: Props) {
                 {typesQuery.data!.map((t) => (
                   <TableRow key={t.id}>
                     <TableCell className="font-medium">{t.name}</TableCell>
-                    <TableCell className="text-muted-foreground">{t.ticket_kind}</TableCell>
+                    <TableCell className="text-slate-500">{t.ticket_kind}</TableCell>
                     <TableCell className="text-right tabular-nums">${(t.price_cents / 100).toFixed(2)}</TableCell>
                     <TableCell className="text-right tabular-nums">
                       {t.quantity_sold} / {t.quantity_total ?? "∞"}
@@ -299,11 +299,11 @@ export function AwardTicketsAdmin({ program, programId }: Props) {
       <div className="space-y-2 pt-6">
         <h4 className="text-sm font-semibold">Purchases & check-in</h4>
         {purchasesQuery.isLoading ? (
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          <Loader2 className="h-6 w-6 animate-spin text-slate-500" />
         ) : !(purchasesQuery.data?.length ?? 0) ? (
-          <p className="text-sm text-muted-foreground">No purchases yet.</p>
+          <p className="text-sm text-slate-500">No purchases yet.</p>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-border/80">
+          <div className="overflow-x-auto rounded-xl border border-slate-200/80">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -323,7 +323,7 @@ export function AwardTicketsAdmin({ program, programId }: Props) {
                   const link = `${site}/ticket/${row.qr_token}`;
                   return (
                     <TableRow key={row.id}>
-                      <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
+                      <TableCell className="whitespace-nowrap text-xs text-slate-500">
                         {format(new Date(row.created_at), "MMM d, h:mm a")}
                       </TableCell>
                       <TableCell className="max-w-[120px] truncate">{row.buyer_name}</TableCell>
@@ -363,7 +363,7 @@ export function AwardTicketsAdmin({ program, programId }: Props) {
                             href={link}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                            className="inline-flex items-center gap-1 text-xs text-amber-600 hover:underline"
                           >
                             Open <ExternalLink className="h-3 w-3" />
                           </a>

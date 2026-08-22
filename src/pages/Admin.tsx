@@ -64,6 +64,17 @@ const AdminPage = () => {
   const [activeTab, setActiveTab] = useState('users');
 
   useEffect(() => {
+    const root = document.documentElement;
+    const wasDark = root.classList.contains("dark");
+    root.classList.remove("dark");
+    root.classList.add("light");
+    return () => {
+      root.classList.remove("light");
+      if (wasDark) root.classList.add("dark");
+    };
+  }, []);
+
+  useEffect(() => {
     if (!loading && !user) {
       navigate('/auth', { state: { from: '/admin' } });
     }
@@ -71,8 +82,8 @@ const AdminPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-muted-foreground">Loading...</div>
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-slate-500">Loading...</div>
       </div>
     );
   }
@@ -83,11 +94,11 @@ const AdminPage = () => {
 
   if (!isAdmin) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         <div className="text-center">
-          <Shield className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-          <h1 className="font-serif text-2xl font-bold text-foreground mb-2">Access Denied</h1>
-          <p className="text-muted-foreground mb-6">
+          <Shield className="w-16 h-16 text-slate-500 mx-auto mb-4" />
+          <h1 className="font-serif text-2xl font-bold text-slate-900 mb-2">Access Denied</h1>
+          <p className="text-slate-500 mb-6">
             You don't have admin privileges. Contact an administrator for access.
           </p>
           <div className="flex gap-4 justify-center">
@@ -108,22 +119,22 @@ const AdminPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-slate-50">
       {/* Header */}
-      <header className="border-b border-border bg-card sticky top-0 z-50">
+      <header className="border-b border-slate-200 bg-white sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link to="/">
               <img src={logo} alt="VPA Logo" className="w-10 h-10" />
             </Link>
             <div>
-              <h1 className="font-serif text-lg font-bold text-foreground">Admin Dashboard</h1>
-              <p className="text-xs text-muted-foreground">Veteran Podcast Awards</p>
+              <h1 className="font-serif text-lg font-bold text-slate-900">Admin Dashboard</h1>
+              <p className="text-xs text-slate-500">Veteran Podcast Awards</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
             <ThemeSelector showLabels={false} />
-            <span className="text-sm text-muted-foreground hidden md:block">{user.email}</span>
+            <span className="text-sm text-slate-500 hidden md:block">{user.email}</span>
             <Link to="/dashboard">
               <Button variant="outline" size="sm">
                 <Users className="w-4 h-4 mr-2" />
@@ -182,11 +193,11 @@ const AdminPage = () => {
                 <button
                   type="button"
                   className={cn(
-                    'inline-flex h-10 shrink-0 items-center justify-center gap-1 rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                    'inline-flex h-10 shrink-0 items-center justify-center gap-1 rounded-md px-3 py-1.5 text-sm font-medium ring-offset-white transition-all',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2',
                     MORE_TAB_VALUES.has(activeTab)
-                      ? 'bg-background text-foreground shadow-sm'
-                      : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground',
+                      ? 'bg-white text-slate-900 shadow-sm'
+                      : 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-900',
                   )}
                 >
                   <span className="hidden sm:inline">More</span>

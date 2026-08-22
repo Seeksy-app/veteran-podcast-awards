@@ -203,7 +203,7 @@ export const UserManager = () => {
 
   const getUserTypeBadge = (type: string | null) => {
     switch (type) {
-      case "podcaster": return <Badge className="bg-primary/20 text-primary">Podcaster</Badge>;
+      case "podcaster": return <Badge className="bg-amber-100 text-amber-600">Podcaster</Badge>;
       case "voter": return <Badge className="bg-blue-500/20 text-blue-500">Voter</Badge>;
       case "fan": return <Badge className="bg-pink-500/20 text-pink-500">Fan</Badge>;
       default: return <Badge variant="secondary">Unknown</Badge>;
@@ -226,10 +226,10 @@ export const UserManager = () => {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <Users className="w-8 h-8 text-primary" />
+              <Users className="w-8 h-8 text-amber-600" />
               <div>
                 <p className="text-2xl font-bold">{stats.total}</p>
-                <p className="text-xs text-muted-foreground">Total Users</p>
+                <p className="text-xs text-slate-500">Total Users</p>
               </div>
             </div>
           </CardContent>
@@ -237,10 +237,10 @@ export const UserManager = () => {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <Mic className="w-8 h-8 text-primary" />
+              <Mic className="w-8 h-8 text-amber-600" />
               <div>
                 <p className="text-2xl font-bold">{stats.podcasters}</p>
-                <p className="text-xs text-muted-foreground">Podcasters</p>
+                <p className="text-xs text-slate-500">Podcasters</p>
               </div>
             </div>
           </CardContent>
@@ -251,7 +251,7 @@ export const UserManager = () => {
               <Vote className="w-8 h-8 text-blue-500" />
               <div>
                 <p className="text-2xl font-bold">{stats.voters}</p>
-                <p className="text-xs text-muted-foreground">Voters</p>
+                <p className="text-xs text-slate-500">Voters</p>
               </div>
             </div>
           </CardContent>
@@ -262,7 +262,7 @@ export const UserManager = () => {
               <Heart className="w-8 h-8 text-pink-500" />
               <div>
                 <p className="text-2xl font-bold">{stats.fans}</p>
-                <p className="text-xs text-muted-foreground">Fans</p>
+                <p className="text-xs text-slate-500">Fans</p>
               </div>
             </div>
           </CardContent>
@@ -273,7 +273,7 @@ export const UserManager = () => {
               <Shield className="w-8 h-8 text-red-500" />
               <div>
                 <p className="text-2xl font-bold">{stats.admins}</p>
-                <p className="text-xs text-muted-foreground">Admins</p>
+                <p className="text-xs text-slate-500">Admins</p>
               </div>
             </div>
           </CardContent>
@@ -328,9 +328,9 @@ export const UserManager = () => {
             )}
           </div>
           {previewRole && (
-            <div className="mt-4 p-4 bg-secondary/30 rounded-lg border border-border">
-              <p className="text-sm text-muted-foreground mb-2">
-                Previewing: <strong className="text-foreground capitalize">{previewRole}</strong> Dashboard
+            <div className="mt-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
+              <p className="text-sm text-slate-500 mb-2">
+                Previewing: <strong className="text-slate-900 capitalize">{previewRole}</strong> Dashboard
               </p>
               <Button variant="gold" size="sm" asChild>
                 <a href={`/dashboard?preview=${previewRole}`} target="_blank" rel="noopener noreferrer">
@@ -366,7 +366,7 @@ export const UserManager = () => {
           {/* Filters */}
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
               <Input
                 placeholder="Search by name or email..."
                 value={searchQuery}
@@ -391,13 +391,13 @@ export const UserManager = () => {
           {/* Table */}
           {isLoading ? (
             <div className="text-center py-12">
-              <RefreshCw className="w-8 h-8 animate-spin text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">Loading users...</p>
+              <RefreshCw className="w-8 h-8 animate-spin text-slate-500 mx-auto mb-4" />
+              <p className="text-slate-500">Loading users...</p>
             </div>
           ) : filteredUsers.length === 0 ? (
             <div className="text-center py-12">
-              <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">No users found</p>
+              <Users className="w-12 h-12 text-slate-500 mx-auto mb-4" />
+              <p className="text-slate-500">No users found</p>
             </div>
           ) : (
             <div className="rounded-md border">
@@ -426,13 +426,13 @@ export const UserManager = () => {
                             <p className="font-medium text-sm">
                               {user.full_name || "No name"}
                             </p>
-                            <p className="text-xs text-muted-foreground">{user.email}</p>
+                            <p className="text-xs text-slate-500">{user.email}</p>
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>{getUserTypeBadge(user.user_type)}</TableCell>
-                      <TableCell>{getRoleBadge(user.id) || <span className="text-muted-foreground text-sm">—</span>}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
+                      <TableCell>{getRoleBadge(user.id) || <span className="text-slate-500 text-sm">—</span>}</TableCell>
+                      <TableCell className="text-sm text-slate-500">
                         {new Date(user.created_at).toLocaleDateString()}
                       </TableCell>
                       <TableCell>
@@ -457,7 +457,7 @@ export const UserManager = () => {
                               </DialogTrigger>
                             </Dialog>
                             <DropdownMenuSeparator />
-                            <DropdownMenuLabel className="text-xs text-muted-foreground">
+                            <DropdownMenuLabel className="text-xs text-slate-500">
                               Assign Role
                             </DropdownMenuLabel>
                             <DropdownMenuItem onClick={() => handleRoleChange(user.id, "admin")}>
@@ -513,23 +513,23 @@ export const UserManager = () => {
               
               <div className="space-y-3 pt-4 border-t">
                 <div className="flex items-center gap-3 text-sm">
-                  <Mail className="w-4 h-4 text-muted-foreground" />
+                  <Mail className="w-4 h-4 text-slate-500" />
                   <span>{selectedUser.email}</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm">
-                  <Calendar className="w-4 h-4 text-muted-foreground" />
+                  <Calendar className="w-4 h-4 text-slate-500" />
                   <span>Joined {new Date(selectedUser.created_at).toLocaleDateString()}</span>
                 </div>
                 {selectedUser.bio && (
                   <div className="pt-2">
-                    <p className="text-sm text-muted-foreground">Bio</p>
+                    <p className="text-sm text-slate-500">Bio</p>
                     <p className="text-sm">{selectedUser.bio}</p>
                   </div>
                 )}
               </div>
 
               <div className="pt-4 border-t">
-                <p className="text-sm text-muted-foreground mb-2">Change Role</p>
+                <p className="text-sm text-slate-500 mb-2">Change Role</p>
                 <div className="flex gap-2">
                   <Button
                     size="sm"

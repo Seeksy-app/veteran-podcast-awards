@@ -94,7 +94,7 @@ export function SecurityPanel({ variant = "default" }: SecurityPanelProps) {
 
   const cardInv =
     "border border-[#1E293B] border-l-4 border-l-[#F59E0B] bg-[#0F2035] text-white shadow-[0_12px_40px_rgba(0,0,0,0.35)]";
-  const execCard = cn(inv ? cardInv : "border-primary/20 bg-primary/5");
+  const execCard = cn(inv ? cardInv : "border-amber-100 bg-amber-50");
 
   const handleExportPDF = () => {
     window.print();
@@ -104,20 +104,20 @@ export function SecurityPanel({ variant = "default" }: SecurityPanelProps) {
     <div className={cn("space-y-6", inv && "text-white")}>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <Shield className={cn("h-8 w-8", inv ? "text-[#F59E0B]" : "text-primary")} />
+          <Shield className={cn("h-8 w-8", inv ? "text-[#F59E0B]" : "text-amber-600")} />
           <div>
             <h2
               className={cn(
                 "font-serif text-2xl font-bold",
-                inv ? "text-[#F59E0B]" : "text-foreground",
+                inv ? "text-[#F59E0B]" : "text-slate-900",
               )}
             >
               VPA Security & Data Protection Overview
             </h2>
-            <p className={cn(inv ? "text-[#94A3B8]" : "text-muted-foreground")}>
+            <p className={cn(inv ? "text-[#94A3B8]" : "text-slate-500")}>
               Audience: Internal (Founders, Admins, Security Reviewers)
             </p>
-            <p className={cn("text-xs", inv ? "text-[#94A3B8]/80" : "text-muted-foreground")}>
+            <p className={cn("text-xs", inv ? "text-[#94A3B8]/80" : "text-slate-500")}>
               Last Updated: {new Date().toLocaleDateString()}
             </p>
           </div>
@@ -143,7 +143,7 @@ export function SecurityPanel({ variant = "default" }: SecurityPanelProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className={cn(inv ? "text-white" : "text-foreground")}>
+          <p className={cn(inv ? "text-white" : "text-slate-900")}>
             VPA implements enterprise-grade security with <strong className={inv ? "text-[#F59E0B]" : ""}>Row Level Security (RLS)</strong>,
             <strong className={inv ? "text-[#F59E0B]" : ""}> JWT authentication</strong>, and{" "}
             <strong className={inv ? "text-[#F59E0B]" : ""}>role-based access controls</strong>. All sensitive data is protected at the
@@ -160,7 +160,7 @@ export function SecurityPanel({ variant = "default" }: SecurityPanelProps) {
               <div className={cn("text-lg font-bold", inv && "text-white")}>
                 {["RLS Enabled", "JWT Auth", "Role-Based", "Encrypted"][i]}
               </div>
-              <div className={cn("text-sm", inv ? "text-[#94A3B8]" : "text-muted-foreground")}>
+              <div className={cn("text-sm", inv ? "text-[#94A3B8]" : "text-slate-500")}>
                 {["All sensitive tables", "Secure sessions", "Access control", "Secrets storage"][i]}
               </div>
             </CardContent>
@@ -171,42 +171,42 @@ export function SecurityPanel({ variant = "default" }: SecurityPanelProps) {
       <Card className={cn(inv && cardInv)}>
         <CardHeader>
           <CardTitle className={cn("flex items-center gap-2", inv && "text-[#F59E0B]")}>
-            <span className={cn("font-bold", inv ? "text-[#F59E0B]" : "text-primary")}>1.</span>
+            <span className={cn("font-bold", inv ? "text-[#F59E0B]" : "text-amber-600")}>1.</span>
             {securitySections[0].title}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className={inv ? "text-white" : "text-foreground"}>VPA is built on:</p>
-          <ul className={cn("list-inside list-disc space-y-1", inv ? "text-[#94A3B8]" : "text-muted-foreground")}>
+          <p className={inv ? "text-white" : "text-slate-900"}>VPA is built on:</p>
+          <ul className={cn("list-inside list-disc space-y-1", inv ? "text-[#94A3B8]" : "text-slate-500")}>
             {securitySections[0].content.map((item, idx) => (
               <li key={idx}>{item}</li>
             ))}
           </ul>
-          <ul className={cn("ml-6 list-inside list-disc space-y-1", inv ? "text-[#94A3B8]" : "text-muted-foreground")}>
+          <ul className={cn("ml-6 list-inside list-disc space-y-1", inv ? "text-[#94A3B8]" : "text-slate-500")}>
             {securitySections[0].subItems?.map((item, idx) => (
               <li key={idx}>{item}</li>
             ))}
           </ul>
-          <p className={cn("mt-4 text-sm italic", inv ? "text-[#94A3B8]" : "text-muted-foreground")}>{securitySections[0].summary}</p>
+          <p className={cn("mt-4 text-sm italic", inv ? "text-[#94A3B8]" : "text-slate-500")}>{securitySections[0].summary}</p>
         </CardContent>
       </Card>
 
       <Card className={cn(inv && cardInv)}>
         <CardHeader>
           <CardTitle className={cn("flex items-center gap-2", inv && "text-[#F59E0B]")}>
-            <span className={cn("font-bold", inv ? "text-[#F59E0B]" : "text-primary")}>2.</span>
+            <span className={cn("font-bold", inv ? "text-[#F59E0B]" : "text-amber-600")}>2.</span>
             Authentication & Authorization
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
             <h4 className={cn("mb-2 font-semibold", inv ? "text-white" : undefined)}>Authentication:</h4>
-            <ul className={cn("list-inside list-disc space-y-1", inv ? "text-[#94A3B8]" : "text-muted-foreground")}>
+            <ul className={cn("list-inside list-disc space-y-1", inv ? "text-[#94A3B8]" : "text-slate-500")}>
               <li>Email/password authentication with secure password hashing</li>
               <li>All authenticated requests include signed JWT</li>
             </ul>
           </div>
-          <hr className={inv ? "border-white/10" : "border-border"} />
+          <hr className={inv ? "border-white/10" : "border-slate-200"} />
           <div>
             <h4 className={cn("mb-3 font-semibold", inv ? "text-white" : undefined)}>Roles / Personas (used in RLS + UI):</h4>
             <div className="space-y-2">
@@ -219,7 +219,7 @@ export function SecurityPanel({ variant = "default" }: SecurityPanelProps) {
                   <Badge variant="outline" className={cn("font-mono", inv && "border-[#F59E0B]/50 text-[#F59E0B]")}>
                     {item.role}
                   </Badge>
-                  <span className={inv ? "text-[#94A3B8]" : "text-muted-foreground"}>– {item.description}</span>
+                  <span className={inv ? "text-[#94A3B8]" : "text-slate-500"}>– {item.description}</span>
                 </div>
               ))}
             </div>
@@ -230,7 +230,7 @@ export function SecurityPanel({ variant = "default" }: SecurityPanelProps) {
       <Card className={cn(inv && cardInv)}>
         <CardHeader>
           <CardTitle className={cn("flex items-center gap-2", inv && "text-[#F59E0B]")}>
-            <span className={cn("font-bold", inv ? "text-[#F59E0B]" : "text-primary")}>3.</span>
+            <span className={cn("font-bold", inv ? "text-[#F59E0B]" : "text-amber-600")}>3.</span>
             Row Level Security (RLS) Strategy
           </CardTitle>
           <CardDescription className={inv ? "text-[#94A3B8]" : undefined}>
@@ -240,9 +240,9 @@ export function SecurityPanel({ variant = "default" }: SecurityPanelProps) {
         <CardContent>
           <div className="space-y-3">
             {securitySections[2].policies?.map((policy) => (
-              <div key={policy.table} className={cn("border-l-2 pl-3", inv ? "border-[#F59E0B]/70" : "border-primary/30")}>
-                <div className={cn("font-mono text-sm", inv ? "text-[#F59E0B]" : "text-primary")}>{policy.table}</div>
-                <div className={cn("text-sm", inv ? "text-[#94A3B8]" : "text-muted-foreground")}>{policy.policy}</div>
+              <div key={policy.table} className={cn("border-l-2 pl-3", inv ? "border-[#F59E0B]/70" : "border-amber-200")}>
+                <div className={cn("font-mono text-sm", inv ? "text-[#F59E0B]" : "text-amber-600")}>{policy.table}</div>
+                <div className={cn("text-sm", inv ? "text-[#94A3B8]" : "text-slate-500")}>{policy.policy}</div>
               </div>
             ))}
           </div>
@@ -252,12 +252,12 @@ export function SecurityPanel({ variant = "default" }: SecurityPanelProps) {
       <Card className={cn(inv && cardInv)}>
         <CardHeader>
           <CardTitle className={cn("flex items-center gap-2", inv && "text-[#F59E0B]")}>
-            <span className={cn("font-bold", inv ? "text-[#F59E0B]" : "text-primary")}>4.</span>
+            <span className={cn("font-bold", inv ? "text-[#F59E0B]" : "text-amber-600")}>4.</span>
             Edge Functions & API Security
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <ul className={cn("list-inside list-disc space-y-1", inv ? "text-[#94A3B8]" : "text-muted-foreground")}>
+          <ul className={cn("list-inside list-disc space-y-1", inv ? "text-[#94A3B8]" : "text-slate-500")}>
             {securitySections[3].items?.map((item, idx) => (
               <li key={idx}>{item}</li>
             ))}
@@ -268,12 +268,12 @@ export function SecurityPanel({ variant = "default" }: SecurityPanelProps) {
       <Card className={cn(inv && cardInv)}>
         <CardHeader>
           <CardTitle className={cn("flex items-center gap-2", inv && "text-[#F59E0B]")}>
-            <span className={cn("font-bold", inv ? "text-[#F59E0B]" : "text-primary")}>5.</span>
+            <span className={cn("font-bold", inv ? "text-[#F59E0B]" : "text-amber-600")}>5.</span>
             Data Protection
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <ul className={cn("list-inside list-disc space-y-1", inv ? "text-[#94A3B8]" : "text-muted-foreground")}>
+          <ul className={cn("list-inside list-disc space-y-1", inv ? "text-[#94A3B8]" : "text-slate-500")}>
             {securitySections[4].items?.map((item, idx) => (
               <li key={idx}>{item}</li>
             ))}
@@ -284,12 +284,12 @@ export function SecurityPanel({ variant = "default" }: SecurityPanelProps) {
       <Card className={cn(inv && cardInv)}>
         <CardHeader>
           <CardTitle className={cn("flex items-center gap-2", inv && "text-[#F59E0B]")}>
-            <span className={cn("font-bold", inv ? "text-[#F59E0B]" : "text-primary")}>6.</span>
+            <span className={cn("font-bold", inv ? "text-[#F59E0B]" : "text-amber-600")}>6.</span>
             Logging & Monitoring
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <ul className={cn("list-inside list-disc space-y-1", inv ? "text-[#94A3B8]" : "text-muted-foreground")}>
+          <ul className={cn("list-inside list-disc space-y-1", inv ? "text-[#94A3B8]" : "text-slate-500")}>
             {securitySections[5].items?.map((item, idx) => (
               <li key={idx}>{item}</li>
             ))}
@@ -297,13 +297,13 @@ export function SecurityPanel({ variant = "default" }: SecurityPanelProps) {
         </CardContent>
       </Card>
 
-      <Card className={cn(inv ? cn(cardInv, "bg-[#0F2035]") : "bg-muted/50")}>
+      <Card className={cn(inv ? cn(cardInv, "bg-[#0F2035]") : "bg-slate-50")}>
         <CardContent className="pt-6">
           <div className="flex items-start gap-3">
             <AlertTriangle className={cn("mt-0.5 h-5 w-5", inv ? "text-[#F59E0B]" : "text-amber-500")} />
             <div>
-              <h4 className={cn("font-semibold", inv ? "text-[#F59E0B]" : "text-foreground")}>Confidential</h4>
-              <p className={cn("text-sm", inv ? "text-[#94A3B8]" : "text-muted-foreground")}>
+              <h4 className={cn("font-semibold", inv ? "text-[#F59E0B]" : "text-slate-900")}>Confidential</h4>
+              <p className={cn("text-sm", inv ? "text-[#94A3B8]" : "text-slate-500")}>
                 This document is intended for internal use by founders, administrators, and potential acquirers conducting due
                 diligence. Do not distribute publicly.
               </p>

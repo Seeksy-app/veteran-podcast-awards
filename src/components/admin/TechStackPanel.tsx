@@ -133,10 +133,10 @@ export function TechStackPanel({ variant = "default" }: TechStackPanelProps) {
     >
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h2 className={cn("font-serif text-2xl font-bold", inv ? "text-[#F59E0B]" : "text-foreground")}>
+          <h2 className={cn("font-serif text-2xl font-bold", inv ? "text-[#F59E0B]" : "text-slate-900")}>
             Technology & IP Inventory
           </h2>
-          <p className={cn(inv ? "text-[#94A3B8]" : "text-muted-foreground")}>
+          <p className={cn(inv ? "text-[#94A3B8]" : "text-slate-500")}>
             Complete intellectual property and technology audit for VPA platform
           </p>
         </div>
@@ -204,7 +204,7 @@ export function TechStackPanel({ variant = "default" }: TechStackPanelProps) {
         <TabsContent value="ip-summary">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><FileText className="w-5 h-5 text-primary" /> Intellectual Property Assets</CardTitle>
+              <CardTitle className="flex items-center gap-2"><FileText className="w-5 h-5 text-amber-600" /> Intellectual Property Assets</CardTitle>
               <CardDescription>Proprietary software, trademarks, and digital assets included in acquisition</CardDescription>
             </CardHeader>
             <CardContent>
@@ -221,7 +221,7 @@ export function TechStackPanel({ variant = "default" }: TechStackPanelProps) {
                     <TableRow key={asset.name}>
                       <TableCell className="font-medium">{asset.name}</TableCell>
                       <TableCell><Badge variant={asset.type === "Trademark" ? "default" : "secondary"}>{asset.type}</Badge></TableCell>
-                      <TableCell className="text-muted-foreground">{asset.description}</TableCell>
+                      <TableCell className="text-slate-500">{asset.description}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -229,31 +229,31 @@ export function TechStackPanel({ variant = "default" }: TechStackPanelProps) {
             </CardContent>
           </Card>
 
-          <Card className="mt-4 bg-muted/50">
+          <Card className="mt-4 bg-slate-50">
             <CardHeader>
               <CardTitle className="text-lg">Platform Statistics</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                <div className="text-center p-4 bg-background rounded-lg">
-                  <div className="text-3xl font-bold text-primary">{frontendStack.length + backendStack.length}</div>
-                  <div className="text-sm text-muted-foreground">Dependencies</div>
+                <div className="text-center p-4 bg-white rounded-lg">
+                  <div className="text-3xl font-bold text-amber-600">{frontendStack.length + backendStack.length}</div>
+                  <div className="text-sm text-slate-500">Dependencies</div>
                 </div>
-                <div className="text-center p-4 bg-background rounded-lg">
-                  <div className="text-3xl font-bold text-primary">{edgeFunctions.length}</div>
-                  <div className="text-sm text-muted-foreground">Edge Functions</div>
+                <div className="text-center p-4 bg-white rounded-lg">
+                  <div className="text-3xl font-bold text-amber-600">{edgeFunctions.length}</div>
+                  <div className="text-sm text-slate-500">Edge Functions</div>
                 </div>
-                <div className="text-center p-4 bg-background rounded-lg">
-                  <div className="text-3xl font-bold text-primary">{databaseTables.length}</div>
-                  <div className="text-sm text-muted-foreground">DB Tables</div>
+                <div className="text-center p-4 bg-white rounded-lg">
+                  <div className="text-3xl font-bold text-amber-600">{databaseTables.length}</div>
+                  <div className="text-sm text-slate-500">DB Tables</div>
                 </div>
-                <div className="text-center p-4 bg-background rounded-lg">
-                  <div className="text-3xl font-bold text-primary">{externalAPIs.length}</div>
-                  <div className="text-sm text-muted-foreground">External APIs</div>
+                <div className="text-center p-4 bg-white rounded-lg">
+                  <div className="text-3xl font-bold text-amber-600">{externalAPIs.length}</div>
+                  <div className="text-sm text-slate-500">External APIs</div>
                 </div>
-                <div className="text-center p-4 bg-background rounded-lg">
-                  <div className="text-3xl font-bold text-primary">{storageBuckets.length}</div>
-                  <div className="text-sm text-muted-foreground">Storage Buckets</div>
+                <div className="text-center p-4 bg-white rounded-lg">
+                  <div className="text-3xl font-bold text-amber-600">{storageBuckets.length}</div>
+                  <div className="text-sm text-slate-500">Storage Buckets</div>
                 </div>
               </div>
             </CardContent>
@@ -264,7 +264,7 @@ export function TechStackPanel({ variant = "default" }: TechStackPanelProps) {
         <TabsContent value="frontend">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Code className="w-5 h-5 text-primary" /> Frontend Dependencies ({frontendStack.length})</CardTitle>
+              <CardTitle className="flex items-center gap-2"><Code className="w-5 h-5 text-amber-600" /> Frontend Dependencies ({frontendStack.length})</CardTitle>
               <CardDescription>All client-side libraries and frameworks</CardDescription>
             </CardHeader>
             <CardContent>
@@ -282,8 +282,8 @@ export function TechStackPanel({ variant = "default" }: TechStackPanelProps) {
                     <TableRow key={pkg.name}>
                       <TableCell className="font-medium font-mono text-sm">{pkg.name}</TableCell>
                       <TableCell><Badge variant="outline">{pkg.category}</Badge></TableCell>
-                      <TableCell className="text-muted-foreground text-sm">{pkg.license}</TableCell>
-                      <TableCell className="text-muted-foreground">{pkg.purpose}</TableCell>
+                      <TableCell className="text-slate-500 text-sm">{pkg.license}</TableCell>
+                      <TableCell className="text-slate-500">{pkg.purpose}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -296,7 +296,7 @@ export function TechStackPanel({ variant = "default" }: TechStackPanelProps) {
         <TabsContent value="backend">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Database className="w-5 h-5 text-primary" /> Backend Infrastructure</CardTitle>
+              <CardTitle className="flex items-center gap-2"><Database className="w-5 h-5 text-amber-600" /> Backend Infrastructure</CardTitle>
               <CardDescription>Server-side services and infrastructure</CardDescription>
             </CardHeader>
             <CardContent>
@@ -314,8 +314,8 @@ export function TechStackPanel({ variant = "default" }: TechStackPanelProps) {
                     <TableRow key={svc.name}>
                       <TableCell className="font-medium">{svc.name}</TableCell>
                       <TableCell><Badge variant="outline">{svc.category}</Badge></TableCell>
-                      <TableCell className="text-muted-foreground text-sm">{svc.license}</TableCell>
-                      <TableCell className="text-muted-foreground">{svc.purpose}</TableCell>
+                      <TableCell className="text-slate-500 text-sm">{svc.license}</TableCell>
+                      <TableCell className="text-slate-500">{svc.purpose}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -325,7 +325,7 @@ export function TechStackPanel({ variant = "default" }: TechStackPanelProps) {
 
           <Card className="mt-4">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Cloud className="w-5 h-5 text-primary" /> Storage Buckets</CardTitle>
+              <CardTitle className="flex items-center gap-2"><Cloud className="w-5 h-5 text-amber-600" /> Storage Buckets</CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
@@ -341,7 +341,7 @@ export function TechStackPanel({ variant = "default" }: TechStackPanelProps) {
                     <TableRow key={bucket.name}>
                       <TableCell className="font-medium font-mono">{bucket.name}</TableCell>
                       <TableCell><Badge variant={bucket.public ? "default" : "secondary"}>{bucket.public ? "Yes" : "No"}</Badge></TableCell>
-                      <TableCell className="text-muted-foreground">{bucket.purpose}</TableCell>
+                      <TableCell className="text-slate-500">{bucket.purpose}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -354,7 +354,7 @@ export function TechStackPanel({ variant = "default" }: TechStackPanelProps) {
         <TabsContent value="edge-functions">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Server className="w-5 h-5 text-primary" /> Edge Functions ({edgeFunctions.length})</CardTitle>
+              <CardTitle className="flex items-center gap-2"><Server className="w-5 h-5 text-amber-600" /> Edge Functions ({edgeFunctions.length})</CardTitle>
               <CardDescription>Serverless TypeScript functions deployed at the edge</CardDescription>
             </CardHeader>
             <CardContent>
@@ -372,8 +372,8 @@ export function TechStackPanel({ variant = "default" }: TechStackPanelProps) {
                     <TableRow key={fn.name}>
                       <TableCell className="font-medium font-mono">{fn.name}</TableCell>
                       <TableCell><Badge variant={fn.auth === "JWT Required" ? "default" : "secondary"}>{fn.auth}</Badge></TableCell>
-                      <TableCell className="text-muted-foreground">{fn.purpose}</TableCell>
-                      <TableCell className="text-muted-foreground text-sm">{fn.apis}</TableCell>
+                      <TableCell className="text-slate-500">{fn.purpose}</TableCell>
+                      <TableCell className="text-slate-500 text-sm">{fn.apis}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -386,21 +386,21 @@ export function TechStackPanel({ variant = "default" }: TechStackPanelProps) {
         <TabsContent value="apis">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Globe className="w-5 h-5 text-primary" /> External API Integrations</CardTitle>
+              <CardTitle className="flex items-center gap-2"><Globe className="w-5 h-5 text-amber-600" /> External API Integrations</CardTitle>
               <CardDescription>Third-party services the platform depends on</CardDescription>
             </CardHeader>
             <CardContent>
               {externalAPIs.map((api) => (
-                <Card key={api.name} className="mb-4 border-l-4 border-l-primary/50">
+                <Card key={api.name} className="mb-4 border-l-4 border-l-amber-300">
                   <CardContent className="pt-4">
                     <div className="flex items-start justify-between mb-2">
                       <h3 className="font-bold text-lg">{api.name}</h3>
                       <Badge>{api.authMethod}</Badge>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                      <div><span className="text-muted-foreground">Endpoint:</span> <code className="text-xs bg-muted px-1.5 py-0.5 rounded">{api.endpoint}</code></div>
-                      <div><span className="text-muted-foreground">Secret:</span> <code className="text-xs bg-muted px-1.5 py-0.5 rounded">{api.secretName}</code></div>
-                      <div className="md:col-span-2"><span className="text-muted-foreground">Usage:</span> {api.usage}</div>
+                      <div><span className="text-slate-500">Endpoint:</span> <code className="text-xs bg-slate-100 px-1.5 py-0.5 rounded">{api.endpoint}</code></div>
+                      <div><span className="text-slate-500">Secret:</span> <code className="text-xs bg-slate-100 px-1.5 py-0.5 rounded">{api.secretName}</code></div>
+                      <div className="md:col-span-2"><span className="text-slate-500">Usage:</span> {api.usage}</div>
                     </div>
                   </CardContent>
                 </Card>
@@ -413,7 +413,7 @@ export function TechStackPanel({ variant = "default" }: TechStackPanelProps) {
         <TabsContent value="database">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Layers className="w-5 h-5 text-primary" /> Database Tables ({databaseTables.length})</CardTitle>
+              <CardTitle className="flex items-center gap-2"><Layers className="w-5 h-5 text-amber-600" /> Database Tables ({databaseTables.length})</CardTitle>
               <CardDescription>Complete schema with Row Level Security policies</CardDescription>
             </CardHeader>
             <CardContent>
@@ -429,8 +429,8 @@ export function TechStackPanel({ variant = "default" }: TechStackPanelProps) {
                   {databaseTables.map((table) => (
                     <TableRow key={table.name}>
                       <TableCell className="font-medium font-mono">{table.name}</TableCell>
-                      <TableCell className="text-muted-foreground">{table.records}</TableCell>
-                      <TableCell className="text-muted-foreground text-sm">{table.rls}</TableCell>
+                      <TableCell className="text-slate-500">{table.records}</TableCell>
+                      <TableCell className="text-slate-500 text-sm">{table.rls}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -443,7 +443,7 @@ export function TechStackPanel({ variant = "default" }: TechStackPanelProps) {
         <TabsContent value="secrets">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Key className="w-5 h-5 text-primary" /> Configured Secrets & API Keys</CardTitle>
+              <CardTitle className="flex items-center gap-2"><Key className="w-5 h-5 text-amber-600" /> Configured Secrets & API Keys</CardTitle>
               <CardDescription>Environment variables required for platform operation (values not shown)</CardDescription>
             </CardHeader>
             <CardContent>
@@ -459,7 +459,7 @@ export function TechStackPanel({ variant = "default" }: TechStackPanelProps) {
                   {secrets.map((secret) => (
                     <TableRow key={secret.name}>
                       <TableCell className="font-medium font-mono">{secret.name}</TableCell>
-                      <TableCell className="text-muted-foreground">{secret.purpose}</TableCell>
+                      <TableCell className="text-slate-500">{secret.purpose}</TableCell>
                       <TableCell><Badge variant="default">Configured</Badge></TableCell>
                     </TableRow>
                   ))}
@@ -484,7 +484,7 @@ export function TechStackPanel({ variant = "default" }: TechStackPanelProps) {
                 <Shield className={cn("w-5 h-5", inv && "text-[#F59E0B]")} /> Transfer Notes
               </CardTitle>
             </CardHeader>
-            <CardContent className={cn("space-y-2 text-sm", inv ? "text-[#94A3B8]" : "text-muted-foreground")}>
+            <CardContent className={cn("space-y-2 text-sm", inv ? "text-[#94A3B8]" : "text-slate-500")}>
               <p>• All API keys will need to be transferred or regenerated for the acquiring party.</p>
               <p>• Resend account ownership and sending domain (veteranpodcastawards.com) must be transferred.</p>
               <p>• Lovable Cloud project access and ownership must be transferred.</p>

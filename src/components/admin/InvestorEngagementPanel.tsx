@@ -100,7 +100,7 @@ export const InvestorEngagementPanel = () => {
   if (isLoading) {
     return (
       <Card>
-        <CardContent className="py-8 text-center text-muted-foreground">
+        <CardContent className="py-8 text-center text-slate-500">
           Loading engagement data...
         </CardContent>
       </Card>
@@ -112,8 +112,8 @@ export const InvestorEngagementPanel = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="font-serif text-2xl font-bold text-foreground">Investor Engagement</h2>
-        <p className="text-muted-foreground">Detailed timeline of investor portal activity</p>
+        <h2 className="font-serif text-2xl font-bold text-slate-900">Investor Engagement</h2>
+        <p className="text-slate-500">Detailed timeline of investor portal activity</p>
       </div>
 
       {/* Summary Stats */}
@@ -126,7 +126,7 @@ export const InvestorEngagementPanel = () => {
               </div>
               <div>
                 <p className="text-2xl font-bold">{investorEmails.length}</p>
-                <p className="text-sm text-muted-foreground">Unique Investors</p>
+                <p className="text-sm text-slate-500">Unique Investors</p>
               </div>
             </div>
           </CardContent>
@@ -143,7 +143,7 @@ export const InvestorEngagementPanel = () => {
                     (e) => e.event_type === 'portal_opened' || e.event_type === 'login',
                   ).length || 0}
                 </p>
-                <p className="text-sm text-muted-foreground">Logins / portal opens</p>
+                <p className="text-sm text-slate-500">Logins / portal opens</p>
               </div>
             </div>
           </CardContent>
@@ -156,7 +156,7 @@ export const InvestorEngagementPanel = () => {
               </div>
               <div>
                 <p className="text-2xl font-bold">{events?.filter(e => e.event_type === 'video_progress').length || 0}</p>
-                <p className="text-sm text-muted-foreground">Video Progress Events</p>
+                <p className="text-sm text-slate-500">Video Progress Events</p>
               </div>
             </div>
           </CardContent>
@@ -171,7 +171,7 @@ export const InvestorEngagementPanel = () => {
         </CardHeader>
         <CardContent>
           {investorEmails.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">No engagement data yet</p>
+            <p className="text-center text-slate-500 py-8">No engagement data yet</p>
           ) : (
             <Accordion type="single" collapsible className="w-full">
               {investorEmails.map((email) => {
@@ -184,7 +184,7 @@ export const InvestorEngagementPanel = () => {
                     <AccordionTrigger className="hover:no-underline">
                       <div className="flex items-center justify-between w-full pr-4">
                         <div className="flex items-center gap-3">
-                          <User className="w-4 h-4 text-muted-foreground" />
+                          <User className="w-4 h-4 text-slate-500" />
                           <span className="font-medium">{email}</span>
                         </div>
                         <div className="flex items-center gap-2">
@@ -202,12 +202,12 @@ export const InvestorEngagementPanel = () => {
                           {investorEvents.map((event) => (
                             <div
                               key={event.id}
-                              className="flex items-center gap-3 py-2 border-l-2 border-border pl-4"
+                              className="flex items-center gap-3 py-2 border-l-2 border-slate-200 pl-4"
                             >
                               {getEventIcon(event.event_type)}
                               <div className="flex-1">
                                 <p className="text-sm font-medium">{getEventLabel(event)}</p>
-                                <p className="text-xs text-muted-foreground">
+                                <p className="text-xs text-slate-500">
                                   {format(new Date(event.created_at), 'MMM d, yyyy h:mm:ss a')}
                                 </p>
                               </div>

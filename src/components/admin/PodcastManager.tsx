@@ -276,8 +276,8 @@ export const PodcastManager = () => {
       <div className="flex flex-col gap-4 mb-6">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <h2 className="font-serif text-xl font-bold text-foreground">Podcast Network</h2>
-            <span className="text-sm text-muted-foreground bg-secondary px-2 py-1 rounded-full">
+            <h2 className="font-serif text-xl font-bold text-slate-900">Podcast Network</h2>
+            <span className="text-sm text-slate-500 bg-slate-100 px-2 py-1 rounded-full">
               {podcasts?.length || 0} total
             </span>
           </div>
@@ -313,7 +313,7 @@ export const PodcastManager = () => {
           <Popover open={searchOpen} onOpenChange={setSearchOpen}>
             <PopoverTrigger asChild>
               <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                 <Input
                   placeholder="Search by title or host..."
                   value={searchQuery}
@@ -327,7 +327,7 @@ export const PodcastManager = () => {
                   onFocus={() => {
                     if (searchQuery.trim()) setSearchOpen(true);
                   }}
-                  className="pl-9 bg-secondary/30"
+                  className="pl-9 bg-slate-50"
                 />
               </div>
             </PopoverTrigger>
@@ -354,18 +354,18 @@ export const PodcastManager = () => {
                             className="w-8 h-8 object-cover rounded"
                           />
                         ) : (
-                          <div className="w-8 h-8 bg-secondary rounded flex items-center justify-center">
-                            <Mic className="w-4 h-4 text-muted-foreground" />
+                          <div className="w-8 h-8 bg-slate-100 rounded flex items-center justify-center">
+                            <Mic className="w-4 h-4 text-slate-500" />
                           </div>
                         )}
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate">{podcast.title}</p>
                           {podcast.author && (
-                            <p className="text-xs text-muted-foreground truncate">by {podcast.author}</p>
+                            <p className="text-xs text-slate-500 truncate">by {podcast.author}</p>
                           )}
                         </div>
                         {!podcast.is_active && (
-                          <span className="text-xs bg-secondary px-2 py-0.5 rounded">Inactive</span>
+                          <span className="text-xs bg-slate-100 px-2 py-0.5 rounded">Inactive</span>
                         )}
                       </CommandItem>
                     ))}
@@ -380,12 +380,12 @@ export const PodcastManager = () => {
             </Button>
           )}
           {selectedPodcastId && (
-            <span className="text-sm text-muted-foreground">
+            <span className="text-sm text-slate-500">
               Showing 1 of {podcasts?.length || 0}
             </span>
           )}
           {!selectedPodcastId && searchQuery && (
-            <span className="text-sm text-muted-foreground">
+            <span className="text-sm text-slate-500">
               Showing {filteredPodcasts.length} of {podcasts?.length || 0}
             </span>
           )}
@@ -393,11 +393,11 @@ export const PodcastManager = () => {
       </div>
 
       {loadingPodcasts ? (
-        <div className="text-center py-8 text-muted-foreground">Loading podcasts...</div>
+        <div className="text-center py-8 text-slate-500">Loading podcasts...</div>
       ) : !podcasts?.length ? (
-        <div className="text-center py-12 bg-card border border-border rounded-lg">
-          <Rss className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground mb-4">No podcasts yet</p>
+        <div className="text-center py-12 bg-white border border-slate-200 rounded-lg">
+          <Rss className="w-12 h-12 text-slate-500 mx-auto mb-4" />
+          <p className="text-slate-500 mb-4">No podcasts yet</p>
           <Button onClick={() => setIsBulkDialogOpen(true)}>
             <Rss className="w-4 h-4 mr-2" />
             Import from RSS URLs
@@ -408,7 +408,7 @@ export const PodcastManager = () => {
           {filteredPodcasts.map((podcast) => (
             <div
               key={podcast.id}
-              className="flex items-center gap-3 p-3 bg-card border border-border rounded-lg"
+              className="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-lg"
             >
               {podcast.image_url ? (
                 <img
@@ -417,26 +417,26 @@ export const PodcastManager = () => {
                   className="w-16 h-16 object-cover rounded"
                 />
               ) : (
-                <div className="w-16 h-16 bg-secondary/50 rounded flex items-center justify-center">
-                  <Rss className="w-6 h-6 text-muted-foreground" />
+                <div className="w-16 h-16 bg-slate-50 rounded flex items-center justify-center">
+                  <Rss className="w-6 h-6 text-slate-500" />
                 </div>
               )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-foreground truncate">{podcast.title}</h3>
+                  <h3 className="font-semibold text-slate-900 truncate">{podcast.title}</h3>
                   {!podcast.is_active && (
-                    <span className="text-xs bg-secondary px-2 py-0.5 rounded">Inactive</span>
+                    <span className="text-xs bg-slate-100 px-2 py-0.5 rounded">Inactive</span>
                   )}
                 </div>
                 {podcast.author && (
-                  <p className="text-sm text-muted-foreground">by {podcast.author}</p>
+                  <p className="text-sm text-slate-500">by {podcast.author}</p>
                 )}
                 {podcast.website_url && (
                   <a
                     href={podcast.website_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs text-primary hover:underline inline-flex items-center gap-1"
+                    className="text-xs text-amber-600 hover:underline inline-flex items-center gap-1"
                   >
                     {podcast.website_url} <ExternalLink className="w-3 h-3" />
                   </a>
@@ -450,7 +450,7 @@ export const PodcastManager = () => {
                       toggleActive.mutate({ id: podcast.id, is_active: checked })
                     }
                   />
-                  <span className="text-xs text-muted-foreground">Active</span>
+                  <span className="text-xs text-slate-500">Active</span>
                 </div>
                 <Button
                   variant="outline"

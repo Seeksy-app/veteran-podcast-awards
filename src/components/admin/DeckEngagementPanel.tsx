@@ -125,7 +125,7 @@ export const DeckEngagementPanel = () => {
               <Users className="h-5 w-5 text-blue-500" />
               <div>
                 <p className="text-2xl font-bold">{uniqueSessions}</p>
-                <p className="text-sm text-muted-foreground">Unique Visitors</p>
+                <p className="text-sm text-slate-500">Unique Visitors</p>
               </div>
             </div>
           </CardContent>
@@ -136,7 +136,7 @@ export const DeckEngagementPanel = () => {
               <MousePointer className="h-5 w-5 text-green-500" />
               <div>
                 <p className="text-2xl font-bold">{clicks}</p>
-                <p className="text-sm text-muted-foreground">Total Clicks</p>
+                <p className="text-sm text-slate-500">Total Clicks</p>
               </div>
             </div>
           </CardContent>
@@ -147,7 +147,7 @@ export const DeckEngagementPanel = () => {
               <Play className="h-5 w-5 text-purple-500" />
               <div>
                 <p className="text-2xl font-bold">{videoPlays}</p>
-                <p className="text-sm text-muted-foreground">Video Plays</p>
+                <p className="text-sm text-slate-500">Video Plays</p>
               </div>
             </div>
           </CardContent>
@@ -158,7 +158,7 @@ export const DeckEngagementPanel = () => {
               <Video className="h-5 w-5 text-purple-500" />
               <div>
                 <p className="text-2xl font-bold">{videoCompletions}</p>
-                <p className="text-sm text-muted-foreground">Video Completions</p>
+                <p className="text-sm text-slate-500">Video Completions</p>
               </div>
             </div>
           </CardContent>
@@ -173,7 +173,7 @@ export const DeckEngagementPanel = () => {
               <Clock className="h-5 w-5 text-teal-500" />
               <div>
                 <p className="text-2xl font-bold">{avgTimeOnPage}s</p>
-                <p className="text-sm text-muted-foreground">Avg. Time on Page</p>
+                <p className="text-sm text-slate-500">Avg. Time on Page</p>
               </div>
             </div>
           </CardContent>
@@ -184,7 +184,7 @@ export const DeckEngagementPanel = () => {
               <TrendingUp className="h-5 w-5 text-orange-500" />
               <div>
                 <p className="text-2xl font-bold">{avgScrollDepth}%</p>
-                <p className="text-sm text-muted-foreground">Avg. Scroll Depth</p>
+                <p className="text-sm text-slate-500">Avg. Scroll Depth</p>
               </div>
             </div>
           </CardContent>
@@ -211,7 +211,7 @@ export const DeckEngagementPanel = () => {
                       <Badge variant="outline" className="font-mono text-xs">
                         {sessionId.slice(0, 20)}...
                       </Badge>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs text-slate-500">
                         {formatDistanceToNow(new Date(firstEvent.created_at), { addSuffix: true })}
                       </span>
                     </div>
@@ -220,13 +220,13 @@ export const DeckEngagementPanel = () => {
                         <div key={event.id} className="flex items-center gap-2 text-sm">
                           {getEventIcon(event.event_type)}
                           <span>{getEventLabel(event)}</span>
-                          <span className="text-xs text-muted-foreground ml-auto">
+                          <span className="text-xs text-slate-500 ml-auto">
                             {format(new Date(event.created_at), 'HH:mm:ss')}
                           </span>
                         </div>
                       ))}
                       {sessionEvents.length > 10 && (
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-slate-500">
                           +{sessionEvents.length - 10} more events
                         </p>
                       )}

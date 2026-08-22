@@ -192,7 +192,7 @@ function statusPill(status: ProgramStatus) {
       );
     default:
       return (
-        <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground ring-1 ring-inset ring-border">
+        <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-500 ring-1 ring-inset ring-slate-200">
           Draft
         </span>
       );
@@ -201,8 +201,8 @@ function statusPill(status: ProgramStatus) {
 
 function SectionHeader({ title, action }: { title: string; action?: React.ReactNode }) {
   return (
-    <div className={cn("flex items-center justify-between gap-4 border-b border-border/60 pb-3", GOLD_RING, "pl-4")}>
-      <h3 className="text-base font-semibold tracking-tight text-foreground">{title}</h3>
+    <div className={cn("flex items-center justify-between gap-4 border-b border-slate-200/60 pb-3", GOLD_RING, "pl-4")}>
+      <h3 className="text-base font-semibold tracking-tight text-slate-900">{title}</h3>
       {action}
     </div>
   );
@@ -704,11 +704,11 @@ export const AwardsManager = () => {
   const existingSlugSet = useMemo(() => new Set(categories.map((c) => c.slug)), [categories]);
 
   return (
-    <div className="text-sm text-foreground">
+    <div className="text-sm text-slate-900">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-8">
         {/* Mobile program selector */}
         <div className="lg:hidden">
-          <Label className="mb-2 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          <Label className="mb-2 block text-xs font-medium uppercase tracking-wide text-slate-500">
             Award program
           </Label>
           <Select
@@ -717,7 +717,7 @@ export const AwardsManager = () => {
             disabled={!programs.length}
           >
             <SelectTrigger
-              className="h-12 rounded-xl border-[#B8860B]/30 bg-card shadow-sm"
+              className="h-12 rounded-xl border-[#B8860B]/30 bg-white shadow-sm"
               style={{ borderColor: `${GOLD}55` }}
             >
               <SelectValue placeholder="Select program" />
@@ -746,14 +746,14 @@ export const AwardsManager = () => {
           </div>
 
           {loadingPrograms ? (
-            <p className="text-muted-foreground">Loading programs…</p>
+            <p className="text-slate-500">Loading programs…</p>
           ) : programs.length === 0 ? (
-            <Card className="rounded-2xl border-dashed border-2 border-[#B8860B]/25 bg-muted/20 p-8 text-center shadow-none">
+            <Card className="rounded-2xl border-dashed border-2 border-[#B8860B]/25 bg-slate-50 p-8 text-center shadow-none">
               <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-[#B8860B]/10 text-4xl">
                 🏆
               </div>
-              <p className="font-medium text-foreground">No programs yet</p>
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="font-medium text-slate-900">No programs yet</p>
+              <p className="mt-1 text-xs text-slate-500">
                 Create your first award program to manage categories and voting.
               </p>
               <Button
@@ -777,10 +777,10 @@ export const AwardsManager = () => {
                       type="button"
                       onClick={() => setSelectedProgramId(p.id)}
                       className={cn(
-                        "w-full rounded-xl border bg-card p-4 text-left shadow-sm transition-all hover:shadow-md",
+                        "w-full rounded-xl border bg-white p-4 text-left shadow-sm transition-all hover:shadow-md",
                         selected
                           ? "border-[#B8860B]/50 bg-[#B8860B]/8 pl-[13px] shadow-md ring-1 ring-[#B8860B]/20"
-                          : "border-border/80 pl-4 hover:border-[#B8860B]/30",
+                          : "border-slate-200/80 pl-4 hover:border-[#B8860B]/30",
                         !selected && "border-l-4 border-l-transparent",
                         selected && "border-l-[3px] border-l-[#B8860B]",
                       )}
@@ -801,27 +801,27 @@ export const AwardsManager = () => {
                           </div>
                         )}
                         <div className="min-w-0 flex-1">
-                          <p className="break-words text-[15px] font-semibold leading-snug text-foreground">{p.name}</p>
+                          <p className="break-words text-[15px] font-semibold leading-snug text-slate-900">{p.name}</p>
                           {p.organization_name && (
-                            <p className="mt-0.5 text-xs text-muted-foreground">{p.organization_name}</p>
+                            <p className="mt-0.5 text-xs text-slate-500">{p.organization_name}</p>
                           )}
                         </div>
                       </div>
                       <div className="mt-2 flex flex-wrap items-center gap-2">
-                        <span className="rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                        <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500">
                           {p.year}
                         </span>
                         {statusPill(p.status)}
                       </div>
                       {p.tagline && (
-                        <p className="mt-2 line-clamp-2 text-xs italic text-muted-foreground">{p.tagline}</p>
+                        <p className="mt-2 line-clamp-2 text-xs italic text-slate-500">{p.tagline}</p>
                       )}
-                      <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
+                      <p className="mt-2 text-[11px] leading-relaxed text-slate-500">
                         Nominations: {formatShortDate(p.nominations_open_at)} · Voting:{" "}
                         {formatShortDate(p.voting_open_at)} · Ceremony: {formatShortDate(p.ceremony_at)}
                       </p>
                       {st && (
-                        <p className="mt-2 text-xs text-foreground/90">
+                        <p className="mt-2 text-xs text-slate-900/90">
                           <span className="font-semibold tabular-nums text-[#B8860B]">{st.categories}</span>{" "}
                           categories ·{" "}
                           <span className="font-semibold tabular-nums text-blue-600 dark:text-blue-400">{st.nominees}</span>{" "}
@@ -843,18 +843,18 @@ export const AwardsManager = () => {
         {/* Main */}
         <main className="min-w-0 flex-1 space-y-10">
           {!selectedProgram ? (
-            <p className="text-muted-foreground">Select a program to view details.</p>
+            <p className="text-slate-500">Select a program to view details.</p>
           ) : (
             <>
               {/* Section 1 — Program header */}
-              <Card className="overflow-hidden rounded-2xl border-border/80 bg-card shadow-md">
+              <Card className="overflow-hidden rounded-2xl border-slate-200/80 bg-white shadow-md">
                 <CardContent className="p-6 sm:p-8">
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0 flex-1 space-y-1">
                       {!programEditing ? (
                         <>
                           <div className="flex flex-wrap items-center gap-3">
-                            <h1 className="break-words text-2xl font-bold tracking-tight text-foreground sm:text-[24px]">
+                            <h1 className="break-words text-2xl font-bold tracking-tight text-slate-900 sm:text-[24px]">
                               {selectedProgram.name}
                             </h1>
                             <Button
@@ -868,7 +868,7 @@ export const AwardsManager = () => {
                               <Pencil className="h-4 w-4" />
                             </Button>
                           </div>
-                          <p className="text-sm text-muted-foreground">Season {selectedProgram.year}</p>
+                          <p className="text-sm text-slate-500">Season {selectedProgram.year}</p>
                         </>
                       ) : (
                         programDraft && (
@@ -1061,7 +1061,7 @@ export const AwardsManager = () => {
 
                   {!programEditing && (
                     <div className="mt-6 flex flex-wrap gap-3">
-                      <div className="rounded-full border border-[#B8860B]/25 bg-[#B8860B]/5 px-4 py-2 text-sm font-medium text-foreground">
+                      <div className="rounded-full border border-[#B8860B]/25 bg-[#B8860B]/5 px-4 py-2 text-sm font-medium text-slate-900">
                         <span className="text-[#B8860B]">{categories.length}</span> Categories
                       </div>
                       <div className="rounded-full border border-blue-500/20 bg-blue-500/5 px-4 py-2 text-sm font-medium">
@@ -1095,12 +1095,12 @@ export const AwardsManager = () => {
                 />
                 <div className="pt-2">
                   {loadingCategories ? (
-                    <p className="text-muted-foreground">Loading categories…</p>
+                    <p className="text-slate-500">Loading categories…</p>
                   ) : categories.length === 0 ? (
-                    <Card className="rounded-2xl border-dashed border-2 border-border bg-muted/20 py-12 text-center shadow-none">
+                    <Card className="rounded-2xl border-dashed border-2 border-slate-200 bg-slate-50 py-12 text-center shadow-none">
                       <Sparkles className="mx-auto mb-2 h-8 w-8 text-[#B8860B]/70" />
                       <p className="font-medium">No categories yet</p>
-                      <p className="mt-1 text-sm text-muted-foreground">
+                      <p className="mt-1 text-sm text-slate-500">
                         Click <span className="font-medium text-[#B8860B]">Add Category</span> to get started.
                       </p>
                     </Card>
@@ -1112,7 +1112,7 @@ export const AwardsManager = () => {
                         return (
                           <Card
                             key={cat.id}
-                            className="group relative overflow-hidden rounded-2xl border border-border/80 bg-card shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+                            className="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
                           >
                             <CardContent className="p-5">
                               <div className="flex items-start justify-between gap-2">
@@ -1121,9 +1121,9 @@ export const AwardsManager = () => {
                                     {categoryEmoji(cat.slug)}
                                   </span>
                                   <div className="min-w-0">
-                                    <h4 className="text-lg font-bold leading-tight text-foreground">{cat.name}</h4>
+                                    <h4 className="text-lg font-bold leading-tight text-slate-900">{cat.name}</h4>
                                     {cat.description && (
-                                      <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{cat.description}</p>
+                                      <p className="mt-1 line-clamp-2 text-xs text-slate-500">{cat.description}</p>
                                     )}
                                   </div>
                                 </div>
@@ -1184,7 +1184,7 @@ export const AwardsManager = () => {
 
               {/* Section 3 — Leaderboard */}
               <section className="space-y-4">
-                <div className={cn("flex flex-col gap-3 border-b border-border/60 pb-3 sm:flex-row sm:items-center sm:justify-between", GOLD_RING, "pl-4")}>
+                <div className={cn("flex flex-col gap-3 border-b border-slate-200/60 pb-3 sm:flex-row sm:items-center sm:justify-between", GOLD_RING, "pl-4")}>
                   <div className="flex items-center gap-2">
                     <h3 className="text-base font-semibold tracking-tight">Live Vote Leaderboard</h3>
                     <span className="text-lg" aria-hidden>
@@ -1209,7 +1209,7 @@ export const AwardsManager = () => {
 
                 <div className="pt-2">
                   {!lbCategories.data?.length ? (
-                    <p className="text-sm text-muted-foreground">Add categories to see the leaderboard.</p>
+                    <p className="text-sm text-slate-500">Add categories to see the leaderboard.</p>
                   ) : (
                     <div className="space-y-0">
                     <Tabs
@@ -1218,7 +1218,7 @@ export const AwardsManager = () => {
                       className="w-full"
                     >
                       <div className="mb-4 overflow-x-auto pb-1">
-                        <TabsList className="inline-flex h-auto min-h-10 w-max flex-wrap gap-1 bg-muted/60 p-1">
+                        <TabsList className="inline-flex h-auto min-h-10 w-max flex-wrap gap-1 bg-slate-50 p-1">
                           {(lbCategories.data ?? []).map((c) => (
                             <TabsTrigger
                               key={c.id}
@@ -1231,22 +1231,22 @@ export const AwardsManager = () => {
                         </TabsList>
                       </div>
                     </Tabs>
-                    <Card className="rounded-2xl border-border/80 shadow-md">
+                    <Card className="rounded-2xl border-slate-200/80 shadow-md">
                       <CardContent className="p-0">
                         {leaderboardRows.isLoading ? (
-                          <div className="p-8 text-center text-muted-foreground">Loading…</div>
+                          <div className="p-8 text-center text-slate-500">Loading…</div>
                         ) : !leaderboardRows.data?.length ? (
-                          <div className="p-12 text-center text-muted-foreground">
+                          <div className="p-12 text-center text-slate-500">
                             <Vote className="mx-auto mb-2 h-10 w-10 opacity-40" />
-                            <p className="font-medium text-foreground">No votes yet</p>
+                            <p className="font-medium text-slate-900">No votes yet</p>
                             <p className="text-xs">Votes will appear here as they come in.</p>
                           </div>
                         ) : (
-                          <div className="divide-y divide-border/60">
+                          <div className="divide-y divide-slate-200/60">
                             {leaderboardRows.data.map((row) => (
                               <div
                                 key={row.podcastId}
-                                className="flex flex-col gap-3 p-4 transition-colors hover:bg-muted/30 sm:flex-row sm:items-center sm:gap-4"
+                                className="flex flex-col gap-3 p-4 transition-colors hover:bg-slate-50 sm:flex-row sm:items-center sm:gap-4"
                               >
                                 <div className="flex w-12 shrink-0 justify-center text-lg font-semibold tabular-nums">
                                   {row.rank <= 3 ? (
@@ -1254,13 +1254,13 @@ export const AwardsManager = () => {
                                       {row.rank === 1 ? "🥇" : row.rank === 2 ? "🥈" : "🥉"}
                                     </span>
                                   ) : (
-                                    <span className="text-muted-foreground">{row.rank}</span>
+                                    <span className="text-slate-500">{row.rank}</span>
                                   )}
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                  <p className="font-semibold text-foreground">{row.title}</p>
-                                  <p className="text-xs text-muted-foreground">{row.podcaster}</p>
-                                  <div className="mt-2 h-2 max-w-md overflow-hidden rounded-full bg-muted">
+                                  <p className="font-semibold text-slate-900">{row.title}</p>
+                                  <p className="text-xs text-slate-500">{row.podcaster}</p>
+                                  <div className="mt-2 h-2 max-w-md overflow-hidden rounded-full bg-slate-100">
                                     <div
                                       className="h-full rounded-full transition-all duration-500"
                                       style={{
@@ -1272,7 +1272,7 @@ export const AwardsManager = () => {
                                 </div>
                                 <div className="text-right sm:w-24">
                                   <p className="font-mono text-base font-semibold tabular-nums">{row.votes}</p>
-                                  <p className="text-xs text-muted-foreground">{row.pct.toFixed(1)}%</p>
+                                  <p className="text-xs text-slate-500">{row.pct.toFixed(1)}%</p>
                                 </div>
                               </div>
                             ))}
@@ -1453,7 +1453,7 @@ export const AwardsManager = () => {
             <DialogTitle>Add categories</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-slate-500">
               Select preset categories (seeded list). Already added slugs are disabled.
             </p>
             <div className="flex flex-wrap gap-2">
@@ -1478,8 +1478,8 @@ export const AwardsManager = () => {
                       "rounded-full border px-3 py-1.5 text-xs font-medium transition-all",
                       has && "cursor-not-allowed opacity-50",
                       has && "border-emerald-500/40 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300",
-                      !has && selected && "border-[#B8860B] bg-[#B8860B]/15 text-foreground shadow-sm",
-                      !has && !selected && "border-border hover:border-[#B8860B]/50",
+                      !has && selected && "border-[#B8860B] bg-[#B8860B]/15 text-slate-900 shadow-sm",
+                      !has && !selected && "border-slate-200 hover:border-[#B8860B]/50",
                     )}
                   >
                     {has ? "✓ " : ""}

@@ -30,7 +30,7 @@ interface UserTypeData {
   value: number;
 }
 
-const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
+const COLORS = ['#f59e0b', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
 
 export function BusinessMetricsPanel() {
   const [stats, setStats] = useState<MetricStats | null>(null);
@@ -143,7 +143,7 @@ export function BusinessMetricsPanel() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <RefreshCw className="w-6 h-6 animate-spin text-muted-foreground" />
+        <RefreshCw className="w-6 h-6 animate-spin text-slate-500" />
       </div>
     );
   }
@@ -152,8 +152,8 @@ export function BusinessMetricsPanel() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-serif font-bold text-foreground">Business Metrics</h2>
-          <p className="text-muted-foreground">User growth and engagement analytics</p>
+          <h2 className="text-2xl font-serif font-bold text-slate-900">Business Metrics</h2>
+          <p className="text-slate-500">User growth and engagement analytics</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={fetchMetrics}>
@@ -172,44 +172,44 @@ export function BusinessMetricsPanel() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <Users className="h-4 w-4 text-slate-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats?.totalUsers || 0}</div>
-            <p className="text-xs text-muted-foreground">Registered accounts</p>
+            <p className="text-xs text-slate-500">Registered accounts</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Pre-Registrations</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <Calendar className="h-4 w-4 text-slate-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats?.totalPreRegistrations || 0}</div>
-            <p className="text-xs text-muted-foreground">Event interest signups</p>
+            <p className="text-xs text-slate-500">Event interest signups</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active Podcasts</CardTitle>
-            <Mic className="h-4 w-4 text-muted-foreground" />
+            <Mic className="h-4 w-4 text-slate-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats?.totalPodcasts || 0}</div>
-            <p className="text-xs text-muted-foreground">In the network</p>
+            <p className="text-xs text-slate-500">In the network</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Votes</CardTitle>
-            <Vote className="h-4 w-4 text-muted-foreground" />
+            <Vote className="h-4 w-4 text-slate-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats?.totalVotes || 0}</div>
-            <p className="text-xs text-muted-foreground">Votes cast</p>
+            <p className="text-xs text-slate-500">Votes cast</p>
           </CardContent>
         </Card>
       </div>
@@ -236,23 +236,23 @@ export function BusinessMetricsPanel() {
                       <XAxis 
                         dataKey="date" 
                         className="text-xs"
-                        tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                        tick={{ fill: '#64748b' }}
                       />
                       <YAxis 
                         className="text-xs"
-                        tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                        tick={{ fill: '#64748b' }}
                       />
                       <Tooltip 
                         contentStyle={{ 
-                          backgroundColor: 'hsl(var(--card))',
-                          border: '1px solid hsl(var(--border))',
+                          backgroundColor: '#ffffff',
+                          border: '1px solid #e2e8f0',
                           borderRadius: '8px'
                         }}
                       />
                       <Line 
                         type="monotone" 
                         dataKey="users" 
-                        stroke="hsl(var(--primary))" 
+                        stroke="#f59e0b" 
                         strokeWidth={2}
                         dot={false}
                       />
@@ -296,7 +296,7 @@ export function BusinessMetricsPanel() {
                           className="w-3 h-3 rounded-full" 
                           style={{ backgroundColor: COLORS[index % COLORS.length] }}
                         />
-                        <span className="text-muted-foreground">{item.name}</span>
+                        <span className="text-slate-500">{item.name}</span>
                       </div>
                       <span className="font-medium">{item.value}</span>
                     </div>
@@ -312,29 +312,29 @@ export function BusinessMetricsPanel() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Favorites</CardTitle>
-                <Heart className="h-4 w-4 text-muted-foreground" />
+                <Heart className="h-4 w-4 text-slate-500" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats?.totalFavorites || 0}</div>
-                <p className="text-xs text-muted-foreground">Podcasts favorited by users</p>
+                <p className="text-xs text-slate-500">Podcasts favorited by users</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Votes Cast</CardTitle>
-                <Vote className="h-4 w-4 text-muted-foreground" />
+                <Vote className="h-4 w-4 text-slate-500" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats?.totalVotes || 0}</div>
-                <p className="text-xs text-muted-foreground">Award votes submitted</p>
+                <p className="text-xs text-slate-500">Award votes submitted</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Avg. Engagement</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                <TrendingUp className="h-4 w-4 text-slate-500" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
@@ -342,7 +342,7 @@ export function BusinessMetricsPanel() {
                     ? ((stats.totalVotes + stats.totalFavorites) / stats.totalUsers).toFixed(1)
                     : '0'}
                 </div>
-                <p className="text-xs text-muted-foreground">Actions per user</p>
+                <p className="text-xs text-slate-500">Actions per user</p>
               </CardContent>
             </Card>
           </div>
@@ -354,23 +354,23 @@ export function BusinessMetricsPanel() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
                   <div>
                     <div className="font-medium">User Activation Rate</div>
-                    <div className="text-sm text-muted-foreground">Users who have taken at least one action</div>
+                    <div className="text-sm text-slate-500">Users who have taken at least one action</div>
                   </div>
-                  <div className="text-2xl font-bold text-primary">
+                  <div className="text-2xl font-bold text-amber-600">
                     {stats && stats.totalUsers > 0 
                       ? Math.min(100, Math.round(((stats.totalVotes + stats.totalFavorites) / stats.totalUsers) * 100 / 2)).toString() + '%'
                       : '0%'}
                   </div>
                 </div>
-                <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
                   <div>
                     <div className="font-medium">Podcast Network Coverage</div>
-                    <div className="text-sm text-muted-foreground">Active podcasts in the veteran/military space</div>
+                    <div className="text-sm text-slate-500">Active podcasts in the veteran/military space</div>
                   </div>
-                  <div className="text-2xl font-bold text-primary">{stats?.totalPodcasts || 0}</div>
+                  <div className="text-2xl font-bold text-amber-600">{stats?.totalPodcasts || 0}</div>
                 </div>
               </div>
             </CardContent>
@@ -382,44 +382,44 @@ export function BusinessMetricsPanel() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Campaigns Sent</CardTitle>
-                <Mail className="h-4 w-4 text-muted-foreground" />
+                <Mail className="h-4 w-4 text-slate-500" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats?.totalCampaignsSent || 0}</div>
-                <p className="text-xs text-muted-foreground">Email campaigns</p>
+                <p className="text-xs text-slate-500">Email campaigns</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Emails Sent</CardTitle>
-                <Mail className="h-4 w-4 text-muted-foreground" />
+                <Mail className="h-4 w-4 text-slate-500" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats?.totalEmailsSent || 0}</div>
-                <p className="text-xs text-muted-foreground">Total deliveries</p>
+                <p className="text-xs text-slate-500">Total deliveries</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Open Rate</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                <TrendingUp className="h-4 w-4 text-slate-500" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats?.emailOpenRate.toFixed(1) || 0}%</div>
-                <p className="text-xs text-muted-foreground">Industry avg: 21%</p>
+                <p className="text-xs text-slate-500">Industry avg: 21%</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Click Rate</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                <TrendingUp className="h-4 w-4 text-slate-500" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats?.emailClickRate.toFixed(1) || 0}%</div>
-                <p className="text-xs text-muted-foreground">Industry avg: 2.5%</p>
+                <p className="text-xs text-slate-500">Industry avg: 2.5%</p>
               </CardContent>
             </Card>
           </div>
@@ -427,10 +427,10 @@ export function BusinessMetricsPanel() {
       </Tabs>
 
       {/* Investor Summary Card */}
-      <Card className="bg-primary/5 border-primary/20">
+      <Card className="bg-amber-50 border-amber-100">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-primary" />
+            <TrendingUp className="w-5 h-5 text-amber-600" />
             Investment Highlights
           </CardTitle>
           <CardDescription>Key metrics for potential acquirers</CardDescription>
@@ -439,7 +439,7 @@ export function BusinessMetricsPanel() {
           <div className="grid md:grid-cols-3 gap-6">
             <div>
               <h4 className="font-semibold mb-2">Platform Traction</h4>
-              <ul className="space-y-1 text-sm text-muted-foreground">
+              <ul className="space-y-1 text-sm text-slate-500">
                 <li>• {stats?.totalUsers || 0} registered users</li>
                 <li>• {stats?.totalPreRegistrations || 0} pre-registrations</li>
                 <li>• {stats?.totalPodcasts || 0} podcasts in network</li>
@@ -447,7 +447,7 @@ export function BusinessMetricsPanel() {
             </div>
             <div>
               <h4 className="font-semibold mb-2">Engagement Metrics</h4>
-              <ul className="space-y-1 text-sm text-muted-foreground">
+              <ul className="space-y-1 text-sm text-slate-500">
                 <li>• {stats?.totalVotes || 0} votes cast</li>
                 <li>• {stats?.totalFavorites || 0} favorites saved</li>
                 <li>• {stats?.emailOpenRate.toFixed(1) || 0}% email open rate</li>
@@ -455,7 +455,7 @@ export function BusinessMetricsPanel() {
             </div>
             <div>
               <h4 className="font-semibold mb-2">Market Opportunity</h4>
-              <ul className="space-y-1 text-sm text-muted-foreground">
+              <ul className="space-y-1 text-sm text-slate-500">
                 <li>• 18M+ veterans in the US</li>
                 <li>• 2M+ active military</li>
                 <li>• 40M+ military family members</li>

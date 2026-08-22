@@ -83,7 +83,7 @@ export const SponsorForm = ({ sponsor, onSubmit, onCancel, isLoading }: SponsorF
         <Label>Logo</Label>
         {logoUrl ? (
           <div className="relative inline-block">
-            <img src={logoUrl} alt="Logo preview" className="h-20 object-contain bg-secondary/50 rounded-lg p-2" />
+            <img src={logoUrl} alt="Logo preview" className="h-20 object-contain bg-slate-50 rounded-lg p-2" />
             <button
               type="button"
               onClick={() => setLogoUrl('')}
@@ -93,9 +93,9 @@ export const SponsorForm = ({ sponsor, onSubmit, onCancel, isLoading }: SponsorF
             </button>
           </div>
         ) : (
-          <label className="flex items-center justify-center gap-2 h-20 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary transition-colors">
-            <Upload className="w-5 h-5 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">
+          <label className="flex items-center justify-center gap-2 h-20 border-2 border-dashed border-slate-200 rounded-lg cursor-pointer hover:border-amber-500 transition-colors">
+            <Upload className="w-5 h-5 text-slate-500" />
+            <span className="text-sm text-slate-500">
               {uploading ? 'Uploading...' : 'Upload Logo'}
             </span>
             <input

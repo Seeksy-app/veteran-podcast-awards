@@ -179,9 +179,9 @@ export const ShareLinkManager = () => {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="text-center py-8 text-muted-foreground">Loading...</div>
+            <div className="text-center py-8 text-slate-500">Loading...</div>
           ) : !links?.length ? (
-            <div className="text-center py-8 text-muted-foreground">No magic links created yet</div>
+            <div className="text-center py-8 text-slate-500">No magic links created yet</div>
           ) : (
             <div className="space-y-4">
               {links.map((link) => {
@@ -195,11 +195,11 @@ export const ShareLinkManager = () => {
                 return (
                   <div
                     key={link.id}
-                    className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 border border-border rounded-lg bg-card"
+                    className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 border border-slate-200 rounded-lg bg-white"
                   >
                     <div className="space-y-2 flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <Link2 className="w-4 h-4 text-muted-foreground" />
+                        <Link2 className="w-4 h-4 text-slate-500" />
                         <span className="font-medium">{link.label}</span>
                         {!link.is_active ? (
                           <Badge variant="secondary">Revoked</Badge>
@@ -209,7 +209,7 @@ export const ShareLinkManager = () => {
                           <Badge variant="outline">Active</Badge>
                         )}
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
+                      <div className="flex items-center gap-4 text-sm text-slate-500 flex-wrap">
                         <span className="flex items-center gap-1">
                           <Eye className="w-3 h-3" />
                           {visits.length} {visits.length === 1 ? 'visit' : 'visits'}

@@ -210,9 +210,9 @@ export const InvestorAccessManager = () => {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="text-center py-8 text-muted-foreground">Loading...</div>
+            <div className="text-center py-8 text-slate-500">Loading...</div>
           ) : accessList?.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
+            <div className="text-center py-8 text-slate-500">
               No investor access codes created yet
             </div>
           ) : (
@@ -222,19 +222,19 @@ export const InvestorAccessManager = () => {
                 return (
                   <div
                     key={access.id}
-                    className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 border border-border rounded-lg bg-card"
+                    className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 border border-slate-200 rounded-lg bg-white"
                   >
                     <div className="space-y-2 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <Mail className="w-4 h-4 text-muted-foreground" />
+                        <Mail className="w-4 h-4 text-slate-500" />
                         <span className="font-medium">{access.email}</span>
                         {!access.is_active && <Badge variant="secondary">Disabled</Badge>}
                         {isExpired && <Badge variant="destructive">Expired</Badge>}
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-4 text-sm text-slate-500">
                         <span className="flex items-center gap-1">
                           <Key className="w-3 h-3" />
-                          <code className="bg-muted px-2 py-0.5 rounded">{access.access_code}</code>
+                          <code className="bg-slate-100 px-2 py-0.5 rounded">{access.access_code}</code>
                         </span>
                         <span className="flex items-center gap-1">
                           <Calendar className="w-3 h-3" />

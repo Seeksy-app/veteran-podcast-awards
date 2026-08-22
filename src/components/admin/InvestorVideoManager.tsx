@@ -183,9 +183,9 @@ export const InvestorVideoManager = () => {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="text-center py-8 text-muted-foreground">Loading...</div>
+            <div className="text-center py-8 text-slate-500">Loading...</div>
           ) : videos?.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
+            <div className="text-center py-8 text-slate-500">
               No videos uploaded yet
             </div>
           ) : (
@@ -193,9 +193,9 @@ export const InvestorVideoManager = () => {
               {videos?.map((video) => (
                 <div
                   key={video.id}
-                  className="flex flex-col md:flex-row gap-4 p-4 border border-border rounded-lg bg-card"
+                  className="flex flex-col md:flex-row gap-4 p-4 border border-slate-200 rounded-lg bg-white"
                 >
-                  <div className="w-full md:w-48 aspect-video bg-muted rounded overflow-hidden">
+                  <div className="w-full md:w-48 aspect-video bg-slate-100 rounded overflow-hidden">
                     <video
                       src={video.video_url}
                       className="w-full h-full object-cover"
@@ -206,7 +206,7 @@ export const InvestorVideoManager = () => {
                     <div className="flex items-center justify-between">
                       <h3 className="font-semibold">{video.title}</h3>
                       <div className="flex items-center gap-2">
-                        <Label htmlFor={`active-${video.id}`} className="text-sm text-muted-foreground">
+                        <Label htmlFor={`active-${video.id}`} className="text-sm text-slate-500">
                           Active
                         </Label>
                         <Switch
@@ -219,7 +219,7 @@ export const InvestorVideoManager = () => {
                       </div>
                     </div>
                     {video.description && (
-                      <p className="text-sm text-muted-foreground">{video.description}</p>
+                      <p className="text-sm text-slate-500">{video.description}</p>
                     )}
                     <div className="flex items-center gap-2 pt-2">
                       <Button
