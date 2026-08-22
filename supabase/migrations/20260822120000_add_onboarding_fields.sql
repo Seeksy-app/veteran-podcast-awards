@@ -6,4 +6,7 @@ ALTER TABLE profiles
   ADD COLUMN IF NOT EXISTS hosting_platform text,
   ADD COLUMN IF NOT EXISTS distribution_platforms text[] DEFAULT '{}',
   ADD COLUMN IF NOT EXISTS has_ad_agency boolean,
-  ADD COLUMN IF NOT EXISTS interested_in_opportunities boolean;
+  ADD COLUMN IF NOT EXISTS interested_in_opportunities boolean,
+  ADD COLUMN IF NOT EXISTS military_branch text,
+  ADD COLUMN IF NOT EXISTS military_affiliation text,
+  ADD COLUMN IF NOT EXISTS selected_categories text[] DEFAULT '{}';

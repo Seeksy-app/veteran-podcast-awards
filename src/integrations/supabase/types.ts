@@ -906,10 +906,13 @@ export type Database = {
           id: string
           interested_in_opportunities: boolean | null
           is_public: boolean | null
+          military_affiliation: string | null
+          military_branch: string | null
           onboarding_completed: boolean | null
           podcast_id: string | null
           podcast_name: string | null
           podcast_rss: string | null
+          selected_categories: string[] | null
           social_instagram: string | null
           social_linkedin: string | null
           social_twitter: string | null
@@ -932,10 +935,13 @@ export type Database = {
           id: string
           interested_in_opportunities?: boolean | null
           is_public?: boolean | null
+          military_affiliation?: string | null
+          military_branch?: string | null
           onboarding_completed?: boolean | null
           podcast_id?: string | null
           podcast_name?: string | null
           podcast_rss?: string | null
+          selected_categories?: string[] | null
           social_instagram?: string | null
           social_linkedin?: string | null
           social_twitter?: string | null
@@ -958,10 +964,13 @@ export type Database = {
           id?: string
           interested_in_opportunities?: boolean | null
           is_public?: boolean | null
+          military_affiliation?: string | null
+          military_branch?: string | null
           onboarding_completed?: boolean | null
           podcast_id?: string | null
           podcast_name?: string | null
           podcast_rss?: string | null
+          selected_categories?: string[] | null
           social_instagram?: string | null
           social_linkedin?: string | null
           social_twitter?: string | null

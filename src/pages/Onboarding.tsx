@@ -11,13 +11,16 @@ import heroBg from "@/assets/hero-bg.jpg";
 import {
   Mic,
   Rss,
-  Radio,
   ChevronRight,
   ChevronLeft,
   Check,
   DollarSign,
   Globe,
+  Shield,
+  Trophy,
 } from "lucide-react";
+
+const TOTAL_STEPS = 4;
 
 const HOSTING_PLATFORMS = [
   "Buzzsprout",
@@ -58,11 +61,37 @@ const DISTRIBUTION_PLATFORMS = [
   { id: "other", label: "Other" },
 ];
 
-const STEP_IMAGES = [
-  { emoji: "🎙️", heading: "Let's set up your podcast", sub: "We'll get your show connected in just a few steps." },
-  { emoji: "📡", heading: "Where does your show live?", sub: "Help us understand your hosting and distribution." },
-  { emoji: "💰", heading: "Let's talk opportunities", sub: "We connect podcasters with sponsors who value the military community." },
+const MILITARY_BRANCHES = [
+  "Army",
+  "Navy",
+  "Marine Corps",
+  "Air Force",
+  "Coast Guard",
+  "Space Force",
+  "National Guard",
 ];
+
+const MILITARY_AFFILIATIONS = [
+  { id: "veteran", label: "Veteran" },
+  { id: "active_duty", label: "Active Duty" },
+  { id: "spouse", label: "Military Spouse" },
+  { id: "supporter", label: "Military Supporter" },
+  { id: "other", label: "Other" },
+];
+
+const STEP_PANELS = [
+  { emoji: "\u{1F3A4}", heading: "Let's set up your podcast", sub: "We'll get your show connected in just a few steps." },
+  { emoji: "\u{1F1FA}\u{1F1F8}", heading: "Tell us about your service", sub: "Honoring those who serve and support the military community." },
+  { emoji: "\u{1F4E1}", heading: "Where does your show live?", sub: "Help us understand your hosting and distribution." },
+  { emoji: "\u{1F3C6}", heading: "Choose your categories", sub: "Select up to 3 award categories for the 2026 Veteran Podcast Awards." },
+];
+
+interface AwardCategory {
+  id: string;
+  name: string;
+  description: string | null;
+  slug: string;
+}
 
 const OnboardingPage = () => {
   const { user, loading } = useAuth();
@@ -70,15 +99,21 @@ const OnboardingPage = () => {
   const [step, setStep] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Step 1
+  // Step 1: Podcast Info
   const [podcastName, setPodcastName] = useState("");
   const [podcastRss, setPodcastRss] = useState("");
 
-  // Step 2
+  // Step 2: Military Info
+  const [militaryBranch, setMilitaryBranch] = useState("");
+  const [militaryAffiliation, setMilitaryAffiliation] = useState("");
+
+  // Step 3: Hosting & Distribution
   const [hostingPlatform, setHostingPlatform] = useState("");
   const [distributionPlatforms, setDistributionPlatforms] = useState<string[]>([]);
 
-  // Step 3
+  // Step 4: Categories + Sponsorship
+  const [categories, setCategories] = useState<AwardCategory[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [hasAgency, setHasAgency] = useState<boolean | null>(null);
   const [interestedInOpportunities, setInterestedInOpportunities] = useState<boolean | null>(null);
 
@@ -95,10 +130,43 @@ const OnboardingPage = () => {
     }
   }, [user, navigate]);
 
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    const { data } = await supabase
+      .from("award_categories")
+      .select("id, name, description, slug, award_programs!inner(status)")
+      .eq("award_programs.status", "active")
+      .order("sort_order")
+      .order("name");
+    if (data) {
+      setCategories(data.map((c: any) => ({ id: c.id, name: c.name, description: c.description, slug: c.slug })));
+    }
+  };
+
   const toggleDistribution = (id: string) => {
     setDistributionPlatforms((prev) =>
       prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]
     );
+  };
+
+  const toggleCategory = (id: string) => {
+    setSelectedCategories((prev) => {
+      if (prev.includes(id)) return prev.filter((c) => c !== id);
+      if (prev.length >= 3) {
+        toast.error("You can select up to 3 categories.");
+        return prev;
+      }
+      return [...prev, id];
+    });
+  };
+
+  const handleSkip = async () => {
+    if (!user) return;
+    await supabase.from("profiles").update({ onboarding_completed: true }).eq("id", user.id);
+    navigate("/dashboard", { replace: true });
   };
 
   const handleComplete = async () => {
@@ -111,8 +179,11 @@ const OnboardingPage = () => {
         .update({
           podcast_name: podcastName || null,
           podcast_rss: podcastRss || null,
+          military_branch: militaryBranch || null,
+          military_affiliation: militaryAffiliation || null,
           hosting_platform: hostingPlatform || null,
           distribution_platforms: distributionPlatforms,
+          selected_categories: selectedCategories,
           has_ad_agency: hasAgency,
           interested_in_opportunities: interestedInOpportunities,
           onboarding_completed: true,
@@ -121,8 +192,7 @@ const OnboardingPage = () => {
 
       if (error) throw error;
 
-      toast.success("You're all set! Welcome to VPA.");
-      navigate("/dashboard", { replace: true });
+      navigate("/dashboard?welcome=1", { replace: true });
     } catch (err) {
       console.error("Onboarding save error:", err);
       toast.error("Something went wrong. Please try again.");
@@ -133,8 +203,9 @@ const OnboardingPage = () => {
 
   const canAdvance = () => {
     if (step === 0) return podcastName.trim().length > 0;
-    if (step === 1) return hostingPlatform.length > 0;
-    if (step === 2) return hasAgency !== null;
+    if (step === 1) return militaryAffiliation.length > 0;
+    if (step === 2) return hostingPlatform.length > 0;
+    if (step === 3) return true;
     return true;
   };
 
@@ -146,7 +217,7 @@ const OnboardingPage = () => {
     );
   }
 
-  const stepInfo = STEP_IMAGES[step];
+  const stepInfo = STEP_PANELS[step];
 
   return (
     <div className="min-h-screen flex">
@@ -159,19 +230,14 @@ const OnboardingPage = () => {
               <img src={logo} alt="VPA" className="h-10 w-10" />
               <span className="font-serif text-lg font-bold text-primary">Veteran Podcast Awards</span>
             </a>
-            <button
-              onClick={() => {
-                navigate("/dashboard");
-              }}
-              className="text-sm text-muted-foreground hover:text-foreground"
-            >
+            <button onClick={handleSkip} className="text-sm text-muted-foreground hover:text-foreground">
               Skip for now
             </button>
           </div>
 
           {/* Progress */}
           <div className="flex items-center gap-2 mb-10">
-            {[0, 1, 2].map((i) => (
+            {Array.from({ length: TOTAL_STEPS }, (_, i) => (
               <div
                 key={i}
                 className={`h-1.5 flex-1 rounded-full transition-colors ${
@@ -183,7 +249,7 @@ const OnboardingPage = () => {
 
           {/* Step label */}
           <p className="text-sm text-primary font-medium mb-2">
-            Step {step + 1} of 3
+            Step {step + 1} of {TOTAL_STEPS}
           </p>
 
           {/* ─── Step 1: Podcast Info ─── */}
@@ -231,8 +297,66 @@ const OnboardingPage = () => {
             </div>
           )}
 
-          {/* ─── Step 2: Hosting & Distribution ─── */}
+          {/* ─── Step 2: Military Info ─── */}
           {step === 1 && (
+            <div className="space-y-6">
+              <div>
+                <h1 className="font-serif text-3xl font-bold text-foreground mb-2">
+                  About You
+                </h1>
+                <p className="text-muted-foreground">
+                  Help us understand your connection to the military community.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="affiliation">Military Affiliation *</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {MILITARY_AFFILIATIONS.map((a) => {
+                    const selected = militaryAffiliation === a.id;
+                    return (
+                      <button
+                        key={a.id}
+                        type="button"
+                        onClick={() => setMilitaryAffiliation(a.id)}
+                        className={`flex items-center gap-2.5 rounded-lg border-2 px-4 py-3 text-left text-sm transition-all ${
+                          selected
+                            ? "border-primary bg-primary/10 text-primary font-medium"
+                            : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                        }`}
+                      >
+                        <Shield className={`w-4 h-4 flex-shrink-0 ${selected ? "text-primary" : ""}`} />
+                        {a.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {militaryAffiliation && militaryAffiliation !== "supporter" && militaryAffiliation !== "other" && (
+                <div className="space-y-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <Label htmlFor="branch">Branch of Service</Label>
+                  <div className="relative">
+                    <Shield className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
+                    <select
+                      id="branch"
+                      value={militaryBranch}
+                      onChange={(e) => setMilitaryBranch(e.target.value)}
+                      className="w-full h-12 pl-10 pr-4 rounded-md border border-input bg-background text-foreground appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                    >
+                      <option value="">Select your branch</option>
+                      {MILITARY_BRANCHES.map((b) => (
+                        <option key={b} value={b}>{b}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ─── Step 3: Hosting & Distribution ─── */}
+          {step === 2 && (
             <div className="space-y-6">
               <div>
                 <h1 className="font-serif text-3xl font-bold text-foreground mb-2">
@@ -279,9 +403,7 @@ const OnboardingPage = () => {
                       >
                         <div
                           className={`w-4 h-4 rounded flex-shrink-0 flex items-center justify-center border transition-colors ${
-                            selected
-                              ? "bg-primary border-primary"
-                              : "border-muted-foreground/40"
+                            selected ? "bg-primary border-primary" : "border-muted-foreground/40"
                           }`}
                         >
                           {selected && <Check className="w-3 h-3 text-primary-foreground" />}
@@ -295,46 +417,88 @@ const OnboardingPage = () => {
             </div>
           )}
 
-          {/* ─── Step 3: Monetization ─── */}
-          {step === 2 && (
+          {/* ─── Step 4: Categories + Sponsorship ─── */}
+          {step === 3 && (
             <div className="space-y-6">
               <div>
                 <h1 className="font-serif text-3xl font-bold text-foreground mb-2">
-                  Sponsorships &amp; Advertising
+                  Awards &amp; Opportunities
                 </h1>
                 <p className="text-muted-foreground">
-                  VPA connects podcasters with sponsors who support the military community.
+                  Choose up to 3 categories for the 2026 awards and tell us about sponsorship.
                 </p>
               </div>
 
-              <div className="space-y-3">
+              {categories.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label>Award Categories (up to 3)</Label>
+                    <span className="text-xs text-muted-foreground">
+                      {selectedCategories.length}/3 selected
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2 max-h-[240px] overflow-y-auto pr-1">
+                    {categories.map((cat) => {
+                      const selected = selectedCategories.includes(cat.id);
+                      return (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          onClick={() => toggleCategory(cat.id)}
+                          className={`flex items-center gap-3 rounded-lg border-2 px-4 py-3 text-left transition-all ${
+                            selected
+                              ? "border-primary bg-primary/10"
+                              : "border-border hover:border-primary/50"
+                          }`}
+                        >
+                          <div
+                            className={`w-5 h-5 rounded flex-shrink-0 flex items-center justify-center border transition-colors ${
+                              selected ? "bg-primary border-primary" : "border-muted-foreground/40"
+                            }`}
+                          >
+                            {selected && <Check className="w-3 h-3 text-primary-foreground" />}
+                          </div>
+                          <div className="min-w-0">
+                            <p className={`text-sm font-medium ${selected ? "text-primary" : "text-foreground"}`}>
+                              {cat.name}
+                            </p>
+                            {cat.description && (
+                              <p className="text-xs text-muted-foreground truncate">{cat.description}</p>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              <div className="border-t border-border pt-5 space-y-3">
                 <Label>Are you currently using an agency for advertising or sponsorships?</Label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
                     onClick={() => setHasAgency(true)}
-                    className={`flex flex-col items-center gap-2 rounded-lg border-2 p-5 transition-all ${
+                    className={`flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-all ${
                       hasAgency === true
                         ? "border-primary bg-primary/10 text-primary"
                         : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
                     }`}
                   >
-                    <DollarSign className="w-6 h-6" />
-                    <span className="font-medium">Yes</span>
-                    <span className="text-xs text-center">I have an agency</span>
+                    <DollarSign className="w-5 h-5" />
+                    <span className="font-medium text-sm">Yes, I have an agency</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setHasAgency(false)}
-                    className={`flex flex-col items-center gap-2 rounded-lg border-2 p-5 transition-all ${
+                    className={`flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-all ${
                       hasAgency === false
                         ? "border-primary bg-primary/10 text-primary"
                         : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
                     }`}
                   >
-                    <Mic className="w-6 h-6" />
-                    <span className="font-medium">No</span>
-                    <span className="text-xs text-center">I handle it myself</span>
+                    <Mic className="w-5 h-5" />
+                    <span className="font-medium text-sm">No, I handle it myself</span>
                   </button>
                 </div>
               </div>
@@ -342,13 +506,13 @@ const OnboardingPage = () => {
               {hasAgency !== null && (
                 <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
                   <Label>
-                    Would you be interested in additional sponsorship and advertising opportunities through VPA?
+                    Interested in sponsorship and advertising opportunities through VPA?
                   </Label>
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       type="button"
                       onClick={() => setInterestedInOpportunities(true)}
-                      className={`rounded-lg border-2 p-4 text-sm font-medium transition-all ${
+                      className={`rounded-lg border-2 p-3 text-sm font-medium transition-all ${
                         interestedInOpportunities === true
                           ? "border-primary bg-primary/10 text-primary"
                           : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
@@ -359,7 +523,7 @@ const OnboardingPage = () => {
                     <button
                       type="button"
                       onClick={() => setInterestedInOpportunities(false)}
-                      className={`rounded-lg border-2 p-4 text-sm font-medium transition-all ${
+                      className={`rounded-lg border-2 p-3 text-sm font-medium transition-all ${
                         interestedInOpportunities === false
                           ? "border-primary bg-primary/10 text-primary"
                           : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
@@ -376,11 +540,7 @@ const OnboardingPage = () => {
           {/* ─── Navigation ─── */}
           <div className="flex items-center justify-between mt-auto pt-10">
             {step > 0 ? (
-              <Button
-                variant="ghost"
-                onClick={() => setStep(step - 1)}
-                className="gap-2"
-              >
+              <Button variant="ghost" onClick={() => setStep(step - 1)} className="gap-2">
                 <ChevronLeft className="w-4 h-4" />
                 Back
               </Button>
@@ -388,7 +548,7 @@ const OnboardingPage = () => {
               <div />
             )}
 
-            {step < 2 ? (
+            {step < TOTAL_STEPS - 1 ? (
               <Button
                 variant="gold"
                 onClick={() => setStep(step + 1)}
@@ -406,7 +566,7 @@ const OnboardingPage = () => {
                 className="gap-2 h-12 px-8"
               >
                 {isSaving ? "Saving..." : "Complete Setup"}
-                {!isSaving && <Check className="w-4 h-4" />}
+                {!isSaving && <Trophy className="w-4 h-4" />}
               </Button>
             )}
           </div>

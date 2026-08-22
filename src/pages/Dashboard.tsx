@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -46,6 +46,7 @@ import { GetNominatedSection } from "@/components/dashboard/GetNominatedSection"
 import { ShareSection } from "@/components/dashboard/ShareSection";
 import { ConnectorsSection } from "@/components/dashboard/ConnectorsSection";
 import { DashboardHome } from "@/components/dashboard/DashboardHome";
+import { WelcomeCelebration } from "@/components/dashboard/WelcomeCelebration";
 
 interface Profile {
   id: string;
@@ -122,6 +123,7 @@ type NavSection =
 const Dashboard = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
   const { theme, setTheme } = useTheme();
   const [activeSection, setActiveSection] = useState<NavSection>("home");
@@ -136,6 +138,7 @@ const Dashboard = () => {
   const [linkedPodcast, setLinkedPodcast] = useState<LinkedPodcast | null>(null);
   const [rssUrl, setRssUrl] = useState("");
   const [categoryNames, setCategoryNames] = useState<Record<string, string>>({});
+  const [showWelcome, setShowWelcome] = useState(searchParams.get("welcome") === "1");
 
   useEffect(() => {
     if (!loading && !user) navigate("/auth");
@@ -391,6 +394,15 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background flex">
+      {showWelcome && (
+        <WelcomeCelebration
+          userName={profile.full_name || user.email || ""}
+          onDismiss={() => {
+            setShowWelcome(false);
+            setSearchParams({}, { replace: true });
+          }}
+        />
+      )}
       {/* ─── Left Sidebar ─── */}
       <aside className="hidden md:flex flex-col w-64 shrink-0 border-r border-border bg-card/50 sticky top-0 h-screen overflow-y-auto">
         <div className="flex-1 flex flex-col px-4 pt-5 pb-4">
