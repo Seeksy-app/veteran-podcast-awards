@@ -98,7 +98,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { action, query, page, podcast_id } = body;
+    const { action, query, page, podcast_id, skipFilter } = body;
     const sb = supabaseAdmin();
 
     if (action === "top") {
@@ -156,7 +156,10 @@ serve(async (req) => {
         status: "active",
       });
 
-      result.data = result.data.filter(isMilitaryRelevant).slice(0, SERVE_PER_PAGE);
+      if (!skipFilter) {
+        result.data = result.data.filter(isMilitaryRelevant);
+      }
+      result.data = result.data.slice(0, SERVE_PER_PAGE);
 
       await setCache(sb, cacheKey, result);
 

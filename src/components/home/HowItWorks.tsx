@@ -32,24 +32,24 @@ export const HowItWorks = () => {
       {/* Top fade — blends into the section above */}
       <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-background to-transparent z-10" />
 
-      <div className="grid grid-cols-1 lg:grid-cols-[40%_1fr] min-h-[900px]">
-        {/* Left: Microphone image — positioned under the spotlight */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[900px]">
+        {/* Left: Microphone — centered, blends seamlessly into right column */}
         <div className="relative hidden lg:block">
           <img
             src={heroBg}
             alt=""
-            className="absolute inset-0 w-full h-full object-cover object-[55%_50%]"
+            className="absolute inset-0 w-full h-full object-cover object-[62%_45%]"
           />
-          {/* Right edge fade into content */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-background" />
+          {/* Seamless right-edge blend */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent from-30% via-background/40 via-70% to-background" />
           {/* Top fade */}
           <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-background via-background/60 to-transparent" />
           {/* Bottom fade */}
           <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-background via-background/60 to-transparent" />
         </div>
 
-        {/* Right: Content — generous gap from the image */}
-        <div className="relative z-10 flex flex-col justify-center py-32 lg:py-40 px-8 lg:pl-20 lg:pr-28">
+        {/* Right: Content */}
+        <div className="relative z-10 flex flex-col justify-center py-32 lg:py-40 px-8 lg:pl-16 lg:pr-28">
           <h2 className="font-serif text-3xl md:text-5xl font-bold mb-5">
             <span className="text-foreground">How It </span>
             <span className="text-gold-gradient">Works</span>

@@ -47,10 +47,10 @@ export const useTopMilitaryPodcasts = (page = 1, enabled = true) => {
   });
 };
 
-export const usePodchaserSearch = (query: string, page = 1) => {
+export const usePodchaserSearch = (query: string, page = 1, skipFilter = false) => {
   return useQuery({
-    queryKey: ["podchaser-search", query, page],
-    queryFn: () => callPodchaserProxy({ action: "search", query, page }),
+    queryKey: ["podchaser-search", query, page, skipFilter],
+    queryFn: () => callPodchaserProxy({ action: "search", query, page, skipFilter }),
     enabled: query.trim().length >= 2,
     staleTime: 1000 * 60 * 60,
   });
