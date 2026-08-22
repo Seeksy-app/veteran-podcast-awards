@@ -165,16 +165,11 @@ const Dashboard = () => {
     }
   }, [user]);
 
-  // Force light mode on dashboard
+  // Force light mode on dashboard via ThemeProvider so it wins over its own effect
   useEffect(() => {
-    const root = document.documentElement;
-    const wasDark = root.classList.contains("dark");
-    root.classList.remove("dark");
-    root.classList.add("light");
-    return () => {
-      root.classList.remove("light");
-      if (wasDark) root.classList.add("dark");
-    };
+    const prev = (localStorage.getItem("vpa-theme") || "dark") as "light" | "dark" | "system";
+    setTheme("light");
+    return () => { setTheme(prev); };
   }, []);
 
   useEffect(() => {

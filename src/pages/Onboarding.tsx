@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useTheme } from "@/hooks/useTheme";
 import { supabase } from "@/integrations/supabase/client";
 import { usePodchaserSearch, type PodchaserPodcast } from "@/hooks/usePodchaserSearch";
 import { Button } from "@/components/ui/button";
@@ -129,16 +130,12 @@ const OnboardingPage = () => {
   const [hasAgency, setHasAgency] = useState<boolean | null>(null);
   const [interestedInOpportunities, setInterestedInOpportunities] = useState<boolean | null>(null);
 
-  // Force light mode on the onboarding page
+  const { setTheme } = useTheme();
+
   useEffect(() => {
-    const root = document.documentElement;
-    const wasDark = root.classList.contains("dark");
-    root.classList.remove("dark");
-    root.classList.add("light");
-    return () => {
-      root.classList.remove("light");
-      if (wasDark) root.classList.add("dark");
-    };
+    const prev = (localStorage.getItem("vpa-theme") || "dark") as "light" | "dark" | "system";
+    setTheme("light");
+    return () => { setTheme(prev); };
   }, []);
 
   useEffect(() => {

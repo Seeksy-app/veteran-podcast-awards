@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useTheme } from '@/hooks/useTheme';
 import { SponsorList } from '@/components/admin/SponsorList';
 import { PodcastManager } from '@/components/admin/PodcastManager';
 import { UserManager } from '@/components/admin/UserManager';
@@ -62,16 +63,12 @@ const AdminPage = () => {
   const { user, loading, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('users');
+  const { setTheme } = useTheme();
 
   useEffect(() => {
-    const root = document.documentElement;
-    const wasDark = root.classList.contains("dark");
-    root.classList.remove("dark");
-    root.classList.add("light");
-    return () => {
-      root.classList.remove("light");
-      if (wasDark) root.classList.add("dark");
-    };
+    const prev = (localStorage.getItem("vpa-theme") || "dark") as "light" | "dark" | "system";
+    setTheme("light");
+    return () => { setTheme(prev); };
   }, []);
 
   useEffect(() => {
