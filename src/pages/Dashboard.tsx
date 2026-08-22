@@ -178,10 +178,13 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
-    if (profile && profile.user_type === "podcaster" && !profile.onboarding_completed) {
-      navigate("/onboarding", { replace: true });
-    }
-  }, [profile, navigate]);
+    if (!profile) return;
+    if (profile.user_type !== "podcaster") return;
+    if (profile.onboarding_completed) return;
+    // If they completed onboarding this session (even if DB lags), don't loop
+    if (user && localStorage.getItem("vpa-onboarding-done") === user.id) return;
+    navigate("/onboarding", { replace: true });
+  }, [profile, navigate, user]);
 
   useEffect(() => {
     if (!profile?.podcast_id) {
@@ -373,10 +376,10 @@ const Dashboard = () => {
 
   const getUserTypeColor = () => {
     switch (profile?.user_type) {
-      case "podcaster": return "bg-primary text-primary-foreground";
+      case "podcaster": return "bg-amber-500 text-white";
       case "voter": return "bg-blue-500 text-white";
-      case "fan": return "bg-secondary text-secondary-foreground";
-      default: return "bg-muted text-muted-foreground";
+      case "fan": return "bg-slate-200 text-slate-700";
+      default: return "bg-slate-100 text-slate-500";
     }
   };
 
@@ -407,8 +410,8 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500" />
       </div>
     );
   }
@@ -605,7 +608,7 @@ const Dashboard = () => {
                       <div className="space-y-2">
                         <Label htmlFor="website">Website</Label>
                         <div className="relative">
-                          <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                          <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                           <Input id="website" placeholder="https://yoursite.com" className="pl-10" value={profile.website_url || ""} onChange={(e) => setProfile({ ...profile, website_url: e.target.value })} />
                         </div>
                       </div>
@@ -619,9 +622,9 @@ const Dashboard = () => {
                   {/* Podcast Details */}
                   {isPodcaster && (
                     <>
-                      <div className="border-t border-border pt-6">
-                        <p className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-                          <Mic className="w-4 h-4 text-primary" />
+                      <div className="border-t border-slate-200 pt-6">
+                        <p className="text-sm font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                          <Mic className="w-4 h-4 text-amber-600" />
                           Podcast Details
                         </p>
                         <div className="space-y-4">
@@ -632,7 +635,7 @@ const Dashboard = () => {
                             </div>
                             <div className="space-y-2">
                               <Label htmlFor="hosting_platform">Hosting Platform</Label>
-                              <select id="hosting_platform" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" value={profile.hosting_platform || ""} onChange={(e) => setProfile({ ...profile, hosting_platform: e.target.value })}>
+                              <select id="hosting_platform" className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400" value={profile.hosting_platform || ""} onChange={(e) => setProfile({ ...profile, hosting_platform: e.target.value })}>
                                 <option value="">Select platform...</option>
                                 {["Buzzsprout","Libsyn","Podbean","Spotify for Podcasters (Anchor)","Transistor","Captivate","RSS.com","Spreaker","Blubrry","Simplecast","Megaphone","Acast","RedCircle","Castos","iHeartRadio","SoundCloud","Audioboom","Podomatic","Other"].map((p) => (
                                   <option key={p} value={p}>{p}</option>
@@ -643,7 +646,7 @@ const Dashboard = () => {
                           <div className="space-y-2">
                             <Label htmlFor="podcast_rss">RSS Feed</Label>
                             <div className="relative">
-                              <Rss className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                              <Rss className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                               <Input id="podcast_rss" placeholder="https://feeds.example.com/your-podcast" className="pl-10" value={profile.podcast_rss || rssUrl} onChange={(e) => { setProfile({ ...profile, podcast_rss: e.target.value }); setRssUrl(e.target.value); }} />
                             </div>
                           </div>
@@ -654,15 +657,15 @@ const Dashboard = () => {
 
                   {/* Military */}
                   {isPodcaster && (
-                    <div className="border-t border-border pt-6">
-                      <p className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-                        <Shield className="w-4 h-4 text-primary" />
+                    <div className="border-t border-slate-200 pt-6">
+                      <p className="text-sm font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                        <Shield className="w-4 h-4 text-amber-600" />
                         Military Affiliation
                       </p>
                       <div className="grid grid-cols-2 gap-4 max-w-lg">
                         <div className="space-y-2">
                           <Label htmlFor="military_affiliation">Affiliation</Label>
-                          <select id="military_affiliation" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" value={profile.military_affiliation || ""} onChange={(e) => setProfile({ ...profile, military_affiliation: e.target.value })}>
+                          <select id="military_affiliation" className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400" value={profile.military_affiliation || ""} onChange={(e) => setProfile({ ...profile, military_affiliation: e.target.value })}>
                             <option value="">Select...</option>
                             <option value="veteran">Veteran</option>
                             <option value="active_duty">Active Duty</option>
@@ -673,7 +676,7 @@ const Dashboard = () => {
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="military_branch">Branch</Label>
-                          <select id="military_branch" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" value={profile.military_branch || ""} onChange={(e) => setProfile({ ...profile, military_branch: e.target.value })}>
+                          <select id="military_branch" className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400" value={profile.military_branch || ""} onChange={(e) => setProfile({ ...profile, military_branch: e.target.value })}>
                             <option value="">Select...</option>
                             {["Army","Navy","Marine Corps","Air Force","Coast Guard","Space Force","National Guard"].map((b) => (
                               <option key={b} value={b}>{b}</option>
@@ -686,48 +689,48 @@ const Dashboard = () => {
 
                   {/* Award Categories (read-only) */}
                   {isPodcaster && (profile.selected_categories?.length ?? 0) > 0 && (
-                    <div className="border-t border-border pt-6">
-                      <p className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                        <Trophy className="w-4 h-4 text-primary" />
+                    <div className="border-t border-slate-200 pt-6">
+                      <p className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                        <Trophy className="w-4 h-4 text-amber-600" />
                         Award Categories
                       </p>
                       <div className="flex flex-wrap gap-2">
                         {(profile.selected_categories || []).map((catId) => (
                           <Badge key={catId} variant="secondary" className="px-3 py-1.5 text-sm">
-                            <Trophy className="w-3.5 h-3.5 mr-1.5 text-primary" />
+                            <Trophy className="w-3.5 h-3.5 mr-1.5 text-amber-600" />
                             {categoryNames[catId] || catId}
                           </Badge>
                         ))}
                       </div>
-                      <p className="text-xs text-muted-foreground mt-2">To change your categories, please contact us.</p>
+                      <p className="text-xs text-slate-500 mt-2">To change your categories, please contact us.</p>
                     </div>
                   )}
 
                   {/* Public Profile */}
-                  <div className="border-t border-border pt-6">
-                    <p className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-                      <Globe className="w-4 h-4 text-primary" />
+                  <div className="border-t border-slate-200 pt-6">
+                    <p className="text-sm font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                      <Globe className="w-4 h-4 text-amber-600" />
                       Public Profile
                     </p>
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm font-medium">Visible to the public</p>
-                          <p className="text-xs text-muted-foreground">Show your profile at veteranpodcastawards.com/podcaster/{profile.username_slug || "your-name"}</p>
+                          <p className="text-sm font-medium text-slate-900">Visible to the public</p>
+                          <p className="text-xs text-slate-500">Show your profile at veteranpodcastawards.com/podcaster/{profile.username_slug || "your-name"}</p>
                         </div>
                         <Switch checked={profile.is_public} onCheckedChange={(checked) => setProfile({ ...profile, is_public: checked })} />
                       </div>
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm font-medium">Allow messages</p>
-                          <p className="text-xs text-muted-foreground">Let visitors contact you through your profile</p>
+                          <p className="text-sm font-medium text-slate-900">Allow messages</p>
+                          <p className="text-xs text-slate-500">Let visitors contact you through your profile</p>
                         </div>
                         <Switch checked={profile.allow_contact} onCheckedChange={(checked) => setProfile({ ...profile, allow_contact: checked })} />
                       </div>
                       <div className="space-y-2 max-w-md">
                         <Label htmlFor="username_slug">Profile URL</Label>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs text-muted-foreground whitespace-nowrap">veteranpodcastawards.com/podcaster/</span>
+                          <span className="text-xs text-slate-500 whitespace-nowrap">veteranpodcastawards.com/podcaster/</span>
                           <Input id="username_slug" placeholder="your-name" value={profile.username_slug || ""} onChange={(e) => setProfile({ ...profile, username_slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "") })} />
                         </div>
                       </div>
@@ -747,7 +750,7 @@ const Dashboard = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Mail className="w-5 h-5 text-primary" />
+                  <Mail className="w-5 h-5 text-amber-600" />
                   Messages
                 </CardTitle>
                 <CardDescription>Messages from your public profile visitors</CardDescription>
@@ -755,36 +758,36 @@ const Dashboard = () => {
               <CardContent>
                 {messages.length === 0 ? (
                   <div className="text-center py-12">
-                    <Inbox className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="font-semibold text-foreground mb-2">No Messages Yet</h3>
-                    <p className="text-muted-foreground text-sm">Messages from your profile visitors will appear here.</p>
+                    <Inbox className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                    <h3 className="font-semibold text-slate-900 mb-2">No Messages Yet</h3>
+                    <p className="text-slate-500 text-sm">Messages from your profile visitors will appear here.</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
                     {messages.map((msg) => (
                       <div
                         key={msg.id}
-                        className={`p-4 rounded-lg border ${msg.is_read ? "bg-muted/30" : "bg-primary/5 border-primary/20"}`}
+                        className={`p-4 rounded-lg border ${msg.is_read ? "bg-slate-50 border-slate-100" : "bg-amber-50 border-amber-100"}`}
                         onClick={() => !msg.is_read && markAsRead(msg.id)}
                         role={msg.is_read ? undefined : "button"}
                         tabIndex={msg.is_read ? undefined : 0}
                       >
                         <div className="flex justify-between items-start mb-2">
                           <div>
-                            <p className="font-medium">{msg.sender_name}</p>
-                            <p className="text-xs text-muted-foreground">{msg.sender_email}</p>
+                            <p className="font-medium text-slate-900">{msg.sender_name}</p>
+                            <p className="text-xs text-slate-500">{msg.sender_email}</p>
                           </div>
                           <div className="flex items-center gap-2">
                             {!msg.is_read && (
-                              <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">New</span>
+                              <span className="text-xs bg-amber-500 text-white px-2 py-0.5 rounded-full">New</span>
                             )}
-                            <span className="text-xs text-muted-foreground">
+                            <span className="text-xs text-slate-500">
                               {new Date(msg.created_at).toLocaleDateString()}
                             </span>
                           </div>
                         </div>
-                        <p className="font-semibold text-sm mb-1">{msg.subject}</p>
-                        <p className="text-sm text-muted-foreground">{msg.message}</p>
+                        <p className="font-semibold text-sm text-slate-900 mb-1">{msg.subject}</p>
+                        <p className="text-sm text-slate-500">{msg.message}</p>
                       </div>
                     ))}
                   </div>
@@ -798,7 +801,7 @@ const Dashboard = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Trophy className="w-5 h-5 text-primary" />
+                  <Trophy className="w-5 h-5 text-amber-600" />
                   My Voting History
                 </CardTitle>
                 <CardDescription>Track all your votes for the Veteran Podcast Awards</CardDescription>
@@ -806,32 +809,32 @@ const Dashboard = () => {
               <CardContent>
                 {votes.length === 0 ? (
                   <div className="text-center py-12">
-                    <Vote className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="font-semibold text-foreground mb-2">No Votes Yet</h3>
-                    <p className="text-muted-foreground text-sm mb-4">You haven&apos;t voted in any categories yet.</p>
+                    <Vote className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                    <h3 className="font-semibold text-slate-900 mb-2">No Votes Yet</h3>
+                    <p className="text-slate-500 text-sm mb-4">You haven&apos;t voted in any categories yet.</p>
                     <Button variant="gold" onClick={() => navigate("/categories")}>Start Voting</Button>
                   </div>
                 ) : (
                   <div className="space-y-6">
                     {votesByCategory.map(([key, group]) => (
                       <div key={key}>
-                        <p className="text-sm font-medium text-foreground mb-2">
+                        <p className="text-sm font-medium text-slate-900 mb-2">
                           {categoryNames[group[0].category_id] || "Category"} &middot; {group[0].year}
-                          <span className="text-muted-foreground font-normal ml-2">({group.length}/3 votes used)</span>
+                          <span className="text-slate-400 font-normal ml-2">({group.length}/3 votes used)</span>
                         </p>
                         <div className="space-y-2">
                           {group.map((vote) => (
-                            <div key={vote.id} className="flex items-center gap-4 p-4 bg-secondary/30 rounded-lg">
-                              <div className="w-12 h-12 rounded-lg bg-secondary flex items-center justify-center overflow-hidden">
+                            <div key={vote.id} className="flex items-center gap-4 p-4 bg-slate-50 rounded-lg border border-slate-100">
+                              <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center overflow-hidden">
                                 {vote.podcast?.image_url ? (
                                   <img src={vote.podcast.image_url} alt={vote.podcast.title} className="w-full h-full object-cover" />
                                 ) : (
-                                  <Mic className="w-6 h-6 text-muted-foreground" />
+                                  <Mic className="w-6 h-6 text-slate-400" />
                                 )}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="font-medium text-foreground truncate">{vote.podcast?.title || "Unknown Podcast"}</p>
-                                <p className="text-sm text-muted-foreground">Vote {vote.vote_slot ?? 1} of 3</p>
+                                <p className="font-medium text-slate-900 truncate">{vote.podcast?.title || "Unknown Podcast"}</p>
+                                <p className="text-sm text-slate-500">Vote {vote.vote_slot ?? 1} of 3</p>
                               </div>
                               <CheckCircle className="w-5 h-5 text-green-500 shrink-0" />
                             </div>
@@ -850,7 +853,7 @@ const Dashboard = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Star className="w-5 h-5 text-primary" />
+                  <Star className="w-5 h-5 text-amber-600" />
                   Podcast Favorites
                 </CardTitle>
                 <CardDescription>Shows you've followed from the Podcast Directory</CardDescription>
@@ -858,29 +861,29 @@ const Dashboard = () => {
               <CardContent>
                 {favorites.length === 0 ? (
                   <div className="text-center py-12">
-                    <Star className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="font-semibold text-foreground mb-2">No Favorites Yet</h3>
-                    <p className="text-muted-foreground text-sm mb-4">Follow podcasts from the directory to see them here.</p>
+                    <Star className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                    <h3 className="font-semibold text-slate-900 mb-2">No Favorites Yet</h3>
+                    <p className="text-slate-500 text-sm mb-4">Follow podcasts from the directory to see them here.</p>
                     <Button variant="outline" onClick={() => navigate("/network")}>Browse Directory</Button>
                   </div>
                 ) : (
                   <div className="space-y-2">
                     {favorites.map((fav) => (
-                      <div key={fav.id} className="flex items-center gap-4 p-3 rounded-lg hover:bg-secondary/30 transition-colors">
-                        <div className="w-12 h-12 rounded-lg bg-secondary flex items-center justify-center overflow-hidden">
+                      <div key={fav.id} className="flex items-center gap-4 p-3 rounded-lg hover:bg-slate-50 transition-colors">
+                        <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center overflow-hidden">
                           {fav.podcast.image_url ? (
                             <img src={fav.podcast.image_url} alt={fav.podcast.title} className="w-full h-full object-cover" />
                           ) : (
-                            <Mic className="w-5 h-5 text-muted-foreground" />
+                            <Mic className="w-5 h-5 text-slate-400" />
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-foreground truncate">{fav.podcast.title}</p>
+                          <p className="font-medium text-slate-900 truncate">{fav.podcast.title}</p>
                           {fav.podcast.author && (
-                            <p className="text-xs text-muted-foreground truncate">{fav.podcast.author}</p>
+                            <p className="text-xs text-slate-500 truncate">{fav.podcast.author}</p>
                           )}
                         </div>
-                        <span className="text-xs text-muted-foreground">{new Date(fav.created_at).toLocaleDateString()}</span>
+                        <span className="text-xs text-slate-400">{new Date(fav.created_at).toLocaleDateString()}</span>
                       </div>
                     ))}
                   </div>
@@ -899,7 +902,7 @@ const Dashboard = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Contact className="w-5 h-5 text-primary" />
+                  <Contact className="w-5 h-5 text-amber-600" />
                   Follower Contacts
                 </CardTitle>
                 <CardDescription>
@@ -909,9 +912,9 @@ const Dashboard = () => {
               <CardContent>
                 {contacts.length === 0 ? (
                   <div className="text-center py-12">
-                    <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="font-semibold text-foreground mb-2">No Contacts Yet</h3>
-                    <p className="text-muted-foreground text-sm max-w-md mx-auto">
+                    <Users className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                    <h3 className="font-semibold text-slate-900 mb-2">No Contacts Yet</h3>
+                    <p className="text-slate-500 text-sm max-w-md mx-auto">
                       When someone follows your podcast, they'll be prompted to share their email.
                       Contacts who opt in will appear here.
                     </p>
@@ -919,15 +922,15 @@ const Dashboard = () => {
                 ) : (
                   <div className="space-y-2">
                     {contacts.map((c) => (
-                      <div key={c.id} className="flex items-center gap-4 p-3 rounded-lg hover:bg-secondary/30 transition-colors">
-                        <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-                          <User className="w-5 h-5 text-muted-foreground" />
+                      <div key={c.id} className="flex items-center gap-4 p-3 rounded-lg hover:bg-slate-50 transition-colors">
+                        <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center">
+                          <User className="w-5 h-5 text-slate-400" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-foreground truncate">{c.name}</p>
-                          <p className="text-xs text-muted-foreground truncate">{c.email}</p>
+                          <p className="font-medium text-slate-900 truncate">{c.name}</p>
+                          <p className="text-xs text-slate-500 truncate">{c.email}</p>
                         </div>
-                        <span className="text-xs text-muted-foreground">{new Date(c.created_at).toLocaleDateString()}</span>
+                        <span className="text-xs text-slate-400">{new Date(c.created_at).toLocaleDateString()}</span>
                       </div>
                     ))}
                   </div>
@@ -960,30 +963,30 @@ const Dashboard = () => {
                   <div className="grid grid-cols-3 gap-3">
                     <button
                       onClick={() => setTheme("light")}
-                      className={`flex flex-col items-center gap-3 p-4 rounded-lg border-2 transition-all ${theme === "light" ? "border-primary bg-primary/10" : "border-border hover:border-primary/50"}`}
+                      className={`flex flex-col items-center gap-3 p-4 rounded-lg border-2 transition-all ${theme === "light" ? "border-amber-500 bg-amber-50" : "border-slate-200 hover:border-amber-300"}`}
                     >
                       <div className="w-12 h-12 rounded-full bg-amber-50 border-2 border-amber-200 flex items-center justify-center">
                         <Sun className="w-6 h-6 text-amber-500" />
                       </div>
-                      <span className="text-sm font-medium">Day</span>
+                      <span className="text-sm font-medium text-slate-700">Day</span>
                     </button>
                     <button
                       onClick={() => setTheme("dark")}
-                      className={`flex flex-col items-center gap-3 p-4 rounded-lg border-2 transition-all ${theme === "dark" ? "border-primary bg-primary/10" : "border-border hover:border-primary/50"}`}
+                      className={`flex flex-col items-center gap-3 p-4 rounded-lg border-2 transition-all ${theme === "dark" ? "border-slate-700 bg-slate-100" : "border-slate-200 hover:border-slate-400"}`}
                     >
                       <div className="w-12 h-12 rounded-full bg-slate-800 border-2 border-slate-600 flex items-center justify-center">
                         <Moon className="w-6 h-6 text-slate-300" />
                       </div>
-                      <span className="text-sm font-medium">Night</span>
+                      <span className="text-sm font-medium text-slate-700">Night</span>
                     </button>
                     <button
                       onClick={() => setTheme("system")}
-                      className={`flex flex-col items-center gap-3 p-4 rounded-lg border-2 transition-all ${theme === "system" ? "border-primary bg-primary/10" : "border-border hover:border-primary/50"}`}
+                      className={`flex flex-col items-center gap-3 p-4 rounded-lg border-2 transition-all ${theme === "system" ? "border-amber-500 bg-amber-50" : "border-slate-200 hover:border-amber-300"}`}
                     >
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-50 to-slate-800 border-2 border-border flex items-center justify-center">
-                        <Monitor className="w-6 h-6 text-foreground" />
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-white to-slate-800 border-2 border-slate-200 flex items-center justify-center">
+                        <Monitor className="w-6 h-6 text-slate-600" />
                       </div>
-                      <span className="text-sm font-medium">Auto</span>
+                      <span className="text-sm font-medium text-slate-700">Auto</span>
                     </button>
                   </div>
                 </CardContent>

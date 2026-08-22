@@ -55,15 +55,43 @@ function buildTemplates(podcastName: string | null, votingLink: string | null) {
   return [
     {
       name: "Nomination Announcement",
-      text: `Honored to announce that ${name} has been nominated for the 2026 Veteran Podcast Awards! Vote for us and help celebrate the voices of those who served. ${link} #VeteranPodcastAwards #MilitaryPodcast`,
+      emoji: "🎙️",
+      text: `Honored to share that ${name} has been nominated for the 2026 Veteran Podcast Awards! These awards celebrate the voices of those who served. Cast your vote and help us represent the military podcast community. ${link} #VeteranPodcastAwards #MilitaryPodcast`,
     },
     {
       name: "Call to Vote",
-      text: `Voting is OPEN for the 2026 Veteran Podcast Awards! If ${name} has made an impact on you, cast your vote today. Every vote counts! ${link} #VoteNow #VPA2026`,
+      emoji: "🗳️",
+      text: `Voting is OPEN for the 2026 Veteran Podcast Awards! If ${name} has made an impact on your life, cast your vote today — every vote matters. Takes 30 seconds! ${link} #VoteNow #VPA2026`,
     },
     {
-      name: "Countdown",
-      text: `The 2026 Veteran Podcast Awards ceremony streams live on Veterans Day, November 11th! Have you voted yet? Support ${name} and the veteran podcast community. ${link} #VeteransDay #PodcastAwards`,
+      name: "Personal Story",
+      emoji: "❤️",
+      text: `I started ${name} because I believe veteran and military stories deserve to be heard. If this podcast has meant something to you, please take a moment to vote for us in the 2026 VPA. It means the world. ${link} #VeteranVoices #MilPodcast`,
+    },
+    {
+      name: "1 Week Left",
+      emoji: "⏰",
+      text: `ONE WEEK LEFT to vote in the 2026 Veteran Podcast Awards! ${name} is nominated and we need your support. Don't miss your chance to make your voice heard — vote now! ${link} #VPA2026 #VeteranPodcast`,
+    },
+    {
+      name: "Final Push",
+      emoji: "🔥",
+      text: `Last chance! Voting for the 2026 Veteran Podcast Awards closes soon. If you believe ${name} belongs in the winner's circle, vote NOW before it's too late. ${link} #LastChance #VPA2026 #MilitaryPodcast`,
+    },
+    {
+      name: "Thank Your Audience",
+      emoji: "🙏",
+      text: `Grateful beyond words for all the support you've shown ${name} and the 2026 Veteran Podcast Awards nomination. This community is why we do what we do. Still time to vote: ${link} #Grateful #VPA2026`,
+    },
+    {
+      name: "Watch Party — Nov 11",
+      emoji: "🎖️",
+      text: `Join us for the 2026 Veteran Podcast Awards ceremony streaming LIVE on Veterans Day, November 11th at 6 PM ET! ${name} is nominated — let's celebrate together. Set a reminder now! ${link} #VeteransDay #VPA2026 #LiveStream`,
+    },
+    {
+      name: "Episode Promo",
+      emoji: "📻",
+      text: `New episode of ${name} is out now! While you're listening, did you know we're nominated for a 2026 Veteran Podcast Award? Show your support with a vote — it only takes a moment! ${link} #NewEpisode #VPA2026`,
     },
   ];
 }
@@ -137,23 +165,23 @@ export function ShareSection({
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h2 className="font-serif text-2xl font-bold text-foreground">Promotion</h2>
-        <p className="text-muted-foreground mt-1">Everything you need to rally votes and grow your audience.</p>
+        <h2 className="font-serif text-2xl font-bold text-slate-900">Promotion</h2>
+        <p className="text-slate-500 mt-1">Everything you need to rally votes and grow your audience.</p>
       </div>
 
       {/* ── Step 1: Voting Link ── */}
       <div className="space-y-3">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">1</div>
-          <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">Your Voting Link</h3>
+          <div className="w-7 h-7 rounded-full bg-amber-100 flex items-center justify-center text-xs font-bold text-amber-700">1</div>
+          <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">Your Voting Link</h3>
         </div>
 
         {votingUrl ? (
-          <Card className="bg-primary/5 border-primary/20">
+          <Card className="bg-amber-50 border-amber-100">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <LinkIcon className="w-5 h-5 text-primary shrink-0" />
-                <span className="flex-1 font-mono text-sm text-foreground truncate">{votingUrl}</span>
+                <LinkIcon className="w-5 h-5 text-amber-600 shrink-0" />
+                <span className="flex-1 font-mono text-sm text-slate-800 truncate">{votingUrl}</span>
                 <Button
                   variant="gold"
                   size="sm"
@@ -164,7 +192,7 @@ export function ShareSection({
                   {copied ? "Copied" : "Copy"}
                 </Button>
               </div>
-              <p className="text-xs text-muted-foreground mt-2 ml-8">
+              <p className="text-xs text-slate-500 mt-2 ml-8">
                 Add this to your show notes, social bios, and episode descriptions.
               </p>
             </CardContent>
@@ -172,8 +200,8 @@ export function ShareSection({
         ) : (
           <Card>
             <CardContent className="p-6 flex flex-col items-center text-center">
-              <LinkIcon className="w-8 h-8 text-muted-foreground/40 mb-3" />
-              <p className="text-sm text-muted-foreground mb-4">
+              <LinkIcon className="w-8 h-8 text-slate-300 mb-3" />
+              <p className="text-sm text-slate-500 mb-4">
                 Generate a personalized link your audience can use to vote for you.
               </p>
               <Button onClick={generateVotingLink} variant="gold">
@@ -189,16 +217,16 @@ export function ShareSection({
       {isPodcaster && (
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">2</div>
-            <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">Create a Post</h3>
+            <div className="w-7 h-7 rounded-full bg-amber-100 flex items-center justify-center text-xs font-bold text-amber-700">2</div>
+            <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">Create a Post</h3>
           </div>
 
           <Card>
             <CardContent className="p-5 space-y-5">
-              {/* Templates as compact selectable chips */}
+              {/* 8 campaign templates */}
               <div>
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Start from a template</p>
-                <div className="flex flex-wrap gap-2">
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Choose a campaign template</p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {templates.map((t, i) => (
                     <button
                       key={t.name}
@@ -206,13 +234,14 @@ export function ShareSection({
                         setPostText(t.text);
                         setActiveTemplate(i);
                       }}
-                      className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${
+                      className={`flex flex-col items-start gap-1 px-3 py-2.5 rounded-lg text-left text-sm border transition-all ${
                         activeTemplate === i
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                          ? "border-amber-400 bg-amber-50 text-amber-800"
+                          : "border-slate-200 text-slate-600 hover:border-amber-300 hover:bg-amber-50/50"
                       }`}
                     >
-                      {t.name}
+                      <span className="text-base leading-none">{t.emoji}</span>
+                      <span className="font-medium text-xs leading-tight">{t.name}</span>
                     </button>
                   ))}
                 </div>
@@ -220,6 +249,7 @@ export function ShareSection({
 
               {/* Compose area */}
               <div>
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Your post</p>
                 <Textarea
                   value={postText}
                   onChange={(e) => {
@@ -227,11 +257,11 @@ export function ShareSection({
                     setActiveTemplate(null);
                   }}
                   placeholder="Write your post, or pick a template above..."
-                  rows={4}
-                  className="resize-none"
+                  rows={5}
+                  className="resize-none border-slate-200 focus:border-amber-400 focus:ring-amber-400"
                 />
                 <div className="flex justify-end mt-1">
-                  <span className={`text-xs tabular-nums ${postText.length > 280 ? "text-yellow-500" : "text-muted-foreground"}`}>
+                  <span className={`text-xs tabular-nums ${postText.length > 280 ? "text-amber-600 font-medium" : "text-slate-400"}`}>
                     {postText.length} / 280
                   </span>
                 </div>
@@ -239,7 +269,7 @@ export function ShareSection({
 
               {/* Platform pills */}
               <div>
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Post to</p>
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Post to</p>
                 <div className="flex flex-wrap gap-2">
                   {PLATFORMS.map((p) => (
                     <button
@@ -248,7 +278,7 @@ export function ShareSection({
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                         selectedPlatforms.includes(p.id)
                           ? `${p.color} shadow-sm scale-[1.02]`
-                          : "bg-secondary text-muted-foreground hover:bg-secondary/80"
+                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                       }`}
                     >
                       {p.label}
@@ -280,13 +310,13 @@ export function ShareSection({
             </CardContent>
           </Card>
 
-          <p className="text-xs text-muted-foreground text-center">
+          <p className="text-xs text-slate-400 text-center">
             Powered by{" "}
-            <a href="https://upload-post.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+            <a href="https://upload-post.com" target="_blank" rel="noopener noreferrer" className="text-amber-600 hover:underline">
               Upload Post
             </a>
             . Connect accounts under{" "}
-            <span className="text-foreground font-medium">Connectors</span>.
+            <span className="text-slate-600 font-medium">Connectors</span>.
           </p>
         </div>
       )}
@@ -295,24 +325,43 @@ export function ShareSection({
       {isPodcaster && (
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">3</div>
-            <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">Promotional Assets</h3>
+            <div className="w-7 h-7 rounded-full bg-amber-100 flex items-center justify-center text-xs font-bold text-amber-700">3</div>
+            <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">Promotional Assets</h3>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
-              { label: "Nominee Badge", desc: "Add to your website or show notes", icon: Megaphone },
-              { label: "Social Banner", desc: "Cover image for profiles & headers", icon: Image },
-              { label: "Story Template", desc: "Ready for Instagram & TikTok", icon: Download },
+              {
+                label: "Nominee Badge",
+                desc: "Add to your website, show notes, or email signature",
+                size: "400 × 400 px",
+                icon: Megaphone,
+                bg: "bg-amber-50",
+              },
+              {
+                label: "Social Banner",
+                desc: "Cover image sized for Twitter, Facebook & LinkedIn headers",
+                size: "1500 × 500 px",
+                icon: Image,
+                bg: "bg-blue-50",
+              },
+              {
+                label: "Story Template",
+                desc: "Vertical graphic ready for Instagram & TikTok stories",
+                size: "1080 × 1920 px",
+                icon: Download,
+                bg: "bg-purple-50",
+              },
             ].map((asset) => (
-              <Card key={asset.label} className="group hover:border-primary/30 transition-colors">
-                <CardContent className="p-5 flex flex-col items-center text-center">
-                  <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center mb-3 group-hover:bg-primary/10 transition-colors">
-                    <asset.icon className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
-                  </div>
-                  <p className="text-sm font-semibold text-foreground">{asset.label}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{asset.desc}</p>
-                  <span className="text-xs text-primary font-medium mt-3">Coming Soon</span>
+              <Card key={asset.label} className="group hover:border-slate-300 transition-colors overflow-hidden">
+                <div className={`${asset.bg} h-24 flex items-center justify-center`}>
+                  <asset.icon className="w-8 h-8 text-slate-400" />
+                </div>
+                <CardContent className="p-4">
+                  <p className="text-sm font-semibold text-slate-900">{asset.label}</p>
+                  <p className="text-xs text-slate-500 mt-0.5 leading-snug">{asset.desc}</p>
+                  <p className="text-[10px] text-slate-400 mt-1 font-mono">{asset.size}</p>
+                  <span className="inline-block text-xs text-amber-600 font-medium mt-3 bg-amber-50 px-2 py-0.5 rounded-full">Coming Soon</span>
                 </CardContent>
               </Card>
             ))}
