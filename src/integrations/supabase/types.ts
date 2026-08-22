@@ -909,7 +909,9 @@ export type Database = {
           military_affiliation: string | null
           military_branch: string | null
           onboarding_completed: boolean | null
+          podchaser_id: number | null
           podcast_id: string | null
+          podcast_image_url: string | null
           podcast_name: string | null
           podcast_rss: string | null
           selected_categories: string[] | null
@@ -938,7 +940,9 @@ export type Database = {
           military_affiliation?: string | null
           military_branch?: string | null
           onboarding_completed?: boolean | null
+          podchaser_id?: number | null
           podcast_id?: string | null
+          podcast_image_url?: string | null
           podcast_name?: string | null
           podcast_rss?: string | null
           selected_categories?: string[] | null
@@ -967,7 +971,9 @@ export type Database = {
           military_affiliation?: string | null
           military_branch?: string | null
           onboarding_completed?: boolean | null
+          podchaser_id?: number | null
           podcast_id?: string | null
+          podcast_image_url?: string | null
           podcast_name?: string | null
           podcast_rss?: string | null
           selected_categories?: string[] | null

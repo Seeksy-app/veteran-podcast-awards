@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { usePodchaserSearch, type PodchaserPodcast } from "@/hooks/usePodchaserSearch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +12,8 @@ import heroBg from "@/assets/hero-bg.jpg";
 import {
   Mic,
   Rss,
+  Search,
+  Loader2,
   ChevronRight,
   ChevronLeft,
   Check,
@@ -100,8 +103,15 @@ const OnboardingPage = () => {
   const [isSaving, setIsSaving] = useState(false);
 
   // Step 1: Podcast Info
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedPodcast, setSelectedPodcast] = useState<PodchaserPodcast | null>(null);
   const [podcastName, setPodcastName] = useState("");
   const [podcastRss, setPodcastRss] = useState("");
+  const [podcastImageUrl, setPodcastImageUrl] = useState("");
+  const [podchaserId, setPodchaserId] = useState<number | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Step 2: Military Info
   const [militaryBranch, setMilitaryBranch] = useState("");
@@ -129,6 +139,44 @@ const OnboardingPage = () => {
       }
     }
   }, [user, navigate]);
+
+  // Debounce search
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedQuery(searchQuery), 350);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const { data: searchResults, isFetching: isSearching } = usePodchaserSearch(debouncedQuery);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const handleSelectPodcast = (podcast: PodchaserPodcast) => {
+    setSelectedPodcast(podcast);
+    setPodcastName(podcast.title);
+    setPodcastRss(podcast.rssUrl || "");
+    setPodcastImageUrl(podcast.imageUrl || "");
+    setPodchaserId(podcast.id);
+    setSearchQuery(podcast.title);
+    setShowDropdown(false);
+  };
+
+  const handleClearSelection = () => {
+    setSelectedPodcast(null);
+    setPodcastName("");
+    setPodcastRss("");
+    setPodcastImageUrl("");
+    setPodchaserId(null);
+    setSearchQuery("");
+  };
 
   useEffect(() => {
     fetchCategories();
@@ -179,6 +227,8 @@ const OnboardingPage = () => {
         .update({
           podcast_name: podcastName || null,
           podcast_rss: podcastRss || null,
+          podcast_image_url: podcastImageUrl || null,
+          podchaser_id: podchaserId,
           military_branch: militaryBranch || null,
           military_affiliation: militaryAffiliation || null,
           hosting_platform: hostingPlatform || null,
@@ -202,7 +252,7 @@ const OnboardingPage = () => {
   };
 
   const canAdvance = () => {
-    if (step === 0) return podcastName.trim().length > 0;
+    if (step === 0) return podcastName.trim().length > 0 || podcastRss.trim().length > 0;
     if (step === 1) return militaryAffiliation.length > 0;
     if (step === 2) return hostingPlatform.length > 0;
     if (step === 3) return true;
@@ -257,43 +307,156 @@ const OnboardingPage = () => {
             <div className="space-y-6">
               <div>
                 <h1 className="font-serif text-3xl font-bold text-foreground mb-2">
-                  Tell us about your podcast
+                  Find your podcast
                 </h1>
                 <p className="text-muted-foreground">
-                  We'll use this to set up your profile and connect your show.
+                  Search for your podcast by name, or add your RSS feed below.
                 </p>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="podcastName">Podcast Name *</Label>
-                <div className="relative">
-                  <Mic className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="podcastName"
-                    value={podcastName}
-                    onChange={(e) => setPodcastName(e.target.value)}
-                    placeholder="e.g. The Veteran's Voice"
-                    className="pl-10 h-12"
-                  />
+              {/* Selected podcast card */}
+              {selectedPodcast ? (
+                <div className="flex items-center gap-4 rounded-xl border-2 border-primary bg-primary/5 p-4">
+                  {podcastImageUrl && (
+                    <img
+                      src={podcastImageUrl}
+                      alt=""
+                      className="w-14 h-14 rounded-lg object-cover flex-shrink-0"
+                    />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-foreground truncate">{podcastName}</p>
+                    {selectedPodcast.author?.name && (
+                      <p className="text-sm text-muted-foreground truncate">
+                        by {selectedPodcast.author.name}
+                      </p>
+                    )}
+                    {podcastRss && (
+                      <p className="text-xs text-muted-foreground truncate mt-0.5">
+                        RSS connected
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleClearSelection}
+                    className="text-sm text-primary hover:underline flex-shrink-0"
+                  >
+                    Change
+                  </button>
                 </div>
-              </div>
+              ) : (
+                <>
+                  {/* Search input with dropdown */}
+                  <div className="space-y-2" ref={dropdownRef}>
+                    <Label htmlFor="podcastSearch">Search by podcast name</Label>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      {isSearching && (
+                        <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground animate-spin" />
+                      )}
+                      <Input
+                        id="podcastSearch"
+                        value={searchQuery}
+                        onChange={(e) => {
+                          setSearchQuery(e.target.value);
+                          setPodcastName(e.target.value);
+                          setShowDropdown(true);
+                        }}
+                        onFocus={() => {
+                          if (searchQuery.length >= 2) setShowDropdown(true);
+                        }}
+                        placeholder="Start typing your podcast name..."
+                        className="pl-10 h-12"
+                        autoComplete="off"
+                      />
 
-              <div className="space-y-2">
-                <Label htmlFor="podcastRss">RSS Feed URL (optional)</Label>
-                <div className="relative">
-                  <Rss className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="podcastRss"
-                    value={podcastRss}
-                    onChange={(e) => setPodcastRss(e.target.value)}
-                    placeholder="https://feeds.example.com/your-podcast"
-                    className="pl-10 h-12"
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  We'll use your RSS to pull in your podcast artwork and episode list.
-                </p>
-              </div>
+                      {/* Dropdown */}
+                      {showDropdown && debouncedQuery.length >= 2 && (
+                        <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-[280px] overflow-y-auto">
+                          {searchResults?.data && searchResults.data.length > 0 ? (
+                            <>
+                              {searchResults.data.map((podcast) => (
+                                <button
+                                  key={podcast.id}
+                                  type="button"
+                                  onClick={() => handleSelectPodcast(podcast)}
+                                  className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-primary/5 transition-colors border-b border-border/50 last:border-0"
+                                >
+                                  {podcast.imageUrl ? (
+                                    <img
+                                      src={podcast.imageUrl}
+                                      alt=""
+                                      className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
+                                    />
+                                  ) : (
+                                    <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
+                                      <Mic className="w-5 h-5 text-muted-foreground" />
+                                    </div>
+                                  )}
+                                  <div className="min-w-0 flex-1">
+                                    <p className="text-sm font-medium text-foreground truncate">
+                                      {podcast.title}
+                                    </p>
+                                    {podcast.author?.name && (
+                                      <p className="text-xs text-muted-foreground truncate">
+                                        {podcast.author.name}
+                                      </p>
+                                    )}
+                                  </div>
+                                  {podcast.numberOfEpisodes > 0 && (
+                                    <span className="text-xs text-muted-foreground flex-shrink-0">
+                                      {podcast.numberOfEpisodes} eps
+                                    </span>
+                                  )}
+                                </button>
+                              ))}
+                            </>
+                          ) : !isSearching ? (
+                            <div className="px-4 py-6 text-center">
+                              <p className="text-sm text-muted-foreground">
+                                No podcasts found for "{debouncedQuery}"
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                You can enter your RSS feed below instead.
+                              </p>
+                            </div>
+                          ) : null}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-border" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-3 text-muted-foreground">or enter your RSS feed</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="podcastRss">RSS Feed URL</Label>
+                    <div className="relative">
+                      <Rss className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        id="podcastRss"
+                        value={podcastRss}
+                        onChange={(e) => {
+                          setPodcastRss(e.target.value);
+                          if (!podcastName) setPodcastName(e.target.value);
+                        }}
+                        placeholder="https://feeds.example.com/your-podcast"
+                        className="pl-10 h-12"
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Can't find your show? Paste your RSS feed and we'll pull in your details.
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
           )}
 
