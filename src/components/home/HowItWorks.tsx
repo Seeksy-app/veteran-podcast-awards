@@ -29,15 +29,23 @@ const steps = [
 export const HowItWorks = () => {
   return (
     <section className="relative bg-background overflow-hidden">
+      {/* Top fade — blends into the section above */}
+      <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-background to-transparent z-10" />
+
       <div className="grid grid-cols-1 lg:grid-cols-[40%_1fr] min-h-[900px]">
-        {/* Left: Microphone image — positioned left under the spotlight */}
+        {/* Left: Microphone image — positioned under the spotlight */}
         <div className="relative hidden lg:block">
           <img
             src={heroBg}
             alt=""
-            className="absolute inset-0 w-full h-full object-cover object-[center_30%]"
+            className="absolute inset-0 w-full h-full object-cover object-[20%_30%]"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-background/90" />
+          {/* Right edge fade into content */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-background" />
+          {/* Top fade */}
+          <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-background via-background/60 to-transparent" />
+          {/* Bottom fade */}
+          <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-background via-background/60 to-transparent" />
         </div>
 
         {/* Right: Content — generous gap from the image */}
