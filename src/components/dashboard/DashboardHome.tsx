@@ -92,11 +92,11 @@ export function DashboardHome({
   );
 
   const stats = [
-    { label: "Followers", value: followerCount, icon: Heart, color: "text-pink-500", bg: "bg-pink-50", show: isPodcaster },
-    { label: "Connected", value: connectedCount, icon: Plug, color: "text-emerald-500", bg: "bg-emerald-50", show: isPodcaster },
-    { label: "Votes Cast", value: voteCount, icon: Vote, color: "text-amber-600", bg: "bg-amber-50", show: true },
-    { label: "Unread", value: unreadMessages, icon: Mail, color: "text-blue-500", bg: "bg-blue-50", show: true },
-    { label: "Favorites", value: favoritesCount, icon: Heart, color: "text-orange-500", bg: "bg-orange-50", show: true },
+    { label: "Followers", value: followerCount, icon: Heart, color: "text-pink-500", bg: "bg-slate-100", show: isPodcaster },
+    { label: "Connected", value: connectedCount, icon: Plug, color: "text-emerald-500", bg: "bg-slate-100", show: isPodcaster },
+    { label: "Votes Cast", value: voteCount, icon: Vote, color: "text-amber-600", bg: "bg-slate-100", show: true },
+    { label: "Unread", value: unreadMessages, icon: Mail, color: "text-blue-500", bg: "bg-slate-100", show: true },
+    { label: "Favorites", value: favoritesCount, icon: Heart, color: "text-orange-500", bg: "bg-slate-100", show: true },
   ].filter((s) => s.show);
 
   const quickActions = [
@@ -120,9 +120,9 @@ export function DashboardHome({
 
       {/* Connect Social Prompt */}
       {isPodcaster && connectedList.length === 0 && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 flex items-center gap-4">
-          <div className="w-11 h-11 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
-            <Plug className="w-5 h-5 text-amber-600" />
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-5 flex items-center gap-4">
+          <div className="w-11 h-11 rounded-xl bg-slate-200 flex items-center justify-center shrink-0">
+            <Plug className="w-5 h-5 text-slate-500" />
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-slate-900 text-sm">Connect your social accounts</p>
@@ -159,26 +159,42 @@ export function DashboardHome({
               const meta = PLATFORM_META[platformId];
               if (!meta || !account) return null;
               const Icon = meta.icon;
+              const avatarUrl = account.social_images;
               return (
                 <div
                   key={platformId}
-                  className="flex items-center gap-3 bg-white border border-slate-200 rounded-xl px-4 py-3 min-w-[180px] shrink-0 shadow-sm"
+                  className="flex items-center gap-3 bg-white border border-slate-200 rounded-xl px-4 py-3 min-w-[200px] shrink-0 shadow-sm"
                 >
-                  <div className={`w-9 h-9 rounded-lg ${meta.color} flex items-center justify-center`}>
-                    <Icon className="w-4 h-4 text-white" />
+                  <div className="relative shrink-0">
+                    {avatarUrl ? (
+                      <img
+                        src={avatarUrl}
+                        alt={account.display_name || platformId}
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className={`w-10 h-10 rounded-full ${meta.color} flex items-center justify-center`}>
+                        <Icon className="w-5 h-5 text-white" />
+                      </div>
+                    )}
+                    <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full ${meta.color} flex items-center justify-center ring-2 ring-white`}>
+                      <Icon className="w-2.5 h-2.5 text-white" />
+                    </div>
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-slate-900 truncate">
+                    <p className="text-sm font-semibold text-slate-900 truncate">
                       {account.display_name || account.username || platformId}
                     </p>
-                    <p className="text-xs text-slate-400 capitalize">{platformId.replace("_", " ")}</p>
+                    <p className="text-xs text-slate-400 capitalize truncate">
+                      {account.username ? `@${account.username.replace(/^@/, "")}` : platformId.replace("_", " ")}
+                    </p>
                   </div>
                 </div>
               );
             })}
             <button
               onClick={() => onNavigate("connectors")}
-              className="flex items-center gap-2 bg-white border border-dashed border-slate-300 rounded-xl px-5 py-3 min-w-[140px] shrink-0 hover:border-amber-400 transition-colors"
+              className="flex items-center gap-2 bg-white border border-dashed border-slate-300 rounded-xl px-5 py-3 min-w-[140px] shrink-0 hover:border-slate-400 transition-colors"
             >
               <ExternalLink className="w-4 h-4 text-slate-400" />
               <span className="text-sm text-slate-400">Add more</span>
@@ -212,10 +228,10 @@ export function DashboardHome({
             <button
               key={action.label}
               onClick={() => onNavigate(action.section)}
-              className="flex items-start gap-4 bg-white border border-slate-200 rounded-xl p-5 text-left hover:border-amber-300 hover:shadow-md transition-all group shadow-sm"
+              className="flex items-start gap-4 bg-white border border-slate-200 rounded-xl p-5 text-left hover:border-slate-300 hover:shadow-md transition-all group shadow-sm"
             >
-              <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center shrink-0 group-hover:bg-amber-100 transition-colors">
-                <action.icon className="w-5 h-5 text-amber-600" />
+              <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center shrink-0 group-hover:bg-slate-200 transition-colors">
+                <action.icon className="w-5 h-5 text-slate-600" />
               </div>
               <div>
                 <p className="font-semibold text-sm text-slate-900">{action.label}</p>
@@ -230,18 +246,18 @@ export function DashboardHome({
       <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
         <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Upcoming</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="flex items-center gap-4 p-4 bg-amber-50 rounded-lg border border-amber-100">
-            <div className="w-12 h-12 rounded-lg bg-amber-100 flex items-center justify-center">
-              <Vote className="w-6 h-6 text-amber-600" />
+          <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
+            <div className="w-12 h-12 rounded-lg bg-slate-200 flex items-center justify-center">
+              <Vote className="w-6 h-6 text-slate-500" />
             </div>
             <div>
               <p className="font-semibold text-slate-900">Voting Opens</p>
               <p className="text-sm text-slate-500">October 5, 2026 &middot; National Military Podcast Day</p>
             </div>
           </div>
-          <div className="flex items-center gap-4 p-4 bg-amber-50 rounded-lg border border-amber-100">
-            <div className="w-12 h-12 rounded-lg bg-amber-100 flex items-center justify-center">
-              <Trophy className="w-6 h-6 text-amber-600" />
+          <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
+            <div className="w-12 h-12 rounded-lg bg-slate-200 flex items-center justify-center">
+              <Trophy className="w-6 h-6 text-slate-500" />
             </div>
             <div>
               <p className="font-semibold text-slate-900">Awards Ceremony</p>
