@@ -35,9 +35,9 @@ export const HowItWorks = () => {
           <img
             src={heroBg}
             alt=""
-            className="absolute inset-0 w-full h-full object-cover object-[25%_center]"
+            className="absolute inset-0 w-full h-full object-cover object-[center_30%]"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-background/10 via-transparent to-background" />
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-background/90" />
         </div>
 
         {/* Right: Content — generous gap from the image */}
