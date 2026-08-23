@@ -570,6 +570,18 @@ const Dashboard = () => {
 
       {/* ─── Main Content ─── */}
       <main className="flex-1 min-w-0 px-6 lg:px-10 py-8 pb-24 md:pb-8 mt-14 md:mt-0">
+
+          {/* Slim top banner — shown on all sections except home (home has its own greeting banner) */}
+          {activeSection !== "home" && (
+            <div className="flex items-center justify-between bg-slate-900 rounded-xl px-5 py-3 mb-6">
+              <p className="text-xs text-white">Voting opens Oct 5 &middot; Ceremony Nov 11, 6 PM ET</p>
+              <div className="flex items-center gap-2">
+                <img src={logo} alt="VPA" className="h-6 w-6 opacity-90" />
+                <span className="font-serif text-sm font-bold text-white">VPA 2026</span>
+              </div>
+            </div>
+          )}
+
           <GetNominatedSection userId={user.id} profile={profile} podcast={linkedPodcast} />
 
           {/* ═══ Home / Overview ═══ */}

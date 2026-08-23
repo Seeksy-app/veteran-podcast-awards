@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import logo from "@/assets/vpa-logo.png";
 import {
   Users,
   Heart,
@@ -111,18 +112,19 @@ export function DashboardHome({
       {/* Greeting Banner */}
       <div className="relative rounded-2xl overflow-hidden bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 px-7 py-6 shadow-lg">
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(circle at 80% 50%, #f59e0b 0%, transparent 60%)" }} />
-        <div className="relative">
-          <h1 className="text-2xl font-bold text-white">
-            {greeting()}, {userName.split(" ")[0]}
-          </h1>
-          <p className="text-slate-400 mt-1 text-sm">
-            {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
-          </p>
-          <div className="mt-3 flex items-center gap-2">
-            <span className="text-xs bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2.5 py-1 rounded-full font-medium">
-              VPA 2026
-            </span>
-            <span className="text-xs text-slate-500">Voting opens Oct 5 · Ceremony Nov 11</span>
+        <div className="relative flex items-center justify-between gap-6">
+          <div>
+            <h1 className="text-2xl font-bold text-white">
+              {greeting()}, {userName.split(" ")[0]}
+            </h1>
+            <p className="text-slate-400 mt-1 text-sm">
+              {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
+            </p>
+            <p className="text-white text-xs mt-2">Voting opens Oct 5 &middot; Ceremony Nov 11</p>
+          </div>
+          <div className="flex items-center gap-2.5 shrink-0">
+            <img src={logo} alt="VPA" className="h-9 w-9 opacity-90" />
+            <span className="font-serif text-base font-bold text-white">VPA 2026</span>
           </div>
         </div>
       </div>
