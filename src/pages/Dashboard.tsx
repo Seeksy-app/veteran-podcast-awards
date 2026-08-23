@@ -530,11 +530,7 @@ const Dashboard = () => {
       </aside>
 
       {/* ─── Mobile header ─── */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-slate-900 px-4 py-3 flex items-center justify-between shadow-lg">
-        <Link to="/" className="flex items-center gap-2">
-          <img src={logo} alt="VPA" className="h-8 w-8" />
-          <span className="font-serif text-sm font-bold text-white">VPA 2026</span>
-        </Link>
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-slate-900 px-4 py-3 flex items-center justify-end shadow-lg">
         <button
           onClick={handleLogout}
           className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-red-400 transition-colors"
