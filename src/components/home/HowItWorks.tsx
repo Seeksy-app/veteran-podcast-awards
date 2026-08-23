@@ -38,7 +38,7 @@ export const HowItWorks = () => {
           <img
             src={heroBg}
             alt=""
-            className="absolute inset-0 w-full h-full object-cover object-[20%_52%]"
+            className="absolute inset-0 w-full h-full object-cover object-[50%_48%]"
           />
           {/* Seamless right-edge blend */}
           <div className="absolute inset-0 bg-gradient-to-r from-transparent from-20% via-background/30 via-65% to-background" />
