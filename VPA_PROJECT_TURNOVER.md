@@ -1,6 +1,6 @@
 # Veteran Podcast Awards (VPA) -- Project Turnover Document
 
-**Date:** August 22, 2026
+**Date:** August 23, 2026
 **Production URL:** https://veteranpodcastawards.com
 **Repository:** veteran-podcast-awards
 
@@ -391,7 +391,7 @@ All 13 functions are in `supabase/functions/`. JWT verification status noted per
 - Custom gradients: `--gradient-gold`, `--gradient-dark`, `--gradient-gold-subtle`
 - Custom shadows: `--shadow-gold`, `--shadow-gold-sm`, `--shadow-dark`
 
-**Dashboard override:** The dashboard forces light mode regardless of global theme setting. A `useEffect` in [Dashboard.tsx](src/pages/Dashboard.tsx) removes `dark` class and adds `light` on mount, restoring the previous state on unmount. Dashboard components use explicit Tailwind colors (`bg-white`, `text-slate-900`, `border-slate-200`, etc.) instead of CSS variables.
+**Dashboard override:** The dashboard forces light mode regardless of global theme setting. Dashboard.tsx, Admin.tsx, and Onboarding.tsx each call `setTheme("light")` via the ThemeProvider on mount (saving the previous theme to restore on unmount). **Critical:** direct classList manipulation (`root.classList.remove("dark")`) does NOT work here — the ThemeProvider's own `useEffect` fires after and re-applies the stored theme, overwriting manual changes. Always use `setTheme()` from `useTheme()` for forced light mode. Dashboard components use explicit Tailwind colors (`bg-white`, `text-slate-900`, `border-slate-200`, etc.) instead of CSS variables.
 
 **Toggle components** in [ThemeToggle.tsx](src/components/theme/ThemeToggle.tsx):
 - `ThemeToggle` -- Dropdown menu (used in Header)
@@ -422,12 +422,13 @@ The dashboard ([Dashboard.tsx](src/pages/Dashboard.tsx)) is a single-page compon
 - Mobile: slides in from left with overlay
 
 **Profile section** -- Single card with divider-separated sections:
-1. Personal (Full Name, Website, Bio)
-2. Podcast Details (Podcast Name, Hosting Platform, RSS Feed) -- podcasters only
-3. Military Affiliation (Affiliation + Branch side by side) -- podcasters only
-4. Award Categories (read-only badges showing selected categories) -- podcasters only
-5. Public Profile (is_public toggle, allow_contact toggle, username_slug input)
-6. One "Save Changes" button at bottom
+1. Personal (Full Name, Website)
+2. Military Affiliation (Affiliation + Branch side by side) -- podcasters only
+3. Bio (textarea)
+4. Podcast Details (Podcast Name, Hosting Platform, RSS Feed) -- podcasters only
+5. Award Categories (read-only badges showing selected categories) -- podcasters only
+6. Public Profile (is_public toggle, allow_contact toggle, username_slug input)
+7. One "Save Changes" button at bottom
 
 **User types and visibility:**
 - `podcaster`: Sees all sections including Connectors, Contacts, Promotion
@@ -613,8 +614,9 @@ These dates are referenced in `DashboardHome.tsx`, `CountdownTimer.tsx`, and var
 - [ ] Deploy updated `podchaser-proxy` edge function (`supabase functions deploy podchaser-proxy`) -- a `skipFilter` parameter was added but not deployed
 
 ### Needs Implementation
-- [ ] Create actual promotional asset images (Nominee Badge, Social Banner, Story Template) -- currently "Coming Soon" placeholders in ShareSection
+- [ ] Create actual promotional asset images (Nominee Badge, Social Banner, Story Template) -- currently "Coming Soon" placeholders in `ShareSection.tsx`
 - [ ] Customize Supabase confirmation email template (currently uses Supabase default)
+- [ ] Connected Accounts bar on DashboardHome shows avatar image from `social_images` field -- verify the Upload Post API actually returns a URL string in that field (may need to adjust the field name if avatars don't render)
 
 ### Housekeeping
 - [ ] Add PDF files to `.gitignore` -- 5 licensing proposal PDFs in repo root should not be tracked:
@@ -626,9 +628,11 @@ These dates are referenced in `DashboardHome.tsx`, `CountdownTimer.tsx`, and var
 - [ ] Fix CSS warning: `@import` for Google Fonts should be moved above `@tailwind` directives in `index.css`
 
 ### Known Quirks
+- **Theme forcing:** MUST use `setTheme("light")` from `useTheme()`, NOT direct classList manipulation. The ThemeProvider's useEffect fires last and overwrites any raw classList changes. See Section 9.
+- shadcn/ui primitive components (`<Input>`, `<Textarea>`, `<Select>`) use CSS variables (`bg-background`, `border-input`, etc.) internally. They render correctly in forced light mode when `setTheme("light")` is used properly, but will go dark if classList manipulation is used instead.
+- Select dropdowns in the Profile section use raw HTML `<select>` with explicit Tailwind styling (not shadcn Select component) -- this is intentional and keeps them light regardless of theme.
 - Browser screenshots render blank in dark mode due to CSS class-based theme system -- use DOM inspection or accessibility tree instead
 - React controlled inputs don't respond well to programmatic value setting via browser automation tools (synthetic events don't trigger React state updates)
-- Select dropdowns use raw HTML `<select>` with Tailwind styling (not shadcn Select component)
 
 ---
 
@@ -679,4 +683,122 @@ The dev server is configured in `.claude/launch.json` as `vpa-dev` (runs `npm ru
 
 ---
 
-*This document was generated on August 22, 2026.*
+## 19. Recent Changes (August 23, 2026 Session)
+
+### Full Dashboard & Admin CSS Variable Cleanup
+
+All pages behind the home page (Dashboard, Onboarding, Admin) were switched from CSS variable-based Tailwind classes to explicit white/slate/amber classes to eliminate warm cream/gold "pastel" tones and dark backgrounds.
+
+**Root cause of the pastel look:** The light theme's CSS variables resolve to warm cream/gold tones (e.g., `--background: 45 30% 97%`, `--secondary: 45 25% 92%`). Classes like `bg-background`, `bg-secondary`, `text-muted-foreground`, `border-border` etc. were producing these tones even in "light" mode.
+
+**Replacement mapping applied across all files:**
+| Old class | New class |
+|-----------|-----------|
+| `text-foreground` | `text-slate-900` |
+| `text-muted-foreground` | `text-slate-500` |
+| `bg-background` | `bg-white` or `bg-slate-50` |
+| `bg-secondary`, `bg-secondary/30` | `bg-slate-100` or `bg-slate-50` |
+| `border-border` | `border-slate-200` |
+| `bg-muted`, `bg-muted/50` | `bg-slate-100` or `bg-slate-50` |
+| `bg-primary`, `bg-primary/10` | `bg-amber-500` or `bg-amber-50` |
+| `text-primary` | `text-amber-600` |
+| `border-primary` | `border-amber-500` |
+| `ring-ring` | `ring-amber-400` |
+| `border-input` | `border-slate-200` |
+| `bg-card` | `bg-white` |
+
+**Files updated:** `Dashboard.tsx`, `Onboarding.tsx`, `ShareSection.tsx`, `ConnectorsSection.tsx`, `DashboardHome.tsx`, `Admin.tsx`, and all 17 files in `src/components/admin/`.
+
+**Commits:** `f868b91`, `1091dba`
+
+---
+
+### Onboarding Infinite Loop Fix
+
+**Symptom:** Users were sent back to `/onboarding` on every login even after completing it.
+
+**Root cause:** `handleSkip` in `Onboarding.tsx` fired the DB update but didn't await/catch errors. If the Supabase update failed silently, `onboarding_completed` stayed `false` in the DB. Dashboard's redirect useEffect then fetched the stale profile and redirected back.
+
+**Fix applied:**
+1. `Onboarding.tsx` — wrapped DB update in try/catch in both `handleSkip` and `handleComplete`. After either path, sets `localStorage.setItem("vpa-onboarding-done", user.id)` as a reliable client-side fallback.
+2. `Dashboard.tsx` — modified the onboarding redirect check to also consult localStorage before redirecting:
+   ```javascript
+   if (user && localStorage.getItem("vpa-onboarding-done") === user.id) return;
+   ```
+
+**Commit:** `f868b91`
+
+---
+
+### Light Mode Fix (ThemeProvider)
+
+**Symptom:** Dashboard, Profile, Admin, and Onboarding pages still rendered in dark mode after the CSS variable cleanup.
+
+**Root cause:** The ThemeProvider (`src/hooks/useTheme.tsx`) defaults to `"dark"` and its `useEffect` calls `root.classList.remove("light", "dark"); root.classList.add(theme)` — this always runs AFTER our force-light effect and overwrites it. Direct classList manipulation cannot win against the ThemeProvider.
+
+**Fix:** Dashboard.tsx, Admin.tsx, and Onboarding.tsx now call `setTheme("light")` via `useTheme()` on mount and restore the previous theme on unmount:
+```javascript
+useEffect(() => {
+  const prev = (localStorage.getItem("vpa-theme") || "dark") as "light" | "dark" | "system";
+  setTheme("light");
+  return () => { setTheme(prev); };
+}, []);
+```
+
+**Commit:** `4756d45`
+
+---
+
+### Promotion Page: 8 Campaign Templates
+
+Expanded `ShareSection.tsx` from 3 to 8 campaign templates with emoji labels in a 2×4 grid:
+1. 🎙️ Nomination Announcement
+2. 🗳️ Call to Vote
+3. ❤️ Personal Story
+4. ⏰ 1 Week Left
+5. 🔥 Final Push
+6. 🙏 Thank Your Audience
+7. 🎖️ Watch Party — Nov 11
+8. 📻 Episode Promo
+
+**Commit:** `f868b91`
+
+---
+
+### DashboardHome: Removed Pastel Backgrounds
+
+- Stat card icon backgrounds: colored pastel (`bg-pink-50`, `bg-amber-50`, etc.) → neutral `bg-slate-100`
+- Quick action icon backgrounds: `bg-amber-50` → `bg-slate-100`
+- Upcoming event cards: `bg-amber-50 border-amber-100` → `bg-slate-50 border-slate-200`
+- Connect social prompt: amber → slate
+- Connected account cards redesigned: show avatar image (`social_images`) as circle with platform icon badge overlaid at bottom-right. Falls back to platform-colored icon circle if no avatar.
+
+**Commit:** `e752ff0`
+
+---
+
+### Connectors Page: Proper Platform Icons
+
+Replaced generic `Share2` icon for TikTok, Threads, Pinterest, Reddit, and Google Business with inline SVG components matching each platform's actual logo. Also fixed all CSS variable classes in `ConnectorsSection.tsx`.
+
+**Commit:** `d336b52`
+
+---
+
+### Profile Page: Section Reorder
+
+Changed the Profile form section order to:
+1. Personal (Full Name, Website)
+2. Military Affiliation
+3. Bio
+4. Podcast Details
+5. Award Categories
+6. Public Profile
+
+Previously, Military Affiliation appeared after Podcast Details.
+
+**Commit:** `d336b52`
+
+---
+
+*This document was last updated August 23, 2026.*
