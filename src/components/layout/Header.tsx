@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, LogIn, LogOut, User, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ContactFormDialog, useContactForm } from "@/components/contact/ContactFormDialog";
 import { useAuth } from "@/hooks/useAuth";
+import { useTheme } from "@/hooks/useTheme";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import logo from "@/assets/vpa-logo.png";
 import {
@@ -28,6 +29,14 @@ export const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut, isAdmin } = useAuth();
+  const { setTheme } = useTheme();
+
+  // Public marketing pages always use dark mode
+  useEffect(() => {
+    const prev = (localStorage.getItem("vpa-theme") || "dark") as "light" | "dark" | "system";
+    setTheme("dark");
+    return () => { setTheme(prev); };
+  }, []);
 
   const handleSignOut = async () => {
     await signOut();
