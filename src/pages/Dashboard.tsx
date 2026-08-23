@@ -312,6 +312,9 @@ const Dashboard = () => {
         selected_categories: profile.selected_categories,
         has_ad_agency: profile.has_ad_agency,
         interested_in_opportunities: profile.interested_in_opportunities,
+        social_twitter: profile.social_twitter,
+        social_instagram: profile.social_instagram,
+        social_linkedin: profile.social_linkedin,
       })
       .eq("id", user.id);
 
@@ -596,10 +599,7 @@ const Dashboard = () => {
             <div className="space-y-5">
               {/* Section header */}
               <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-xl font-semibold text-slate-900">Your Profile</h2>
-                  <p className="text-sm text-slate-500 mt-0.5">Fill in your details — they power your public page</p>
-                </div>
+                <h2 className="text-xl font-semibold text-slate-900">Your Profile</h2>
                 {profile.username_slug && profile.is_public && (
                   <a href={`/podcaster/${profile.username_slug}`} target="_blank" rel="noopener noreferrer"
                     className="flex items-center gap-2 text-sm font-medium text-amber-600 hover:text-amber-700 border border-amber-300 rounded-lg px-4 py-2 hover:bg-amber-50 transition-colors">
@@ -610,6 +610,53 @@ const Dashboard = () => {
               </div>
 
               <form onSubmit={handleUpdateProfile} className="space-y-4">
+                {/* Public Page — compact strip at top */}
+                <div className="bg-white rounded-xl border border-slate-200 px-5 py-4 shadow-sm">
+                  <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+                    {/* Slug */}
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="text-xs text-slate-400 whitespace-nowrap shrink-0">/podcaster/</span>
+                      <Input
+                        placeholder="your-slug"
+                        className="h-8 text-sm w-36"
+                        value={profile.username_slug || ""}
+                        onChange={(e) => setProfile({ ...profile, username_slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "") })}
+                      />
+                    </div>
+                    {/* Divider */}
+                    <div className="hidden sm:block w-px h-6 bg-slate-200 shrink-0" />
+                    {/* Toggle: Public */}
+                    <label className="flex items-center gap-2.5 cursor-pointer shrink-0">
+                      <Switch
+                        checked={profile.is_public}
+                        onCheckedChange={(checked) => setProfile({ ...profile, is_public: checked })}
+                      />
+                      <span className="text-sm text-slate-700">Public</span>
+                    </label>
+                    {/* Divider */}
+                    <div className="hidden sm:block w-px h-6 bg-slate-200 shrink-0" />
+                    {/* Toggle: Messages */}
+                    <label className="flex items-center gap-2.5 cursor-pointer shrink-0">
+                      <Switch
+                        checked={profile.allow_contact}
+                        onCheckedChange={(checked) => setProfile({ ...profile, allow_contact: checked })}
+                      />
+                      <span className="text-sm text-slate-700">Allow messages</span>
+                    </label>
+                    {profile.username_slug && profile.is_public && (
+                      <a
+                        href={`/podcaster/${profile.username_slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="ml-auto text-xs text-amber-600 hover:underline flex items-center gap-1 shrink-0"
+                      >
+                        <ExternalLink className="w-3 h-3" /> View page
+                      </a>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-2.5">Your public page is what people see when they vote for you</p>
+                </div>
+
                 {/* Personal */}
                 <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-5">
                   <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Personal</p>
@@ -758,34 +805,6 @@ const Dashboard = () => {
                     <p className="text-xs text-slate-400">To change categories, contact us.</p>
                   </div>
                 )}
-
-                {/* Public Page Settings */}
-                <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-4">
-                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                    <Globe className="w-3.5 h-3.5 text-amber-600" /> Public Page
-                  </p>
-                  <div className="flex items-center justify-between py-2 border-b border-slate-100">
-                    <div>
-                      <p className="text-sm font-medium text-slate-900">Visible to the public</p>
-                      <p className="text-xs text-slate-400 mt-0.5">/podcaster/{profile.username_slug || "your-name"}</p>
-                    </div>
-                    <Switch checked={profile.is_public} onCheckedChange={(checked) => setProfile({ ...profile, is_public: checked })} />
-                  </div>
-                  <div className="flex items-center justify-between py-2 border-b border-slate-100">
-                    <div>
-                      <p className="text-sm font-medium text-slate-900">Allow messages</p>
-                      <p className="text-xs text-slate-400 mt-0.5">Let visitors contact you through your profile</p>
-                    </div>
-                    <Switch checked={profile.allow_contact} onCheckedChange={(checked) => setProfile({ ...profile, allow_contact: checked })} />
-                  </div>
-                  <div className="space-y-1.5 max-w-sm pt-1">
-                    <Label>Your URL slug</Label>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-xs text-slate-400 whitespace-nowrap shrink-0">/podcaster/</span>
-                      <Input placeholder="your-name" value={profile.username_slug || ""} onChange={(e) => setProfile({ ...profile, username_slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "") })} />
-                    </div>
-                  </div>
-                </div>
 
                 <div className="flex items-center gap-3 pt-1">
                   <Button type="submit" variant="gold" size="lg" disabled={isUpdating}>
