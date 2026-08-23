@@ -122,18 +122,18 @@ export function DashboardHome({
             </p>
             <p className="text-white text-xs mt-2">Voting opens Oct 5 &middot; Ceremony Nov 11</p>
           </div>
-          <div className="flex items-center gap-2.5 shrink-0">
-            <img src={logo} alt="VPA" className="h-9 w-9 opacity-90" />
-            <span className="font-serif text-base font-bold text-white">VPA 2026</span>
+          <div className="flex items-center gap-3 shrink-0">
+            <img src={logo} alt="VPA" className="h-14 w-14 opacity-90" />
+            <span className="font-serif text-xl font-bold text-white">VPA 2026</span>
           </div>
         </div>
       </div>
 
       {/* Connect Social Prompt */}
       {isPodcaster && connectedList.length === 0 && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 flex items-center gap-4">
-          <div className="w-11 h-11 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
-            <Plug className="w-5 h-5 text-amber-600" />
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-5 flex items-center gap-4">
+          <div className="w-11 h-11 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
+            <Plug className="w-5 h-5 text-slate-500" />
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-slate-900 text-sm">Connect your social accounts</p>

@@ -371,7 +371,7 @@ const Dashboard = () => {
 
   const getUserTypeColor = () => {
     switch (profile?.user_type) {
-      case "podcaster": return "bg-amber-500 text-white";
+      case "podcaster": return "bg-slate-600 text-slate-200";
       case "voter": return "bg-blue-500 text-white";
       case "fan": return "bg-slate-200 text-slate-700";
       default: return "bg-slate-100 text-slate-500";
@@ -432,12 +432,6 @@ const Dashboard = () => {
       {/* ─── Left Sidebar ─── */}
       <aside className="hidden md:flex flex-col w-64 shrink-0 bg-slate-900 sticky top-0 h-screen overflow-y-auto">
         <div className="flex-1 flex flex-col px-3 pt-5 pb-4">
-          {/* Brand */}
-          <Link to="/" className="flex items-center gap-2.5 px-3 mb-6">
-            <img src={logo} alt="VPA" className="h-9 w-9" />
-            <span className="font-serif text-base font-bold text-white">VPA 2026</span>
-          </Link>
-
           {/* User card */}
           <div className="flex items-center gap-3 px-3 py-3 mb-2 rounded-xl bg-slate-800">
             <div className="relative group">
