@@ -38,6 +38,9 @@ import {
   Contact,
   Plug,
   LogOut,
+  ExternalLink,
+  Instagram,
+  Linkedin,
 } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import logo from "@/assets/vpa-logo.png";
@@ -590,162 +593,215 @@ const Dashboard = () => {
 
           {/* ═══ Profile ═══ */}
           {activeSection === "profile" && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Edit Profile</CardTitle>
-                <CardDescription>Manage your personal and podcast information</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleUpdateProfile} className="space-y-8">
-                  {/* Personal */}
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="full_name">Full Name</Label>
-                        <Input id="full_name" value={profile.full_name || ""} onChange={(e) => setProfile({ ...profile, full_name: e.target.value })} />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="website">Website</Label>
-                        <div className="relative">
-                          <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                          <Input id="website" placeholder="https://yoursite.com" className="pl-10" value={profile.website_url || ""} onChange={(e) => setProfile({ ...profile, website_url: e.target.value })} />
-                        </div>
+            <div className="space-y-5">
+              {/* Section header */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold text-slate-900">Your Profile</h2>
+                  <p className="text-sm text-slate-500 mt-0.5">Fill in your details — they power your public page</p>
+                </div>
+                {profile.username_slug && profile.is_public && (
+                  <a href={`/podcaster/${profile.username_slug}`} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-sm font-medium text-amber-600 hover:text-amber-700 border border-amber-300 rounded-lg px-4 py-2 hover:bg-amber-50 transition-colors">
+                    <ExternalLink className="w-4 h-4" />
+                    Preview Public Page
+                  </a>
+                )}
+              </div>
+
+              <form onSubmit={handleUpdateProfile} className="space-y-4">
+                {/* Personal */}
+                <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-5">
+                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Personal</p>
+                  <div className="flex items-center gap-4">
+                    <div className="relative group shrink-0">
+                      <Avatar className="w-16 h-16 border-2 border-slate-200">
+                        <AvatarImage src={profile.avatar_url || undefined} />
+                        <AvatarFallback className="text-lg bg-slate-100 text-slate-500">
+                          {profile.full_name?.charAt(0) || "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <label className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                        <Camera className="w-4 h-4 text-white" />
+                        <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
+                      </label>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-slate-900">Profile Photo</p>
+                      <p className="text-xs text-slate-400 mt-0.5">Hover to change · Appears on your public page</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="full_name">Full Name</Label>
+                      <Input id="full_name" value={profile.full_name || ""} onChange={(e) => setProfile({ ...profile, full_name: e.target.value })} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="website">Website</Label>
+                      <div className="relative">
+                        <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <Input id="website" placeholder="https://yoursite.com" className="pl-10" value={profile.website_url || ""} onChange={(e) => setProfile({ ...profile, website_url: e.target.value })} />
                       </div>
                     </div>
                   </div>
-
-                  {/* Military Affiliation */}
-                  {isPodcaster && (
-                    <div className="border-t border-slate-200 pt-6">
-                      <p className="text-sm font-semibold text-slate-900 mb-4 flex items-center gap-2">
-                        <Shield className="w-4 h-4 text-amber-600" />
-                        Military Affiliation
-                      </p>
-                      <div className="grid grid-cols-2 gap-4 max-w-lg">
-                        <div className="space-y-2">
-                          <Label htmlFor="military_affiliation">Affiliation</Label>
-                          <select id="military_affiliation" className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400" value={profile.military_affiliation || ""} onChange={(e) => setProfile({ ...profile, military_affiliation: e.target.value })}>
-                            <option value="">Select...</option>
-                            <option value="veteran">Veteran</option>
-                            <option value="active_duty">Active Duty</option>
-                            <option value="spouse">Military Spouse</option>
-                            <option value="supporter">Military Supporter</option>
-                            <option value="other">Other</option>
-                          </select>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="military_branch">Branch</Label>
-                          <select id="military_branch" className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400" value={profile.military_branch || ""} onChange={(e) => setProfile({ ...profile, military_branch: e.target.value })}>
-                            <option value="">Select...</option>
-                            {["Army","Navy","Marine Corps","Air Force","Coast Guard","Space Force","National Guard"].map((b) => (
-                              <option key={b} value={b}>{b}</option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Bio */}
-                  <div className="border-t border-slate-200 pt-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="bio">Bio</Label>
-                      <Textarea id="bio" placeholder="Tell us about yourself..." value={profile.bio || ""} onChange={(e) => setProfile({ ...profile, bio: e.target.value })} rows={3} />
-                    </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="bio">Bio / Mission</Label>
+                    <Textarea id="bio" placeholder="Tell the world who you are, your mission, and what drives your podcast..." value={profile.bio || ""} onChange={(e) => setProfile({ ...profile, bio: e.target.value })} rows={4} />
+                    <p className="text-xs text-slate-400">This is the first thing visitors read on your public page</p>
                   </div>
+                </div>
 
-                  {/* Podcast Details */}
-                  {isPodcaster && (
-                    <>
-                      <div className="border-t border-slate-200 pt-6">
-                        <p className="text-sm font-semibold text-slate-900 mb-4 flex items-center gap-2">
-                          <Mic className="w-4 h-4 text-amber-600" />
-                          Podcast Details
-                        </p>
-                        <div className="space-y-4">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label htmlFor="podcast_name">Podcast Name</Label>
-                              <Input id="podcast_name" placeholder="Your podcast name" value={profile.podcast_name || linkedPodcast?.title || ""} onChange={(e) => setProfile({ ...profile, podcast_name: e.target.value })} />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="hosting_platform">Hosting Platform</Label>
-                              <select id="hosting_platform" className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400" value={profile.hosting_platform || ""} onChange={(e) => setProfile({ ...profile, hosting_platform: e.target.value })}>
-                                <option value="">Select platform...</option>
-                                {["Buzzsprout","Libsyn","Podbean","Spotify for Podcasters (Anchor)","Transistor","Captivate","RSS.com","Spreaker","Blubrry","Simplecast","Megaphone","Acast","RedCircle","Castos","iHeartRadio","SoundCloud","Audioboom","Podomatic","Other"].map((p) => (
-                                  <option key={p} value={p}>{p}</option>
-                                ))}
-                              </select>
-                            </div>
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="podcast_rss">RSS Feed</Label>
-                            <div className="relative">
-                              <Rss className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                              <Input id="podcast_rss" placeholder="https://feeds.example.com/your-podcast" className="pl-10" value={profile.podcast_rss || rssUrl} onChange={(e) => { setProfile({ ...profile, podcast_rss: e.target.value }); setRssUrl(e.target.value); }} />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </>
-                  )}
-
-                  {/* Award Categories (read-only) */}
-                  {isPodcaster && (profile.selected_categories?.length ?? 0) > 0 && (
-                    <div className="border-t border-slate-200 pt-6">
-                      <p className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
-                        <Trophy className="w-4 h-4 text-amber-600" />
-                        Award Categories
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {(profile.selected_categories || []).map((catId) => (
-                          <Badge key={catId} variant="secondary" className="px-3 py-1.5 text-sm">
-                            <Trophy className="w-3.5 h-3.5 mr-1.5 text-amber-600" />
-                            {categoryNames[catId] || catId}
-                          </Badge>
-                        ))}
-                      </div>
-                      <p className="text-xs text-slate-500 mt-2">To change your categories, please contact us.</p>
-                    </div>
-                  )}
-
-                  {/* Public Profile */}
-                  <div className="border-t border-slate-200 pt-6">
-                    <p className="text-sm font-semibold text-slate-900 mb-4 flex items-center gap-2">
-                      <Globe className="w-4 h-4 text-amber-600" />
-                      Public Profile
+                {/* Military */}
+                {isPodcaster && (
+                  <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-4">
+                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                      <Shield className="w-3.5 h-3.5 text-amber-600" /> Military Service
                     </p>
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-slate-900">Visible to the public</p>
-                          <p className="text-xs text-slate-500">Show your profile at veteranpodcastawards.com/podcaster/{profile.username_slug || "your-name"}</p>
-                        </div>
-                        <Switch checked={profile.is_public} onCheckedChange={(checked) => setProfile({ ...profile, is_public: checked })} />
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label>Affiliation</Label>
+                        <select className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-amber-400" value={profile.military_affiliation || ""} onChange={(e) => setProfile({ ...profile, military_affiliation: e.target.value })}>
+                          <option value="">Select...</option>
+                          <option value="veteran">Veteran</option>
+                          <option value="active_duty">Active Duty</option>
+                          <option value="spouse">Military Spouse</option>
+                          <option value="supporter">Military Supporter</option>
+                          <option value="other">Other</option>
+                        </select>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-slate-900">Allow messages</p>
-                          <p className="text-xs text-slate-500">Let visitors contact you through your profile</p>
-                        </div>
-                        <Switch checked={profile.allow_contact} onCheckedChange={(checked) => setProfile({ ...profile, allow_contact: checked })} />
-                      </div>
-                      <div className="space-y-2 max-w-md">
-                        <Label htmlFor="username_slug">Profile URL</Label>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-slate-500 whitespace-nowrap">veteranpodcastawards.com/podcaster/</span>
-                          <Input id="username_slug" placeholder="your-name" value={profile.username_slug || ""} onChange={(e) => setProfile({ ...profile, username_slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "") })} />
-                        </div>
+                      <div className="space-y-1.5">
+                        <Label>Branch</Label>
+                        <select className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-amber-400" value={profile.military_branch || ""} onChange={(e) => setProfile({ ...profile, military_branch: e.target.value })}>
+                          <option value="">Select...</option>
+                          {["Army","Navy","Marine Corps","Air Force","Coast Guard","Space Force","National Guard"].map((b) => (
+                            <option key={b} value={b}>{b}</option>
+                          ))}
+                        </select>
                       </div>
                     </div>
                   </div>
+                )}
 
-                  <Button type="submit" variant="gold" size="lg" disabled={isUpdating} className="mt-2">
+                {/* Podcast */}
+                {isPodcaster && (
+                  <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-4">
+                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                      <Mic className="w-3.5 h-3.5 text-amber-600" /> Podcast
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label>Podcast Name</Label>
+                        <Input placeholder="Your podcast name" value={profile.podcast_name || linkedPodcast?.title || ""} onChange={(e) => setProfile({ ...profile, podcast_name: e.target.value })} />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label>Hosting Platform</Label>
+                        <select className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-amber-400" value={profile.hosting_platform || ""} onChange={(e) => setProfile({ ...profile, hosting_platform: e.target.value })}>
+                          <option value="">Select platform...</option>
+                          {["Buzzsprout","Libsyn","Podbean","Spotify for Podcasters (Anchor)","Transistor","Captivate","RSS.com","Spreaker","Blubrry","Simplecast","Megaphone","Acast","RedCircle","Castos","iHeartRadio","SoundCloud","Audioboom","Podomatic","Other"].map((p) => (
+                            <option key={p} value={p}>{p}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label>RSS Feed</Label>
+                      <div className="relative">
+                        <Rss className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <Input placeholder="https://feeds.example.com/your-podcast" className="pl-10" value={profile.podcast_rss || rssUrl} onChange={(e) => { setProfile({ ...profile, podcast_rss: e.target.value }); setRssUrl(e.target.value); }} />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Social Links */}
+                <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-4">
+                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Social Links</p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-1.5">
+                      <Label>X / Twitter</Label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-black">𝕏</span>
+                        <Input placeholder="https://x.com/handle" className="pl-9" value={profile.social_twitter || ""} onChange={(e) => setProfile({ ...profile, social_twitter: e.target.value })} />
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label>Instagram</Label>
+                      <div className="relative">
+                        <Instagram className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <Input placeholder="https://instagram.com/handle" className="pl-10" value={profile.social_instagram || ""} onChange={(e) => setProfile({ ...profile, social_instagram: e.target.value })} />
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label>LinkedIn</Label>
+                      <div className="relative">
+                        <Linkedin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <Input placeholder="https://linkedin.com/in/name" className="pl-10" value={profile.social_linkedin || ""} onChange={(e) => setProfile({ ...profile, social_linkedin: e.target.value })} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Award Categories read-only */}
+                {isPodcaster && (profile.selected_categories?.length ?? 0) > 0 && (
+                  <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-3">
+                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                      <Trophy className="w-3.5 h-3.5 text-amber-600" /> Award Categories
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {(profile.selected_categories || []).map((catId) => (
+                        <Badge key={catId} variant="secondary" className="px-3 py-1.5 text-sm">
+                          <Trophy className="w-3.5 h-3.5 mr-1.5 text-amber-600" />
+                          {categoryNames[catId] || catId}
+                        </Badge>
+                      ))}
+                    </div>
+                    <p className="text-xs text-slate-400">To change categories, contact us.</p>
+                  </div>
+                )}
+
+                {/* Public Page Settings */}
+                <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-4">
+                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <Globe className="w-3.5 h-3.5 text-amber-600" /> Public Page
+                  </p>
+                  <div className="flex items-center justify-between py-2 border-b border-slate-100">
+                    <div>
+                      <p className="text-sm font-medium text-slate-900">Visible to the public</p>
+                      <p className="text-xs text-slate-400 mt-0.5">/podcaster/{profile.username_slug || "your-name"}</p>
+                    </div>
+                    <Switch checked={profile.is_public} onCheckedChange={(checked) => setProfile({ ...profile, is_public: checked })} />
+                  </div>
+                  <div className="flex items-center justify-between py-2 border-b border-slate-100">
+                    <div>
+                      <p className="text-sm font-medium text-slate-900">Allow messages</p>
+                      <p className="text-xs text-slate-400 mt-0.5">Let visitors contact you through your profile</p>
+                    </div>
+                    <Switch checked={profile.allow_contact} onCheckedChange={(checked) => setProfile({ ...profile, allow_contact: checked })} />
+                  </div>
+                  <div className="space-y-1.5 max-w-sm pt-1">
+                    <Label>Your URL slug</Label>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs text-slate-400 whitespace-nowrap shrink-0">/podcaster/</span>
+                      <Input placeholder="your-name" value={profile.username_slug || ""} onChange={(e) => setProfile({ ...profile, username_slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "") })} />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 pt-1">
+                  <Button type="submit" variant="gold" size="lg" disabled={isUpdating}>
                     {isUpdating ? "Saving..." : "Save Changes"}
                   </Button>
-                </form>
-              </CardContent>
-            </Card>
+                  {profile.username_slug && profile.is_public && (
+                    <a href={`/podcaster/${profile.username_slug}`} target="_blank" rel="noopener noreferrer">
+                      <Button type="button" variant="outline" size="lg">
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        Preview Page
+                      </Button>
+                    </a>
+                  )}
+                </div>
+              </form>
+            </div>
           )}
 
           {/* ═══ Inbox ═══ */}
