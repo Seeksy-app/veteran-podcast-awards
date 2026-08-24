@@ -62,13 +62,13 @@ export const ContactFormDialog = ({ open, onOpenChange, type }: ContactFormDialo
       const interestedIn = [type, organization, message];
       if (podcastUrl) interestedIn.push(`RSS/URL: ${podcastUrl}`);
 
-      const { error } = await supabase.from("pre_registrations").insert({
-        email,
-        name,
-        interested_in: interestedIn.filter(Boolean),
-      });
+      const { error } = await supabase.from("pre_registrations").upsert(
+        { email, name, interested_in: interestedIn.filter(Boolean) },
+        { onConflict: "email", ignoreDuplicates: true }
+      );
 
-      if (error) throw error;
+      // pre_registrations is best-effort; continue even if it fails
+      if (error) console.warn("pre_registrations upsert:", error.message);
 
       const listName =
         type === "sponsorship" || type === "partnership"

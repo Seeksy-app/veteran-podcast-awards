@@ -75,7 +75,7 @@ const AuthPage = () => {
   }, [searchParams]);
 
   useEffect(() => {
-    if (!loading && user) {
+    if (!loading && user && user.email_confirmed_at) {
       const returnTo = searchParams.get("returnTo");
       const from = (location.state as { from?: string })?.from;
       const target = returnTo ? decodeURIComponent(returnTo) : from || "/";
