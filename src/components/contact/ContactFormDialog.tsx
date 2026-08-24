@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { addToContactList } from "@/lib/contactLists";
 import { toast } from "sonner";
 import { Mail, Send } from "lucide-react";
 
@@ -78,20 +79,16 @@ export const ContactFormDialog = ({ open, onOpenChange, type }: ContactFormDialo
           : null;
 
       if (listName) {
-        await supabase.from("podcast_contacts").upsert(
-          {
-            email,
-            name,
-            podcast_name: type === "nomination" ? organization : null,
-            podcast_url: podcastUrl || null,
-            notes: message || null,
-            source: "Website Form",
-            status: "uncontacted",
-            lists: [listName],
-            tags: [type],
-          },
-          { onConflict: "email", ignoreDuplicates: true }
-        );
+        await addToContactList({
+          email,
+          name,
+          list: listName,
+          tag: type,
+          source: "Website Form",
+          podcastName: type === "nomination" ? organization : null,
+          podcastUrl: podcastUrl || null,
+          notes: message || null,
+        });
       }
 
       if (type === "sponsorship" || type === "nomination") {

@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
+import { addToContactList } from "@/lib/contactLists";
 import logo from "@/assets/vpa-logo.png";
 import { Eye, EyeOff, Mail, Lock, User, Mic, Heart, ArrowRight } from "lucide-react";
 
@@ -206,17 +207,14 @@ const AuthPage = () => {
             toast.error(error.message);
           }
         } else {
-          await supabase.from("podcast_contacts").upsert(
-            {
-              email,
-              name: fullName || email.split("@")[0],
-              source: "Website Signup",
-              status: "registered",
-              lists: ["Registered Users"],
-              tags: [userType || "fan"],
-            },
-            { onConflict: "email", ignoreDuplicates: true }
-          );
+          await addToContactList({
+            email,
+            name: fullName || email.split("@")[0],
+            list: "Registered Users",
+            tag: userType || "fan",
+            status: "registered",
+            source: "Website Signup",
+          });
           setShowVerify(true);
         }
       }
