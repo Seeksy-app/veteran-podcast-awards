@@ -16,6 +16,15 @@ const passwordSchema = z.string().min(6, "Password must be at least 6 characters
 
 type UserType = "podcaster" | "fan";
 
+// Rotating right-panel imagery: media, awards, community
+const SLIDES = [
+  { src: heroBg },
+  { src: "https://images.unsplash.com/photo-1598743400863-0201c7e1445b?w=1600&q=80" }, // ON AIR studio
+  { src: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1600&q=80" }, // confetti celebration
+  { src: "https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?w=1600&q=80" }, // crowd, stage lights
+  { src: "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=1600&q=80" }, // studio microphone
+];
+
 const QUOTES = [
   {
     text: "The most powerful person in the world is the storyteller.",
@@ -65,6 +74,14 @@ const AuthPage = () => {
   const [errors, setErrors] = useState<{ email?: string; password?: string; userType?: string }>({});
 
   const [quote] = useState(() => QUOTES[Math.floor(Math.random() * QUOTES.length)]);
+  const [slideIndex, setSlideIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setSlideIndex((i) => (i + 1) % SLIDES.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, []);
 
   const { signIn, signUp, requestPasswordReset, user, loading } = useAuth();
   const navigate = useNavigate();
@@ -481,25 +498,41 @@ const AuthPage = () => {
         </div>
       </div>
 
-      {/* ─── Right: Image + Quote ─── */}
+      {/* ─── Right: Rotating imagery + Quote ─── */}
       <div className="hidden lg:flex lg:flex-1 relative overflow-hidden">
-        <img
-          src={heroBg}
-          alt=""
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/20" />
+        {SLIDES.map((slide, i) => (
+          <img
+            key={slide.src}
+            src={slide.src}
+            alt=""
+            className={`absolute inset-0 w-full h-full object-cover brightness-[1.2] transition-opacity duration-[1500ms] ease-in-out ${
+              i === slideIndex ? "opacity-100" : "opacity-0"
+            }`}
+          />
+        ))}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent" />
 
-        <div className="relative z-10 flex flex-col justify-end p-12 pb-16">
+        <div className="relative z-10 flex flex-col justify-end p-12 pb-16 w-full">
           <div className="max-w-lg">
             <div className="text-primary text-5xl font-serif mb-4 leading-none">&ldquo;</div>
-            <blockquote className="font-serif text-2xl text-white italic leading-relaxed mb-6">
+            <blockquote className="font-serif text-2xl text-white italic leading-relaxed mb-6 [text-shadow:0_1px_8px_rgba(0,0,0,0.7)]">
               {quote.text}
             </blockquote>
             <div>
-              <p className="text-primary font-semibold">{quote.author}</p>
-              <p className="text-white/60 text-sm">{quote.role}</p>
+              <p className="text-primary font-semibold [text-shadow:0_1px_6px_rgba(0,0,0,0.7)]">{quote.author}</p>
+              <p className="text-white/80 text-sm [text-shadow:0_1px_6px_rgba(0,0,0,0.7)]">{quote.role}</p>
             </div>
+          </div>
+          {/* Slide dots */}
+          <div className="absolute bottom-6 right-8 flex gap-2">
+            {SLIDES.map((_, i) => (
+              <span
+                key={i}
+                className={`w-1.5 h-1.5 rounded-full transition-colors duration-500 ${
+                  i === slideIndex ? "bg-primary" : "bg-white/30"
+                }`}
+              />
+            ))}
           </div>
         </div>
       </div>
