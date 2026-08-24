@@ -293,11 +293,12 @@ const AuthPage = () => {
             <Button
               variant="outline"
               className="w-full h-12"
-              onClick={() => {
-                supabase.auth.signInWithOAuth({
+              onClick={async () => {
+                const { error } = await supabase.auth.signInWithOAuth({
                   provider: "linkedin_oidc",
                   options: { redirectTo: `${window.location.origin}/dashboard` },
                 });
+                if (error) toast.error(`LinkedIn sign-in failed: ${error.message}`);
               }}
             >
               <svg className="w-5 h-5 mr-3 fill-[#0A66C2]" viewBox="0 0 24 24">
@@ -308,11 +309,12 @@ const AuthPage = () => {
             <Button
               variant="outline"
               className="w-full h-12"
-              onClick={() => {
-                supabase.auth.signInWithOAuth({
+              onClick={async () => {
+                const { error } = await supabase.auth.signInWithOAuth({
                   provider: "spotify",
                   options: { redirectTo: `${window.location.origin}/dashboard` },
                 });
+                if (error) toast.error(`Spotify sign-in failed: ${error.message}`);
               }}
             >
               <svg className="w-5 h-5 mr-3 fill-[#1DB954]" viewBox="0 0 24 24">
