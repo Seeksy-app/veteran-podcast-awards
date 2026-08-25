@@ -96,7 +96,8 @@ const AuthPage = () => {
   }, [searchParams]);
 
   useEffect(() => {
-    if (!loading && user && user.email_confirmed_at) {
+    const isOAuthUser = user?.app_metadata?.provider && user.app_metadata.provider !== "email";
+    if (!loading && user && (user.email_confirmed_at || isOAuthUser)) {
       const returnTo = searchParams.get("returnTo");
       const from = (location.state as { from?: string })?.from;
       const target = returnTo ? decodeURIComponent(returnTo) : from || "/";

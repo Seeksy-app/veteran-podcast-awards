@@ -2,7 +2,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { useEffect } from "react";
+import { toast } from "sonner";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { HelmetProvider } from "react-helmet-async";
 import Index from "./pages/Index";
@@ -36,6 +38,25 @@ import Onboarding from "./pages/Onboarding";
 
 const queryClient = new QueryClient();
 
+/** Surfaces OAuth errors that Supabase sends back via URL query or hash on any route. */
+const OAuthErrorCatcher = () => {
+  const location = useLocation();
+  useEffect(() => {
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    const queryParams = new URLSearchParams(window.location.search);
+    const errDesc =
+      hashParams.get("error_description") ||
+      queryParams.get("error_description") ||
+      hashParams.get("error") ||
+      queryParams.get("error");
+    if (errDesc) {
+      toast.error(`Sign-in failed: ${decodeURIComponent(errDesc).replace(/\+/g, " ")}`, { duration: 10000 });
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+  }, [location]);
+  return null;
+};
+
 const App = () => (
   <HelmetProvider>
     <QueryClientProvider client={queryClient}>
@@ -44,6 +65,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <OAuthErrorCatcher />
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/livestream" element={<Livestream />} />

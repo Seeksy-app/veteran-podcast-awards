@@ -154,7 +154,9 @@ const Dashboard = () => {
   const [showWelcome, setShowWelcome] = useState(searchParams.get("welcome") === "1");
 
   useEffect(() => {
-    if (!loading && !user) navigate("/auth");
+    // Don't bounce while Supabase is still consuming OAuth tokens from the URL hash
+    const hashHasAuth = /access_token|refresh_token|error/.test(window.location.hash);
+    if (!loading && !user && !hashHasAuth) navigate("/auth");
   }, [user, loading, navigate]);
 
   useEffect(() => {
