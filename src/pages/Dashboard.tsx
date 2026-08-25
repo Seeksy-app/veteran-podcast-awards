@@ -78,6 +78,7 @@ interface Profile {
   selected_categories: string[] | null;
   has_ad_agency: boolean | null;
   interested_in_opportunities: boolean | null;
+  user_type_confirmed?: boolean | null;
 }
 
 interface PodcasterMessage {
@@ -426,8 +427,47 @@ const Dashboard = () => {
     navigate("/");
   };
 
+  const confirmRole = async (type: "podcaster" | "fan") => {
+    await supabase
+      .from("profiles")
+      .update({ user_type: type, user_type_confirmed: true } as never)
+      .eq("id", user.id);
+    setProfile({ ...profile, user_type: type, user_type_confirmed: true });
+    if (type === "podcaster") navigate("/onboarding");
+  };
+
+  const needsRolePick = profile.user_type_confirmed === false;
+
   return (
     <div className="min-h-screen bg-slate-50 flex">
+      {/* ─── One-time role prompt for OAuth signups ─── */}
+      {needsRolePick && (
+        <div className="fixed inset-0 z-[100] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center">
+            <img src={logo} alt="VPA" className="h-14 w-14 mx-auto mb-4" />
+            <h2 className="font-serif text-2xl font-bold text-slate-900 mb-2">Welcome to VPA!</h2>
+            <p className="text-sm text-slate-500 mb-7">One quick question — which best describes you?</p>
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                onClick={() => confirmRole("podcaster")}
+                className="flex flex-col items-center gap-2 rounded-xl border-2 border-slate-200 p-6 hover:border-amber-400 hover:bg-amber-50 transition-colors"
+              >
+                <Mic className="w-8 h-8 text-amber-600" />
+                <span className="font-semibold text-slate-900">Podcaster</span>
+                <span className="text-xs text-slate-500">I have a podcast</span>
+              </button>
+              <button
+                onClick={() => confirmRole("fan")}
+                className="flex flex-col items-center gap-2 rounded-xl border-2 border-slate-200 p-6 hover:border-amber-400 hover:bg-amber-50 transition-colors"
+              >
+                <Heart className="w-8 h-8 text-rose-500" />
+                <span className="font-semibold text-slate-900">Fan</span>
+                <span className="text-xs text-slate-500">Follow & vote</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {showWelcome && (
         <WelcomeCelebration
           userName={profile.full_name || user.email || ""}
