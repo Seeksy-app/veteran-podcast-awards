@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
 import { SponsorList } from '@/components/admin/SponsorList';
+import { SponsorTiersManager } from '@/components/admin/SponsorTiersManager';
 import { PodcastManager } from '@/components/admin/PodcastManager';
 import { UserManager } from '@/components/admin/UserManager';
 import { ContactManager } from '@/components/admin/ContactManager';
@@ -256,6 +257,7 @@ const AdminPage = () => {
           </TabsContent>
 
           <TabsContent value="sponsors">
+            <SponsorTiersManager />
             <SponsorList />
           </TabsContent>
 

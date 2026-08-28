@@ -43,10 +43,10 @@ export const useCreateSponsor = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (sponsor: SponsorInsert) => {
+    mutationFn: async (sponsor: SponsorInsert & { tier_id?: string | null }) => {
       const { data, error } = await supabase
         .from('sponsors')
-        .insert(sponsor)
+        .insert(sponsor as SponsorInsert)
         .select()
         .single();
       
@@ -63,10 +63,10 @@ export const useUpdateSponsor = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ id, ...updates }: SponsorUpdate & { id: string }) => {
+    mutationFn: async ({ id, ...updates }: SponsorUpdate & { id: string; tier_id?: string | null }) => {
       const { data, error } = await supabase
         .from('sponsors')
-        .update(updates)
+        .update(updates as SponsorUpdate)
         .eq('id', id)
         .select()
         .single();

@@ -221,63 +221,35 @@ export const UserManager = () => {
 
   return (
     <div className="space-y-6">
-      {/* Stats Cards */}
+      {/* Stats Cards — click to filter the user list */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <Users className="w-8 h-8 text-amber-600" />
-              <div>
-                <p className="text-2xl font-bold">{stats.total}</p>
-                <p className="text-xs text-slate-500">Total Users</p>
+        {(
+          [
+            { filter: "all", count: stats.total, label: "Total Users", icon: Users, color: "text-amber-600" },
+            { filter: "podcaster", count: stats.podcasters, label: "Podcasters", icon: Mic, color: "text-amber-600" },
+            { filter: "voter", count: stats.voters, label: "Voters", icon: Vote, color: "text-blue-500" },
+            { filter: "fan", count: stats.fans, label: "Fans", icon: Heart, color: "text-pink-500" },
+            { filter: "admin", count: stats.admins, label: "Admins", icon: Shield, color: "text-red-500" },
+          ] as const
+        ).map((c) => (
+          <Card
+            key={c.filter}
+            onClick={() => setFilterType(c.filter)}
+            className={`cursor-pointer transition-all hover:shadow-md ${
+              filterType === c.filter ? "ring-2 ring-amber-400 border-amber-300" : ""
+            }`}
+          >
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <c.icon className={`w-8 h-8 ${c.color}`} />
+                <div>
+                  <p className="text-2xl font-bold">{c.count}</p>
+                  <p className="text-xs text-slate-500">{c.label}</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <Mic className="w-8 h-8 text-amber-600" />
-              <div>
-                <p className="text-2xl font-bold">{stats.podcasters}</p>
-                <p className="text-xs text-slate-500">Podcasters</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <Vote className="w-8 h-8 text-blue-500" />
-              <div>
-                <p className="text-2xl font-bold">{stats.voters}</p>
-                <p className="text-xs text-slate-500">Voters</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <Heart className="w-8 h-8 text-pink-500" />
-              <div>
-                <p className="text-2xl font-bold">{stats.fans}</p>
-                <p className="text-xs text-slate-500">Fans</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <Shield className="w-8 h-8 text-red-500" />
-              <div>
-                <p className="text-2xl font-bold">{stats.admins}</p>
-                <p className="text-xs text-slate-500">Admins</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       {/* Role Preview Card */}
@@ -413,7 +385,11 @@ export const UserManager = () => {
                 </TableHeader>
                 <TableBody>
                   {filteredUsers.map((user) => (
-                    <TableRow key={user.id}>
+                    <TableRow
+                      key={user.id}
+                      onClick={() => setSelectedUser(user)}
+                      className="cursor-pointer hover:bg-slate-50"
+                    >
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <Avatar className="w-8 h-8">
@@ -435,7 +411,7 @@ export const UserManager = () => {
                       <TableCell className="text-sm text-slate-500">
                         {new Date(user.created_at).toLocaleDateString()}
                       </TableCell>
-                      <TableCell>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon">

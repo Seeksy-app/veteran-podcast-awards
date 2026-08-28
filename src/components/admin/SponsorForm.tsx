@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import type { SponsorTier as SponsorPackage } from './SponsorTiersManager';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,6 +22,7 @@ interface SponsorFormProps {
     logo_url: string;
     website_url?: string;
     tier: SponsorTier;
+    tier_id?: string | null;
     display_order: number;
     is_active: boolean;
   }) => void;
@@ -34,6 +38,16 @@ export const SponsorForm = ({ sponsor, onSubmit, onCancel, isLoading }: SponsorF
   const [displayOrder, setDisplayOrder] = useState(sponsor?.display_order || 0);
   const [isActive, setIsActive] = useState(sponsor?.is_active ?? true);
   const [uploading, setUploading] = useState(false);
+  const [tierId, setTierId] = useState<string>(((sponsor as unknown as { tier_id?: string })?.tier_id) || "");
+
+  const { data: packages } = useQuery({
+    queryKey: ["sponsor-tiers"],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any).from("sponsor_tiers").select("*").order("sort_order");
+      if (error) return [] as SponsorPackage[];
+      return data as SponsorPackage[];
+    },
+  });
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -61,6 +75,7 @@ export const SponsorForm = ({ sponsor, onSubmit, onCancel, isLoading }: SponsorF
       logo_url: logoUrl,
       website_url: websiteUrl || undefined,
       tier,
+      tier_id: tierId || null,
       display_order: displayOrder,
       is_active: isActive,
     });
@@ -120,8 +135,29 @@ export const SponsorForm = ({ sponsor, onSubmit, onCancel, isLoading }: SponsorF
         />
       </div>
 
+      {(packages?.length ?? 0) > 0 && (
+        <div className="space-y-2">
+          <Label htmlFor="package">Sponsorship Package</Label>
+          <Select value={tierId || "none"} onValueChange={(v) => setTierId(v === "none" ? "" : v)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select a package..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">No package</SelectItem>
+              {(packages || []).map((p) => (
+                <SelectItem key={p.id} value={p.id}>
+                  {p.name}
+                  {p.price != null ? ` — $${Number(p.price).toLocaleString()}` : ""}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-slate-400">Package pricing and slots are managed in Sponsorship Packages above.</p>
+        </div>
+      )}
+
       <div className="space-y-2">
-        <Label htmlFor="tier">Sponsorship Tier</Label>
+        <Label htmlFor="tier">Display Tier (site placement)</Label>
         <Select value={tier} onValueChange={(v) => setTier(v as SponsorTier)}>
           <SelectTrigger>
             <SelectValue />
