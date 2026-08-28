@@ -39,6 +39,8 @@ export const PodcastManager = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [selectedPodcastId, setSelectedPodcastId] = useState<string | null>(null);
 
+  const [listFilter, setListFilter] = useState<"all" | "registered" | "network">("all");
+
   const { data: podcasts, isLoading: loadingPodcasts } = useQuery({
     queryKey: ["admin-podcasts"],
     queryFn: async () => {
@@ -51,22 +53,51 @@ export const PodcastManager = () => {
     },
   });
 
+  // Podcasts claimed by a registered user (profiles.podcast_id)
+  const { data: registrants } = useQuery({
+    queryKey: ["admin-podcast-registrants"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("podcast_id, full_name, email")
+        .not("podcast_id", "is", null);
+      if (error) throw error;
+      return data as { podcast_id: string; full_name: string | null; email: string | null }[];
+    },
+  });
+
+  const registrantByPodcast = useMemo(() => {
+    const map = new Map<string, { full_name: string | null; email: string | null }>();
+    (registrants || []).forEach((r) => {
+      if (r.podcast_id) map.set(r.podcast_id, { full_name: r.full_name, email: r.email });
+    });
+    return map;
+  }, [registrants]);
+
+  const registeredCount = useMemo(
+    () => (podcasts || []).filter((p) => registrantByPodcast.has(p.id)).length,
+    [podcasts, registrantByPodcast]
+  );
+
   const filteredPodcasts = useMemo(() => {
     if (!podcasts) return [];
-    if (!searchQuery.trim() && !selectedPodcastId) return podcasts;
-    
+    let base = podcasts;
+    if (listFilter === "registered") base = base.filter((p) => registrantByPodcast.has(p.id));
+    if (listFilter === "network") base = base.filter((p) => !registrantByPodcast.has(p.id));
+    if (!searchQuery.trim() && !selectedPodcastId) return base;
+
     if (selectedPodcastId) {
-      return podcasts.filter((p) => p.id === selectedPodcastId);
+      return base.filter((p) => p.id === selectedPodcastId);
     }
-    
+
     const query = searchQuery.toLowerCase();
-    return podcasts.filter(
+    return base.filter(
       (podcast) =>
         podcast.title.toLowerCase().includes(query) ||
         podcast.author?.toLowerCase().includes(query) ||
         podcast.description?.toLowerCase().includes(query)
     );
-  }, [podcasts, searchQuery, selectedPodcastId]);
+  }, [podcasts, searchQuery, selectedPodcastId, listFilter, registrantByPodcast]);
 
   const searchSuggestions = useMemo(() => {
     if (!podcasts || !searchQuery.trim()) return [];
@@ -308,6 +339,29 @@ export const PodcastManager = () => {
           </div>
         </div>
 
+        {/* List filters */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {(
+            [
+              { key: "all", label: "All", count: podcasts?.length || 0 },
+              { key: "registered", label: "Registered for Awards", count: registeredCount },
+              { key: "network", label: "Network (RSS only)", count: (podcasts?.length || 0) - registeredCount },
+            ] as const
+          ).map((f) => (
+            <button
+              key={f.key}
+              onClick={() => setListFilter(f.key)}
+              className={`px-3.5 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+                listFilter === f.key
+                  ? "bg-amber-500 border-amber-500 text-white"
+                  : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
+              }`}
+            >
+              {f.label} <span className={listFilter === f.key ? "opacity-80" : "text-slate-400"}>({f.count})</span>
+            </button>
+          ))}
+        </div>
+
         {/* Search with dropdown */}
         <div className="flex items-center gap-2">
           <Popover open={searchOpen} onOpenChange={setSearchOpen}>
@@ -424,6 +478,14 @@ export const PodcastManager = () => {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <h3 className="font-semibold text-slate-900 truncate">{podcast.title}</h3>
+                  {registrantByPodcast.has(podcast.id) && (
+                    <span
+                      className="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-medium whitespace-nowrap"
+                      title={registrantByPodcast.get(podcast.id)?.email || undefined}
+                    >
+                      Registered · {registrantByPodcast.get(podcast.id)?.full_name || registrantByPodcast.get(podcast.id)?.email}
+                    </span>
+                  )}
                   {!podcast.is_active && (
                     <span className="text-xs bg-slate-100 px-2 py-0.5 rounded">Inactive</span>
                   )}
