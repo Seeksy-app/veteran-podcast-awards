@@ -135,7 +135,7 @@ type NavSection =
   | "settings";
 
 const Dashboard = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
@@ -398,7 +398,10 @@ const Dashboard = () => {
 
   const unreadCount = messages.filter((m) => !m.is_read).length;
 
-  const isPodcaster = profile?.user_type === "podcaster";
+  // Admin-only role preview: /dashboard?preview=podcaster|voter|fan
+  const previewParam = searchParams.get("preview");
+  const previewRole = isAdmin && previewParam ? (previewParam === "podcaster" ? "podcaster" : "fan") : null;
+  const isPodcaster = previewRole ? previewRole === "podcaster" : profile?.user_type === "podcaster";
 
   type NavItem = { key: NavSection; label: string; icon: typeof User; badge?: number; podcasterOnly?: boolean; group?: string };
   const navItems: NavItem[] = [
@@ -436,10 +439,19 @@ const Dashboard = () => {
     if (type === "podcaster") navigate("/onboarding");
   };
 
-  const needsRolePick = profile.user_type_confirmed === false;
+  const needsRolePick = profile.user_type_confirmed === false && !previewRole;
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
+      {/* Admin role-preview banner */}
+      {previewRole && (
+        <div className="fixed top-0 inset-x-0 z-[90] bg-purple-600 text-white text-sm text-center py-1.5 flex items-center justify-center gap-3">
+          <span>
+            Previewing the <strong className="capitalize">{previewParam}</strong> dashboard view
+          </span>
+          <a href="/dashboard" className="underline font-medium hover:opacity-80">Exit preview</a>
+        </div>
+      )}
       {/* ─── One-time role prompt for OAuth signups ─── */}
       {needsRolePick && (
         <div className="fixed inset-0 z-[100] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
