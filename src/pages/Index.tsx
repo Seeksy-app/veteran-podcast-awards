@@ -1,3 +1,4 @@
+import { useSearchParams } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Hero } from "@/components/home/Hero";
@@ -7,6 +8,10 @@ import { FriendsOf } from "@/components/home/FriendsOf";
 import { SEO } from "@/components/SEO";
 
 const Index = () => {
+  // Temporary placement toggle: /?friends=bottom moves the strip below the CTA
+  const [searchParams] = useSearchParams();
+  const friendsAtBottom = searchParams.get("friends") === "bottom";
+
   const eventStructuredData = {
     '@context': 'https://schema.org',
     '@type': 'Event',
@@ -38,8 +43,9 @@ const Index = () => {
       <main>
         <Hero />
         <HowItWorks />
-        <FriendsOf />
+        {!friendsAtBottom && <FriendsOf />}
         <CallToAction />
+        {friendsAtBottom && <FriendsOf />}
       </main>
       <Footer />
     </div>

@@ -35,7 +35,7 @@ export const FriendsOf = () => {
         <div className="pointer-events-none absolute inset-y-0 right-0 w-24 z-10 bg-gradient-to-l from-background to-transparent" />
 
         <div
-          className="flex w-max items-center gap-20 motion-reduce:animate-none hover:[animation-play-state:paused]"
+          className="flex w-max items-center motion-reduce:animate-none"
           style={{ animation: "friends-marquee 35s linear infinite" }}
         >
           {loop.map((friend, i) => (
@@ -47,7 +47,7 @@ export const FriendsOf = () => {
               title={friend.name}
               aria-hidden={i >= FRIENDS.length}
               tabIndex={i >= FRIENDS.length ? -1 : undefined}
-              className="shrink-0 opacity-75 hover:opacity-100 transition-opacity duration-300"
+              className="shrink-0 mx-10 opacity-75 hover:opacity-100 transition-opacity duration-300"
             >
               <img
                 src={friend.logo}
