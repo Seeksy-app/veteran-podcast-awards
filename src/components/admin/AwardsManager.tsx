@@ -213,6 +213,7 @@ export const AwardsManager = () => {
   const [selectedProgramId, setSelectedProgramId] = useState<string | null>(null);
   const [programDialogOpen, setProgramDialogOpen] = useState(false);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
+  const [programTab, setProgramTab] = useState<"categories" | "results" | "tickets">("categories");
   const [leaderboardProgramId, setLeaderboardProgramId] = useState<string | null>(null);
   const [leaderboardCategoryId, setLeaderboardCategoryId] = useState<string | null>(null);
 
@@ -1075,7 +1076,32 @@ export const AwardsManager = () => {
                 </CardContent>
               </Card>
 
+              {/* Program section tabs */}
+              <div className="flex flex-wrap items-center gap-2">
+                {(
+                  [
+                    { key: "categories", label: `Award Categories (${categories.length})` },
+                    { key: "results", label: "🔴 Live Results" },
+                    { key: "tickets", label: "Tickets" },
+                  ] as const
+                ).map((t) => (
+                  <button
+                    key={t.key}
+                    onClick={() => setProgramTab(t.key)}
+                    className={cn(
+                      "px-4 py-2 rounded-lg text-sm font-medium border transition-colors",
+                      programTab === t.key
+                        ? "bg-[#B8860B] border-[#B8860B] text-white shadow"
+                        : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
+                    )}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+
               {/* Section 2 — Categories */}
+              {programTab === "categories" && (
               <section className="space-y-4">
                 <SectionHeader
                   title="Award Categories"
@@ -1181,8 +1207,10 @@ export const AwardsManager = () => {
                   )}
                 </div>
               </section>
+              )}
 
               {/* Section 3 — Leaderboard */}
+              {programTab === "results" && (
               <section className="space-y-4">
                 <div className={cn("flex flex-col gap-3 border-b border-slate-200/60 pb-3 sm:flex-row sm:items-center sm:justify-between", GOLD_RING, "pl-4")}>
                   <div className="flex items-center gap-2">
@@ -1284,8 +1312,11 @@ export const AwardsManager = () => {
                   )}
                 </div>
               </section>
+              )}
 
-              <AwardTicketsAdmin programId={resolvedProgramId} program={selectedProgram} />
+              {programTab === "tickets" && (
+                <AwardTicketsAdmin programId={resolvedProgramId} program={selectedProgram} />
+              )}
             </>
           )}
         </main>
