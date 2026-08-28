@@ -19,7 +19,6 @@ const navItems = [
   { label: "Livestream", href: "/livestream" },
   { label: "Podcast Directory", href: "/network" },
   { label: "Podcast Day", href: "/podcast-day" },
-  { label: "Sponsors", href: "/sponsors" },
   { label: "About", href: "/about" },
 ];
 

@@ -22,9 +22,6 @@ export const Footer = () => {
             <Link to="/network" className="text-xs text-muted-foreground hover:text-primary transition-colors">
               Podcast Directory
             </Link>
-            <Link to="/sponsors" className="text-xs text-muted-foreground hover:text-primary transition-colors">
-              Sponsors
-            </Link>
             <Link to="/livestream" className="text-xs text-muted-foreground hover:text-primary transition-colors">
               Livestream
             </Link>

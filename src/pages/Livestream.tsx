@@ -75,18 +75,7 @@ const LivestreamPage = () => {
             </div>
           </div>
 
-          {/* Sponsors CTA */}
-          <div className="text-center">
-            <p className="text-muted-foreground mb-4">
-              Interested in sponsoring the Veteran Podcast Awards?
-            </p>
-            <Button variant="goldOutline" size="lg" asChild>
-              <Link to="/sponsors">
-                <Users className="w-5 h-5 mr-2" />
-                View Sponsors & Opportunities
-              </Link>
-            </Button>
-          </div>
+          {/* Sponsors CTA hidden while packages are finalized — /sponsors stays live but unlisted */}
         </div>
       </main>
       <Footer />
