@@ -39,7 +39,7 @@ export const PodcastManager = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [selectedPodcastId, setSelectedPodcastId] = useState<string | null>(null);
 
-  const [listFilter, setListFilter] = useState<"all" | "registered" | "network">("all");
+  const [listFilter, setListFilter] = useState<"all" | "registered" | "network" | "nominated">("all");
 
   const { data: podcasts, isLoading: loadingPodcasts } = useQuery({
     queryKey: ["admin-podcasts"],
@@ -63,6 +63,28 @@ export const PodcastManager = () => {
         .not("podcast_id", "is", null);
       if (error) throw error;
       return data as { podcast_id: string; full_name: string | null; email: string | null }[];
+    },
+  });
+
+  // Community nominations submitted via the Nominate a Podcast form
+  const { data: nominations } = useQuery({
+    queryKey: ["admin-nominated-contacts"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("podcast_contacts")
+        .select("id, name, email, podcast_name, podcast_url, notes, created_at")
+        .contains("lists", ["Nominated Podcasts"])
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data as {
+        id: string;
+        name: string | null;
+        email: string;
+        podcast_name: string | null;
+        podcast_url: string | null;
+        notes: string | null;
+        created_at: string;
+      }[];
     },
   });
 
@@ -346,6 +368,7 @@ export const PodcastManager = () => {
               { key: "all", label: "All", count: podcasts?.length || 0 },
               { key: "registered", label: "Registered for Awards", count: registeredCount },
               { key: "network", label: "Network (RSS only)", count: (podcasts?.length || 0) - registeredCount },
+              { key: "nominated", label: "Nominated", count: nominations?.length || 0 },
             ] as const
           ).map((f) => (
             <button
@@ -446,7 +469,47 @@ export const PodcastManager = () => {
         </div>
       </div>
 
-      {loadingPodcasts ? (
+      {listFilter === "nominated" ? (
+        !nominations?.length ? (
+          <div className="text-center py-12 bg-white border border-slate-200 rounded-lg text-slate-500">
+            No nominations yet. Nominations from the "Nominate a Podcast" form appear here.
+          </div>
+        ) : (
+          <div className="grid gap-2">
+            {nominations.map((n) => (
+              <div key={n.id} className="p-4 bg-white border border-slate-200 rounded-lg">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-semibold text-slate-900">{n.podcast_name || "Untitled podcast"}</h3>
+                      <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">Nominated</span>
+                    </div>
+                    <p className="text-sm text-slate-500 mt-0.5">
+                      by {n.name || "Anonymous"} · <a href={`mailto:${n.email}`} className="text-amber-600 hover:underline">{n.email}</a>
+                    </p>
+                    {n.podcast_url && (
+                      <a
+                        href={n.podcast_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-amber-600 hover:underline inline-flex items-center gap-1 mt-1"
+                      >
+                        {n.podcast_url} <ExternalLink className="w-3 h-3" />
+                      </a>
+                    )}
+                    {n.notes && (
+                      <p className="text-sm text-slate-600 mt-2 italic">&ldquo;{n.notes}&rdquo;</p>
+                    )}
+                  </div>
+                  <span className="text-xs text-slate-400 whitespace-nowrap shrink-0">
+                    {new Date(n.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )
+      ) : loadingPodcasts ? (
         <div className="text-center py-8 text-slate-500">Loading podcasts...</div>
       ) : !podcasts?.length ? (
         <div className="text-center py-12 bg-white border border-slate-200 rounded-lg">

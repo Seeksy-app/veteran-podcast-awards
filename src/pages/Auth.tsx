@@ -60,7 +60,21 @@ const AuthPage = () => {
   const [showVerify, setShowVerify] = useState(false);
   const [showResendVerify, setShowResendVerify] = useState(false);
   const [isResending, setIsResending] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string; userType?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string; userType?: string; terms?: string }>({});
+  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [awardsOptIn, setAwardsOptIn] = useState(true);
+  const [awardsYear, setAwardsYear] = useState<number | null>(null);
+
+  useEffect(() => {
+    supabase
+      .from("awards_config")
+      .select("year")
+      .eq("is_active", true)
+      .single()
+      .then(({ data }) => {
+        if (data?.year) setAwardsYear(data.year);
+      });
+  }, []);
 
   const [quote] = useState(() => QUOTES[Math.floor(Math.random() * QUOTES.length)]);
   const [slideIndex, setSlideIndex] = useState(0);
@@ -113,7 +127,11 @@ const AuthPage = () => {
   }, [searchParams]);
 
   const validateForm = () => {
-    const newErrors: { email?: string; password?: string; userType?: string } = {};
+    const newErrors: { email?: string; password?: string; userType?: string; terms?: string } = {};
+
+    if (!isLogin && !agreeTerms) {
+      newErrors.terms = "You must agree to the Terms & Conditions to create an account";
+    }
 
     const emailResult = emailSchema.safeParse(email);
     if (!emailResult.success) {
@@ -200,7 +218,10 @@ const AuthPage = () => {
           toast.success("Welcome back!");
         }
       } else {
-        const { error } = await signUp(email, password, fullName, userType!);
+        const { error } = await signUp(email, password, fullName, userType!, {
+          accepted_terms_at: new Date().toISOString(),
+          awards_opt_in: userType === "podcaster" ? awardsOptIn : false,
+        });
         if (error) {
           if (error.message.includes("already registered")) {
             toast.error("This email is already registered. Try logging in instead.");
@@ -460,6 +481,42 @@ const AuthPage = () => {
                 >
                   {isSendingReset ? "Sending reset..." : "Forgot password?"}
                 </button>
+              </div>
+            )}
+
+            {!isLogin && (
+              <div className="space-y-3 pt-1">
+                {userType === "podcaster" && (
+                  <label className="flex items-start gap-3 cursor-pointer rounded-lg border border-primary/30 bg-primary/5 p-3">
+                    <input
+                      type="checkbox"
+                      checked={awardsOptIn}
+                      onChange={(e) => setAwardsOptIn(e.target.checked)}
+                      className="mt-0.5 h-4 w-4 accent-amber-500"
+                    />
+                    <span className="text-sm text-foreground">
+                      Register me for the <strong>{awardsYear || 2026} Veteran Podcast Awards</strong>
+                    </span>
+                  </label>
+                )}
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={agreeTerms}
+                    onChange={(e) => {
+                      setAgreeTerms(e.target.checked);
+                      setErrors((prev) => ({ ...prev, terms: undefined }));
+                    }}
+                    className="mt-0.5 h-4 w-4 accent-amber-500"
+                  />
+                  <span className="text-sm text-muted-foreground">
+                    I agree to the{" "}
+                    <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Terms &amp; Conditions</a>{" "}
+                    and{" "}
+                    <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Privacy Policy</a>
+                  </span>
+                </label>
+                {errors.terms && <p className="text-sm text-destructive">{errors.terms}</p>}
               </div>
             )}
 

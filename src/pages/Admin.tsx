@@ -5,7 +5,6 @@ import { useTheme } from '@/hooks/useTheme';
 import { SponsorList } from '@/components/admin/SponsorList';
 import { PodcastManager } from '@/components/admin/PodcastManager';
 import { UserManager } from '@/components/admin/UserManager';
-import { SubmissionManager } from '@/components/admin/SubmissionManager';
 import { ContactManager } from '@/components/admin/ContactManager';
 import { TechStackPanel } from '@/components/admin/TechStackPanel';
 import { SecurityPanel } from '@/components/admin/SecurityPanel';
@@ -159,10 +158,6 @@ const AdminPage = () => {
                 <Mic className="w-4 h-4" />
                 <span className="hidden sm:inline">Podcasts</span>
               </TabsTrigger>
-              <TabsTrigger value="submissions" className="gap-2">
-                <Rss className="w-4 h-4" />
-                <span className="hidden sm:inline">Submissions</span>
-              </TabsTrigger>
               <TabsTrigger value="awards" className="gap-2">
                 <Trophy className="w-4 h-4" />
                 <span className="hidden sm:inline">Awards</span>
@@ -244,10 +239,6 @@ const AdminPage = () => {
 
           <TabsContent value="podcasts">
             <PodcastManager />
-          </TabsContent>
-
-          <TabsContent value="submissions">
-            <SubmissionManager />
           </TabsContent>
 
           <TabsContent value="awards">

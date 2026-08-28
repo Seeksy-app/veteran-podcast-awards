@@ -404,34 +404,40 @@ const OnboardingPage = () => {
                 </p>
               </div>
 
-              {/* Selected podcast card */}
-              {(selectedPodcast || selectedLocalPodcastId) ? (
-                <div className="flex items-center gap-4 rounded-xl border-2 border-amber-400 bg-amber-50 p-4">
-                  {podcastImageUrl && (
-                    <img
-                      src={podcastImageUrl}
-                      alt=""
-                      className="w-14 h-14 rounded-lg object-cover flex-shrink-0"
-                    />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-slate-900 truncate">{podcastName}</p>
-                    {podcastRss && (
-                      <p className="text-xs text-slate-500 truncate mt-0.5">
-                        RSS connected
-                      </p>
+              {/* Selected podcast card — confirm it matches before continuing */}
+              {(selectedPodcast || selectedLocalPodcastId || (podcastRss.trim() && podcastName.trim())) ? (
+                <div className="rounded-xl border-2 border-amber-400 bg-amber-50 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-amber-700 mb-3 flex items-center gap-1.5">
+                    <Check className="w-3.5 h-3.5" /> Confirm this is your show
+                  </p>
+                  <div className="flex items-center gap-4">
+                    {podcastImageUrl && (
+                      <img
+                        src={podcastImageUrl}
+                        alt=""
+                        className="w-14 h-14 rounded-lg object-cover flex-shrink-0"
+                      />
                     )}
-                    {selectedLocalPodcastId && (
-                      <p className="text-xs text-amber-600 mt-0.5">Already in our directory</p>
-                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-slate-900 truncate">{podcastName}</p>
+                      {podcastRss && (
+                        <p className="text-xs text-slate-500 truncate mt-0.5">{podcastRss}</p>
+                      )}
+                      {selectedLocalPodcastId && (
+                        <p className="text-xs text-amber-600 mt-0.5">Already in our directory</p>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleClearSelection}
+                      className="text-sm text-amber-600 hover:underline flex-shrink-0"
+                    >
+                      Change
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={handleClearSelection}
-                    className="text-sm text-amber-600 hover:underline flex-shrink-0"
-                  >
-                    Change
-                  </button>
+                  <p className="text-xs text-slate-500 mt-3">
+                    Check that the artwork and title match the podcast you want to register. If not, click Change.
+                  </p>
                 </div>
               ) : (
                 <>

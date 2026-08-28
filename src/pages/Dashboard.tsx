@@ -430,7 +430,7 @@ const Dashboard = () => {
   const confirmRole = async (type: "podcaster" | "fan") => {
     await supabase
       .from("profiles")
-      .update({ user_type: type, user_type_confirmed: true } as never)
+      .update({ user_type: type, user_type_confirmed: true, accepted_terms_at: new Date().toISOString() } as never)
       .eq("id", user.id);
     setProfile({ ...profile, user_type: type, user_type_confirmed: true });
     if (type === "podcaster") navigate("/onboarding");
@@ -465,6 +465,12 @@ const Dashboard = () => {
                 <span className="text-xs text-slate-500">Follow & vote</span>
               </button>
             </div>
+            <p className="text-[11px] text-slate-400 mt-5">
+              By continuing, you agree to our{" "}
+              <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-amber-600 hover:underline">Terms &amp; Conditions</a>{" "}
+              and{" "}
+              <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-amber-600 hover:underline">Privacy Policy</a>
+            </p>
           </div>
         </div>
       )}
