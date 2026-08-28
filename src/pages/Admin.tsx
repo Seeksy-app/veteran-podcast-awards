@@ -16,6 +16,7 @@ import { InvestorEngagementPanel } from '@/components/admin/InvestorEngagementPa
 import { DeckEngagementPanel } from '@/components/admin/DeckEngagementPanel';
 import { AwardsManager } from '@/components/admin/AwardsManager';
 import { EmailMarketingPanel } from '@/components/admin/EmailMarketingPanel';
+import { TasksPanel } from '@/components/admin/TasksPanel';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -27,6 +28,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { ThemeSelector } from '@/components/theme/ThemeToggle';
 import {
+  ClipboardList,
   LogOut,
   Shield,
   Home,
@@ -162,6 +164,10 @@ const AdminPage = () => {
                 <Trophy className="w-4 h-4" />
                 <span className="hidden sm:inline">Awards</span>
               </TabsTrigger>
+              <TabsTrigger value="tasks" className="gap-2">
+                <ClipboardList className="w-4 h-4" />
+                <span className="hidden sm:inline">Tasks</span>
+              </TabsTrigger>
               <TabsTrigger value="sponsors" className="gap-2">
                 <Handshake className="w-4 h-4" />
                 <span className="hidden sm:inline">Sponsors</span>
@@ -243,6 +249,10 @@ const AdminPage = () => {
 
           <TabsContent value="awards">
             <AwardsManager />
+          </TabsContent>
+
+          <TabsContent value="tasks">
+            <TasksPanel />
           </TabsContent>
 
           <TabsContent value="sponsors">
