@@ -32,7 +32,7 @@ export const HowItWorks = () => {
       {/* Top fade — blends into the section above */}
       <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-background to-transparent z-10" />
 
-      <div className="grid grid-cols-1 lg:grid-cols-[45%_55%] min-h-[900px]">
+      <div className="grid grid-cols-1 lg:grid-cols-[45%_55%] lg:min-h-[900px]">
         {/* Left: Microphone — anchored left under the spotlight */}
         <div className="relative hidden lg:block">
           <img
@@ -49,7 +49,7 @@ export const HowItWorks = () => {
         </div>
 
         {/* Right: Content */}
-        <div className="relative z-10 flex flex-col justify-center py-32 lg:py-40 px-8 lg:pl-12 lg:pr-20">
+        <div className="relative z-10 flex flex-col justify-center py-16 lg:py-40 px-6 sm:px-8 lg:pl-12 lg:pr-20">
           <h2 className="font-serif text-3xl md:text-5xl font-bold mb-5">
             <span className="text-foreground">How It </span>
             <span className="text-gold-gradient">Works</span>

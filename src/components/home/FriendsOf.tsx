@@ -5,11 +5,11 @@ import mbaLogo from "@/assets/friends/mba.png";
 import meteorLogo from "@/assets/friends/meteor17.gif";
 
 const FRIENDS = [
-  { name: "Team Boxing League", logo: tblLogo, url: "https://www.teamboxingleague.com/", h: "h-16" },
-  { name: "The Genius Network", logo: geniusLogo, url: "https://geniusnetwork.com/", h: "h-12" },
-  { name: "Department of Hydration", logo: hydrationLogo, url: "https://deptofhydration.us/", h: "h-7" },
-  { name: "Military Basketball Association", logo: mbaLogo, url: "https://www.mymbaglobal.com/", h: "h-16" },
-  { name: "Meteor 17", logo: meteorLogo, url: "https://www.meteor17.com/", h: "h-10" },
+  { name: "Team Boxing League", logo: tblLogo, url: "https://www.teamboxingleague.com/", h: "h-10 md:h-16" },
+  { name: "The Genius Network", logo: geniusLogo, url: "https://geniusnetwork.com/", h: "h-8 md:h-12" },
+  { name: "Department of Hydration", logo: hydrationLogo, url: "https://deptofhydration.us/", h: "h-5 md:h-7" },
+  { name: "Military Basketball Association", logo: mbaLogo, url: "https://www.mymbaglobal.com/", h: "h-10 md:h-16" },
+  { name: "Meteor 17", logo: meteorLogo, url: "https://www.meteor17.com/", h: "h-7 md:h-10" },
 ];
 
 export const FriendsOf = () => {
@@ -17,7 +17,7 @@ export const FriendsOf = () => {
   const loop = [...FRIENDS, ...FRIENDS];
 
   return (
-    <section className="relative bg-background py-16 overflow-hidden border-t border-border/40">
+    <section className="relative bg-background py-10 md:py-16 overflow-hidden border-t border-border/40">
       <style>{`
         @keyframes friends-marquee {
           from { transform: translateX(0); }
@@ -25,7 +25,7 @@ export const FriendsOf = () => {
         }
       `}</style>
 
-      <p className="text-center text-xs font-semibold uppercase tracking-[0.25em] text-muted-foreground mb-10">
+      <p className="text-center text-xs font-semibold uppercase tracking-[0.25em] text-muted-foreground mb-7 md:mb-10">
         Friends of <span className="text-primary">VPA</span>
       </p>
 
@@ -47,7 +47,7 @@ export const FriendsOf = () => {
               title={friend.name}
               aria-hidden={i >= FRIENDS.length}
               tabIndex={i >= FRIENDS.length ? -1 : undefined}
-              className="shrink-0 mx-10 opacity-75 hover:opacity-100 transition-opacity duration-300"
+              className="shrink-0 mx-6 md:mx-10 opacity-75 hover:opacity-100 transition-opacity duration-300"
             >
               <img
                 src={friend.logo}
