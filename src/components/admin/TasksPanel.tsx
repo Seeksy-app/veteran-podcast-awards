@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Plus, Trash2, ExternalLink, ClipboardList } from "lucide-react";
+import { Plus, Trash2, ExternalLink, ClipboardList, Pencil } from "lucide-react";
 import { toast } from "sonner";
 
 interface AdminTask {
@@ -57,6 +57,7 @@ export const TasksPanel = () => {
   const { user } = useAuth();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [draft, setDraft] = useState(emptyDraft);
+  const [editingTask, setEditingTask] = useState<AdminTask | null>(null);
   const [viewStatus, setViewStatus] = useState<"all" | AdminTask["status"]>("all");
   const [assigneeFilter, setAssigneeFilter] = useState<string>("all");
   const [areaFilter, setAreaFilter] = useState<string>("all");
@@ -84,9 +85,9 @@ export const TasksPanel = () => {
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ["admin-tasks"] });
 
-  const createTask = useMutation({
+  const saveTask = useMutation({
     mutationFn: async () => {
-      const { error } = await tasksTable().insert({
+      const payload = {
         title: draft.title.trim(),
         description: draft.description.trim() || null,
         status: draft.status,
@@ -95,17 +96,42 @@ export const TasksPanel = () => {
         due_date: draft.due_date || null,
         area: draft.area || null,
         link: draft.link.trim() || null,
-      });
+      };
+      const { error } = editingTask
+        ? await tasksTable().update({ ...payload, updated_at: new Date().toISOString() }).eq("id", editingTask.id)
+        : await tasksTable().insert(payload);
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Task created");
+      toast.success(editingTask ? "Task updated" : "Task created");
       setIsDialogOpen(false);
+      setEditingTask(null);
       setDraft(emptyDraft);
       invalidate();
     },
-    onError: (e: Error) => toast.error(`Could not create task: ${e.message}`),
+    onError: (e: Error) => toast.error(`Could not save task: ${e.message}`),
   });
+
+  const openEdit = (t: AdminTask) => {
+    setEditingTask(t);
+    setDraft({
+      title: t.title,
+      description: t.description || "",
+      status: t.status,
+      priority: t.priority,
+      assignee: t.assignee || "",
+      due_date: t.due_date || "",
+      area: t.area || "",
+      link: t.link || "",
+    });
+    setIsDialogOpen(true);
+  };
+
+  const openNew = () => {
+    setEditingTask(null);
+    setDraft(emptyDraft);
+    setIsDialogOpen(true);
+  };
 
   const updateStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: AdminTask["status"] }) => {
@@ -196,7 +222,7 @@ export const TasksPanel = () => {
             Everything to get done before voting opens Oct 5 and the ceremony Nov 11
           </p>
         </div>
-        <Button onClick={() => setIsDialogOpen(true)}>
+        <Button onClick={openNew}>
           <Plus className="w-4 h-4 mr-2" />
           New Task
         </Button>
@@ -323,6 +349,13 @@ export const TasksPanel = () => {
                       <option value="completed">Completed</option>
                     </select>
                     <button
+                      onClick={() => openEdit(t)}
+                      className="text-slate-400 hover:text-amber-600 shrink-0"
+                      title="Edit task (assignee, due date, details)"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
                       onClick={() => deleteTask.mutate(t.id)}
                       className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
                       title="Delete task"
@@ -337,11 +370,20 @@ export const TasksPanel = () => {
         ))
       )}
 
-      {/* New Task dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      {/* New / Edit Task dialog */}
+      <Dialog
+        open={isDialogOpen}
+        onOpenChange={(open) => {
+          setIsDialogOpen(open);
+          if (!open) {
+            setEditingTask(null);
+            setDraft(emptyDraft);
+          }
+        }}
+      >
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>New Task</DialogTitle>
+            <DialogTitle>{editingTask ? "Edit Task" : "New Task"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-1.5">
@@ -431,8 +473,8 @@ export const TasksPanel = () => {
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-              <Button onClick={() => createTask.mutate()} disabled={!draft.title.trim() || createTask.isPending}>
-                {createTask.isPending ? "Creating..." : "Create Task"}
+              <Button onClick={() => saveTask.mutate()} disabled={!draft.title.trim() || saveTask.isPending}>
+                {saveTask.isPending ? "Saving..." : editingTask ? "Save Changes" : "Create Task"}
               </Button>
             </div>
           </div>
