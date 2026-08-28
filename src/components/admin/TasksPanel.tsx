@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -53,8 +54,22 @@ const tasksTable = () => (supabase as any).from("admin_tasks");
 
 export const TasksPanel = () => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [draft, setDraft] = useState(emptyDraft);
+  const [viewStatus, setViewStatus] = useState<"all" | AdminTask["status"]>("all");
+  const [assigneeFilter, setAssigneeFilter] = useState<string>("all");
+  const [areaFilter, setAreaFilter] = useState<string>("all");
+
+  // Logged-in admin's display name, for the "My Tasks" view
+  const { data: myProfile } = useQuery({
+    queryKey: ["admin-tasks-me", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("full_name").eq("id", user!.id).single();
+      return data as { full_name: string | null } | null;
+    },
+    enabled: !!user,
+  });
 
   const { data: tasks, isLoading, error } = useQuery({
     queryKey: ["admin-tasks"],
@@ -113,11 +128,40 @@ export const TasksPanel = () => {
     onError: (e: Error) => toast.error(`Delete failed: ${e.message}`),
   });
 
+  const isMine = (t: AdminTask) => {
+    if (!t.assignee) return false;
+    const me = (myProfile?.full_name || "").toLowerCase();
+    const a = t.assignee.toLowerCase();
+    return me.length > 0 && (me.includes(a) || a.includes(me.split(" ")[0]));
+  };
+
+  const assignees = useMemo(
+    () => [...new Set((tasks || []).map((t) => t.assignee).filter(Boolean))] as string[],
+    [tasks]
+  );
+  const areas = useMemo(
+    () => [...new Set((tasks || []).map((t) => t.area).filter(Boolean))] as string[],
+    [tasks]
+  );
+
+  const filteredTasks = useMemo(() => {
+    return (tasks || []).filter((t) => {
+      if (assigneeFilter === "mine" && !isMine(t)) return false;
+      if (assigneeFilter === "unassigned" && t.assignee) return false;
+      if (assigneeFilter !== "all" && assigneeFilter !== "mine" && assigneeFilter !== "unassigned" && t.assignee !== assigneeFilter) return false;
+      if (areaFilter !== "all" && t.area !== areaFilter) return false;
+      return true;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tasks, assigneeFilter, areaFilter, myProfile]);
+
   const grouped = useMemo(() => {
     const map: Record<string, AdminTask[]> = { todo: [], in_progress: [], completed: [] };
-    (tasks || []).forEach((t) => map[t.status]?.push(t));
+    filteredTasks.forEach((t) => map[t.status]?.push(t));
     return map;
-  }, [tasks]);
+  }, [filteredTasks]);
+
+  const visibleSections = viewStatus === "all" ? SECTIONS : SECTIONS.filter((s) => s.key === viewStatus);
 
   const dueLabel = (t: AdminTask) => {
     if (!t.due_date) return null;
@@ -158,10 +202,78 @@ export const TasksPanel = () => {
         </Button>
       </div>
 
+      {/* View filters */}
+      <div className="flex flex-wrap items-center gap-2">
+        {(
+          [
+            { key: "all", label: "All" },
+            { key: "todo", label: "To Dos" },
+            { key: "in_progress", label: "In Progress" },
+            { key: "completed", label: "Done" },
+          ] as const
+        ).map((v) => (
+          <button
+            key={v.key}
+            onClick={() => setViewStatus(v.key)}
+            className={`px-3.5 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+              viewStatus === v.key
+                ? "bg-slate-900 border-slate-900 text-white"
+                : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
+            }`}
+          >
+            {v.label}
+          </button>
+        ))}
+        <div className="w-px h-6 bg-slate-200 mx-1" />
+        <button
+          onClick={() => setAssigneeFilter(assigneeFilter === "mine" ? "all" : "mine")}
+          className={`px-3.5 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+            assigneeFilter === "mine"
+              ? "bg-amber-500 border-amber-500 text-white"
+              : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
+          }`}
+        >
+          My Tasks
+        </button>
+        <select
+          value={assigneeFilter === "mine" ? "all" : assigneeFilter}
+          onChange={(e) => setAssigneeFilter(e.target.value)}
+          className="text-sm border border-slate-200 rounded-full px-3 py-1.5 bg-white text-slate-600"
+        >
+          <option value="all">All assignees</option>
+          {assignees.map((a) => (
+            <option key={a} value={a}>{a}</option>
+          ))}
+          <option value="unassigned">Unassigned</option>
+        </select>
+        <select
+          value={areaFilter}
+          onChange={(e) => setAreaFilter(e.target.value)}
+          className="text-sm border border-slate-200 rounded-full px-3 py-1.5 bg-white text-slate-600"
+        >
+          <option value="all">All areas</option>
+          {areas.map((a) => (
+            <option key={a} value={a}>{a}</option>
+          ))}
+        </select>
+        {(viewStatus !== "all" || assigneeFilter !== "all" || areaFilter !== "all") && (
+          <button
+            onClick={() => {
+              setViewStatus("all");
+              setAssigneeFilter("all");
+              setAreaFilter("all");
+            }}
+            className="text-sm text-slate-400 hover:text-slate-600 underline"
+          >
+            Clear
+          </button>
+        )}
+      </div>
+
       {isLoading ? (
         <div className="text-center py-8 text-slate-500">Loading tasks...</div>
       ) : (
-        SECTIONS.map((section) => (
+        visibleSections.map((section) => (
           <div key={section.key} className={`bg-white border border-slate-200 border-l-4 ${section.accent} rounded-lg`}>
             <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100">
               <span className={`w-2 h-2 rounded-full ${section.dot}`} />
