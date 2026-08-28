@@ -103,8 +103,6 @@ export const SponsorTiersManager = () => {
     setDialogOpen(true);
   };
 
-  if (error) return null; // table not created yet — hide quietly
-
   return (
     <div className="bg-white border border-slate-200 rounded-xl p-6 mb-6">
       <div className="flex items-center justify-between mb-4">
@@ -127,6 +125,12 @@ export const SponsorTiersManager = () => {
           <Plus className="w-4 h-4 mr-1.5" /> Add Package
         </Button>
       </div>
+
+      {error && (
+        <p className="text-sm text-slate-500 bg-slate-50 border border-slate-200 rounded-lg p-3 mb-3">
+          Sponsorship packages table not found — run the <code>sponsor_tiers</code> migration in the Supabase SQL editor to enable this.
+        </p>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {(tiers || []).map((t) => {
