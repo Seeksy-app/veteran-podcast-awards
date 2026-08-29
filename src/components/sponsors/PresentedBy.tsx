@@ -17,14 +17,14 @@ export const PresentedBy = ({ categoryId, className = "" }: { categoryId: string
     queryKey: ["category-sponsor", categoryId],
     queryFn: async () => {
       const { data, error } = await (supabase as any)
-        .from("sponsors")
-        .select("id, name, logo_url, website_url")
+        .from("sponsor_categories")
+        .select("sponsors(id, name, logo_url, website_url, is_active)")
         .eq("category_id", categoryId)
-        .eq("is_active", true)
         .limit(1)
         .maybeSingle();
       if (error) return null;
-      return data as CategorySponsor | null;
+      const s = (data as { sponsors: (CategorySponsor & { is_active: boolean }) | null } | null)?.sponsors;
+      return s && s.is_active ? s : null;
     },
     enabled: !!categoryId,
   });

@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { useAllSponsors, useDeleteSponsor, useUpdateSponsor, useCreateSponsor } from '@/hooks/useSponsors';
 import { SponsorForm } from './SponsorForm';
 import { Button } from '@/components/ui/button';
@@ -19,6 +21,7 @@ const tierColors: Record<string, string> = {
 };
 
 export const SponsorList = () => {
+  const queryClient = useQueryClient();
   const { data: sponsors, isLoading } = useAllSponsors();
   const createSponsor = useCreateSponsor();
   const updateSponsor = useUpdateSponsor();
@@ -27,9 +30,22 @@ export const SponsorList = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingSponsor, setEditingSponsor] = useState<Sponsor | null>(null);
 
-  const handleCreate = async (data: Parameters<typeof createSponsor.mutateAsync>[0]) => {
+  /** Replace the sponsor's category claims; unique(category_id) guards exclusivity server-side */
+  const syncCategories = async (sponsorId: string, categoryIds: string[]) => {
+    await (supabase as any).from('sponsor_categories').delete().eq('sponsor_id', sponsorId);
+    if (categoryIds.length) {
+      const { error } = await (supabase as any)
+        .from('sponsor_categories')
+        .insert(categoryIds.map((category_id) => ({ sponsor_id: sponsorId, category_id })));
+      if (error) toast.error('Some categories were just taken by another sponsor — reopen to adjust.');
+    }
+    queryClient.invalidateQueries({ queryKey: ['sponsor-category-claims'] });
+  };
+
+  const handleCreate = async ({ category_ids, ...data }: Parameters<typeof createSponsor.mutateAsync>[0] & { category_ids: string[] }) => {
     try {
-      await createSponsor.mutateAsync(data);
+      const created = await createSponsor.mutateAsync(data);
+      await syncCategories(created.id, category_ids);
       toast.success('Sponsor created successfully');
       setIsFormOpen(false);
     } catch (error) {
@@ -37,17 +53,20 @@ export const SponsorList = () => {
     }
   };
 
-  const handleUpdate = async (data: {
+  const handleUpdate = async ({ category_ids, ...data }: {
     name: string;
     logo_url: string;
     website_url?: string;
     tier: Database['public']['Enums']['sponsor_tier'];
+    tier_id?: string | null;
+    category_ids: string[];
     display_order: number;
     is_active: boolean;
   }) => {
     if (!editingSponsor) return;
     try {
       await updateSponsor.mutateAsync({ ...data, id: editingSponsor.id });
+      await syncCategories(editingSponsor.id, category_ids);
       toast.success('Sponsor updated successfully');
       setEditingSponsor(null);
     } catch (error) {
@@ -162,7 +181,7 @@ export const SponsorList = () => {
 
       {/* Create Dialog */}
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Add Sponsor</DialogTitle>
           </DialogHeader>
@@ -176,7 +195,7 @@ export const SponsorList = () => {
 
       {/* Edit Dialog */}
       <Dialog open={!!editingSponsor} onOpenChange={(open) => !open && setEditingSponsor(null)}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Sponsor</DialogTitle>
           </DialogHeader>

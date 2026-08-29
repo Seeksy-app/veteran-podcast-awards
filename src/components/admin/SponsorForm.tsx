@@ -23,7 +23,7 @@ interface SponsorFormProps {
     website_url?: string;
     tier: SponsorTier;
     tier_id?: string | null;
-    category_id?: string | null;
+    category_ids: string[];
     display_order: number;
     is_active: boolean;
   }) => void;
@@ -40,7 +40,8 @@ export const SponsorForm = ({ sponsor, onSubmit, onCancel, isLoading }: SponsorF
   const [isActive, setIsActive] = useState(sponsor?.is_active ?? true);
   const [uploading, setUploading] = useState(false);
   const [tierId, setTierId] = useState<string>(((sponsor as unknown as { tier_id?: string })?.tier_id) || "");
-  const [categoryId, setCategoryId] = useState<string>(((sponsor as unknown as { category_id?: string })?.category_id) || "");
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
+  const [loadedExisting, setLoadedExisting] = useState(false);
 
   const { data: packages } = useQuery({
     queryKey: ["sponsor-tiers"],
@@ -56,12 +57,54 @@ export const SponsorForm = ({ sponsor, onSubmit, onCancel, isLoading }: SponsorF
     queryFn: async () => {
       const { data, error } = await supabase
         .from("award_categories")
-        .select("id, name")
+        .select("id, name, slug")
         .order("sort_order");
       if (error) return [];
-      return data as { id: string; name: string }[];
+      return data as { id: string; name: string; slug: string }[];
     },
   });
+
+  // Which categories are already claimed, and by which sponsor
+  const { data: claims } = useQuery({
+    queryKey: ["sponsor-category-claims"],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("sponsor_categories")
+        .select("category_id, sponsor_id");
+      if (error) return [] as { category_id: string; sponsor_id: string }[];
+      return data as { category_id: string; sponsor_id: string }[];
+    },
+  });
+
+  // Pre-select the sponsor's existing categories when editing
+  if (!loadedExisting && claims && sponsor) {
+    setSelectedCategoryIds(claims.filter((c) => c.sponsor_id === sponsor.id).map((c) => c.category_id));
+    setLoadedExisting(true);
+  }
+
+  const BRANCH_RE = /(army|navy|marine|air-force|coast-guard|space-force|national-guard)/;
+  const isBranch = (slug: string) => BRANCH_RE.test(slug);
+  const regularCats = (awardCategories || []).filter((c) => !isBranch(c.slug));
+  const branchCats = (awardCategories || []).filter((c) => isBranch(c.slug));
+  const takenByOther = (catId: string) =>
+    (claims || []).some((c) => c.category_id === catId && c.sponsor_id !== sponsor?.id);
+  const selectedRegular = selectedCategoryIds.filter((id) => regularCats.some((c) => c.id === id));
+  const selectedBranch = selectedCategoryIds.filter((id) => branchCats.some((c) => c.id === id));
+
+  const toggleCategory = (catId: string, branch: boolean) => {
+    setSelectedCategoryIds((prev) => {
+      if (prev.includes(catId)) return prev.filter((id) => id !== catId);
+      if (branch && selectedBranch.length >= 1) {
+        toast.error("Sponsors can pick 1 branch category");
+        return prev;
+      }
+      if (!branch && selectedRegular.length >= 5) {
+        toast.error("Sponsors can pick up to 5 award categories");
+        return prev;
+      }
+      return [...prev, catId];
+    });
+  };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -90,7 +133,7 @@ export const SponsorForm = ({ sponsor, onSubmit, onCancel, isLoading }: SponsorF
       website_url: websiteUrl || undefined,
       tier,
       tier_id: tierId || null,
-      category_id: categoryId || null,
+      category_ids: selectedCategoryIds,
       display_order: displayOrder,
       is_active: isActive,
     });
@@ -172,22 +215,74 @@ export const SponsorForm = ({ sponsor, onSubmit, onCancel, isLoading }: SponsorF
       )}
 
       {(awardCategories?.length ?? 0) > 0 && (
-        <div className="space-y-2">
-          <Label htmlFor="sponsoredCategory">Sponsored Award Category (optional)</Label>
-          <Select value={categoryId || "none"} onValueChange={(v) => setCategoryId(v === "none" ? "" : v)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select a category..." />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">No category</SelectItem>
-              {(awardCategories || []).map((c) => (
-                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <p className="text-xs text-slate-400">
-            Shows "Presented by" with this sponsor's logo on the category page and every nominee's voting page.
-          </p>
+        <div className="space-y-4 rounded-lg border border-slate-200 p-4">
+          <div>
+            <Label>Sponsored Award Categories</Label>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Up to 5 categories + 1 branch. Each category is exclusive — taken ones are locked.
+              "Presented by" appears on the category page and every nominee's voting page and share card.
+            </p>
+          </div>
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">
+              Categories ({selectedRegular.length}/5)
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {regularCats.map((c) => {
+                const taken = takenByOther(c.id);
+                const selected = selectedCategoryIds.includes(c.id);
+                return (
+                  <button
+                    key={c.id}
+                    type="button"
+                    disabled={taken}
+                    onClick={() => toggleCategory(c.id, false)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                      selected
+                        ? "bg-amber-500 border-amber-500 text-white"
+                        : taken
+                        ? "bg-slate-100 border-slate-200 text-slate-300 cursor-not-allowed line-through"
+                        : "bg-white border-slate-200 text-slate-600 hover:border-amber-300"
+                    }`}
+                    title={taken ? "Already sponsored" : undefined}
+                  >
+                    {c.name}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          {branchCats.length > 0 && (
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">
+                Branch Categories ({selectedBranch.length}/1)
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {branchCats.map((c) => {
+                  const taken = takenByOther(c.id);
+                  const selected = selectedCategoryIds.includes(c.id);
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      disabled={taken}
+                      onClick={() => toggleCategory(c.id, true)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                        selected
+                          ? "bg-amber-500 border-amber-500 text-white"
+                          : taken
+                          ? "bg-slate-100 border-slate-200 text-slate-300 cursor-not-allowed line-through"
+                          : "bg-white border-slate-200 text-slate-600 hover:border-amber-300"
+                      }`}
+                      title={taken ? "Already sponsored" : undefined}
+                    >
+                      {c.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       )}
 

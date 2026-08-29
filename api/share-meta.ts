@@ -44,12 +44,13 @@ export default async function handler(req: any, res: any) {
   let categoryName = "";
   let sponsorName = "";
   if (nomination?.category_id) {
-    const [cats, sponsors] = await Promise.all([
+    const [cats, claims] = await Promise.all([
       sb(`award_categories?id=eq.${nomination.category_id}&select=name&limit=1`),
-      sb(`sponsors?category_id=eq.${nomination.category_id}&is_active=eq.true&select=name&limit=1`),
+      sb(`sponsor_categories?category_id=eq.${nomination.category_id}&select=sponsors(name,is_active)&limit=1`),
     ]);
     categoryName = cats[0]?.name || "";
-    sponsorName = sponsors[0]?.name || "";
+    const claimed = claims[0]?.sponsors;
+    sponsorName = claimed?.is_active ? claimed.name : "";
   }
 
   const show = nomination?.podcast_name || "a veteran podcast";
