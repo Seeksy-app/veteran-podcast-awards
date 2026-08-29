@@ -23,6 +23,7 @@ interface SponsorFormProps {
     website_url?: string;
     tier: SponsorTier;
     tier_id?: string | null;
+    category_id?: string | null;
     display_order: number;
     is_active: boolean;
   }) => void;
@@ -39,6 +40,7 @@ export const SponsorForm = ({ sponsor, onSubmit, onCancel, isLoading }: SponsorF
   const [isActive, setIsActive] = useState(sponsor?.is_active ?? true);
   const [uploading, setUploading] = useState(false);
   const [tierId, setTierId] = useState<string>(((sponsor as unknown as { tier_id?: string })?.tier_id) || "");
+  const [categoryId, setCategoryId] = useState<string>(((sponsor as unknown as { category_id?: string })?.category_id) || "");
 
   const { data: packages } = useQuery({
     queryKey: ["sponsor-tiers"],
@@ -46,6 +48,18 @@ export const SponsorForm = ({ sponsor, onSubmit, onCancel, isLoading }: SponsorF
       const { data, error } = await (supabase as any).from("sponsor_tiers").select("*").order("sort_order");
       if (error) return [] as SponsorPackage[];
       return data as SponsorPackage[];
+    },
+  });
+
+  const { data: awardCategories } = useQuery({
+    queryKey: ["award-categories-for-sponsors"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("award_categories")
+        .select("id, name")
+        .order("sort_order");
+      if (error) return [];
+      return data as { id: string; name: string }[];
     },
   });
 
@@ -76,6 +90,7 @@ export const SponsorForm = ({ sponsor, onSubmit, onCancel, isLoading }: SponsorF
       website_url: websiteUrl || undefined,
       tier,
       tier_id: tierId || null,
+      category_id: categoryId || null,
       display_order: displayOrder,
       is_active: isActive,
     });
@@ -153,6 +168,26 @@ export const SponsorForm = ({ sponsor, onSubmit, onCancel, isLoading }: SponsorF
             </SelectContent>
           </Select>
           <p className="text-xs text-slate-400">Package pricing and slots are managed in Sponsorship Packages above.</p>
+        </div>
+      )}
+
+      {(awardCategories?.length ?? 0) > 0 && (
+        <div className="space-y-2">
+          <Label htmlFor="sponsoredCategory">Sponsored Award Category (optional)</Label>
+          <Select value={categoryId || "none"} onValueChange={(v) => setCategoryId(v === "none" ? "" : v)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select a category..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">No category</SelectItem>
+              {(awardCategories || []).map((c) => (
+                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-slate-400">
+            Shows "Presented by" with this sponsor's logo on the category page and every nominee's voting page.
+          </p>
         </div>
       )}
 

@@ -17,6 +17,7 @@ import {
 } from "@/lib/awards";
 import { toast } from "sonner";
 import { ChevronLeft, Loader2, Mic } from "lucide-react";
+import { PresentedBy } from "@/components/sponsors/PresentedBy";
 const AwardsCategoryNomineesPage = () => {
   const { programId, categoryId } = useParams<{ programId: string; categoryId: string }>();
   const { user, loading: authLoading } = useAuth();
@@ -190,6 +191,8 @@ const AwardsCategoryNomineesPage = () => {
           <p className="text-sm text-muted-foreground">{p.name}</p>
           {cat.description && <p className="mt-2 text-sm text-muted-foreground">{cat.description}</p>}
         </div>
+
+        <PresentedBy categoryId={categoryId} className="mb-8 !justify-start" />
 
         {nomineesQuery.isLoading || authLoading ? (
           <div className="flex justify-center py-16">

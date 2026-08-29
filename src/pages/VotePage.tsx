@@ -6,6 +6,7 @@ import { Footer } from "@/components/layout/Footer";
 import { SEO } from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { PresentedBy } from "@/components/sponsors/PresentedBy";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -153,6 +154,24 @@ const VotePage = () => {
       };
     },
   });
+
+  // Log share-link arrivals (?ref=...) once per session — powers sponsor reach reports
+  useEffect(() => {
+    if (landingQuery.data?.kind !== "ok") return;
+    const ref = new URLSearchParams(window.location.search).get("ref");
+    if (!ref) return;
+    const key = `share-click-${nominationId}`;
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, "1");
+    (supabase as any)
+      .from("share_clicks")
+      .insert({
+        nomination_id: landingQuery.data.anchor.id,
+        category_id: landingQuery.data.anchor.category_id,
+        ref,
+      })
+      .then(() => {});
+  }, [landingQuery.data, nominationId]);
 
   useEffect(() => {
     if (!nominationId || isUuid) return;
@@ -373,6 +392,8 @@ const VotePage = () => {
             <Link to={backToProgram}>← Back to categories</Link>
           </Button>
         </div>
+
+        <PresentedBy categoryId={data.anchor.category_id} className="mb-6" />
 
         <Card className="overflow-hidden border-primary/20 mb-8">
           <CardHeader className="text-center space-y-4 pb-2">

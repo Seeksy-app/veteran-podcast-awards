@@ -49,7 +49,7 @@ const PLATFORMS = [
 function buildTemplates(podcastName: string | null, votingLink: string | null) {
   const name = podcastName || "my podcast";
   const link = votingLink
-    ? `${window.location.origin}/vote/${votingLink}`
+    ? `${window.location.origin}/vote/${votingLink}?ref=share`
     : "https://veteranpodcastawards.com";
 
   return [
