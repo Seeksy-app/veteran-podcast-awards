@@ -17,6 +17,7 @@ interface MyCategoriesSectionProps {
   podcasterName: string;
   selectedCategories: string[];
   onSaved: (categoryIds: string[]) => void;
+  onPodcastLinked: (podcastId: string) => void;
   onGoToProfile: () => void;
 }
 
@@ -33,6 +34,7 @@ export const MyCategoriesSection = ({
   podcasterName,
   selectedCategories,
   onSaved,
+  onPodcastLinked,
   onGoToProfile,
 }: MyCategoriesSectionProps) => {
   const [categories, setCategories] = useState<AwardCategory[]>([]);
@@ -50,6 +52,16 @@ export const MyCategoriesSection = ({
       setIsLoading(false);
     })();
   }, []);
+
+  // No linked podcast yet? Try claiming one from the profile's RSS automatically.
+  useEffect(() => {
+    if (podcastId) return;
+    (async () => {
+      const { data: pid } = await (supabase as any).rpc("claim_my_podcast");
+      if (pid) onPodcastLinked(pid as string);
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [podcastId]);
 
   const toggle = (id: string) => {
     setSelected((prev) => {

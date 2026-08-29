@@ -953,6 +953,7 @@ const Dashboard = () => {
               podcasterName={profile.full_name || ""}
               selectedCategories={profile.selected_categories || []}
               onSaved={(ids) => setProfile({ ...profile, selected_categories: ids })}
+              onPodcastLinked={(pid) => setProfile({ ...profile, podcast_id: pid })}
               onGoToProfile={() => setActiveSection("profile")}
             />
           )}

@@ -331,6 +331,26 @@ const OnboardingPage = () => {
 
       if (error) throw error;
 
+      // Link (or create) the podcasts row from the saved RSS, then enter the
+      // selected categories as public nominations so voting pages light up.
+      try {
+        const { data: pid } = await (supabase as any).rpc("claim_my_podcast");
+        if (pid && selectedCategories.length) {
+          await (supabase as any).from("nominations").upsert(
+            selectedCategories.map((category_id) => ({
+              user_id: user.id,
+              podcast_id: pid,
+              podcast_name: podcastName || "Untitled Podcast",
+              podcaster_name: (user.user_metadata?.full_name as string) || user.email || "",
+              category_id,
+            })),
+            { onConflict: "user_id,category_id", ignoreDuplicates: true }
+          );
+        }
+      } catch {
+        // Non-fatal: they can finish from My Categories in the dashboard
+      }
+
       localStorage.setItem("vpa-onboarding-done", user.id);
       navigate("/dashboard?welcome=1", { replace: true });
     } catch (err) {
