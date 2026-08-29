@@ -21,7 +21,7 @@ interface MyCategoriesSectionProps {
   onGoToProfile: () => void;
 }
 
-const MAX_CATEGORIES = 5;
+const MAX_CATEGORIES = 3;
 
 /**
  * Podcaster-facing category management. Saving syncs the public `nominations`
@@ -42,6 +42,8 @@ export const MyCategoriesSection = ({
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
+  const [votingLive, setVotingLive] = useState(false);
+
   useEffect(() => {
     (async () => {
       const { data } = await supabase
@@ -49,6 +51,16 @@ export const MyCategoriesSection = ({
         .select("id, name, slug")
         .order("sort_order");
       setCategories((data as AwardCategory[]) || []);
+      // Entries lock once voting begins
+      const { data: prog } = await supabase
+        .from("award_programs")
+        .select("voting_open_at")
+        .eq("status", "active")
+        .limit(1)
+        .maybeSingle();
+      if (prog?.voting_open_at && new Date(prog.voting_open_at) <= new Date()) {
+        setVotingLive(true);
+      }
       setIsLoading(false);
     })();
   }, []);
@@ -145,6 +157,11 @@ export const MyCategoriesSection = ({
         </div>
       ) : (
         <>
+          {votingLive && (
+            <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              🔒 Voting is live — category entries are locked for the season.
+            </div>
+          )}
           <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
@@ -161,8 +178,9 @@ export const MyCategoriesSection = ({
                   <button
                     key={c.id}
                     type="button"
+                    disabled={votingLive}
                     onClick={() => toggle(c.id)}
-                    className={`flex items-center gap-2.5 rounded-lg border-2 px-4 py-3 text-left text-sm transition-all ${
+                    className={`flex items-center gap-2.5 rounded-lg border-2 px-4 py-3 text-left text-sm transition-all disabled:opacity-60 disabled:cursor-not-allowed ${
                       on
                         ? "border-amber-500 bg-amber-50 text-amber-800 font-medium"
                         : "border-slate-200 text-slate-600 hover:border-amber-300"
@@ -177,7 +195,7 @@ export const MyCategoriesSection = ({
           </div>
 
           <div className="flex items-center gap-3">
-            <Button variant="gold" size="lg" onClick={handleSave} disabled={isSaving}>
+            <Button variant="gold" size="lg" onClick={handleSave} disabled={isSaving || votingLive}>
               {isSaving ? "Saving..." : "Save Categories"}
             </Button>
             <p className="text-xs text-slate-400">

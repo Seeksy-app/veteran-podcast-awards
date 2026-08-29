@@ -114,8 +114,22 @@ const AuthPage = () => {
     if (!loading && user && (user.email_confirmed_at || isOAuthUser)) {
       const returnTo = searchParams.get("returnTo");
       const from = (location.state as { from?: string })?.from;
-      const target = returnTo ? decodeURIComponent(returnTo) : from || "/";
-      navigate(target, { replace: true });
+      (async () => {
+        // Podcasters who haven't finished onboarding go straight there
+        if (!returnTo && !from) {
+          const { data: prof } = await supabase
+            .from("profiles")
+            .select("user_type, onboarding_completed")
+            .eq("id", user.id)
+            .maybeSingle();
+          if (prof?.user_type === "podcaster" && !prof.onboarding_completed) {
+            navigate("/onboarding", { replace: true });
+            return;
+          }
+        }
+        const target = returnTo ? decodeURIComponent(returnTo) : from || "/";
+        navigate(target, { replace: true });
+      })();
     }
   }, [user, loading, navigate, location, searchParams]);
 
