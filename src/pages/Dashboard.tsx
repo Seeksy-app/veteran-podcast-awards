@@ -48,6 +48,7 @@ import { GetNominatedSection } from "@/components/dashboard/GetNominatedSection"
 import { ShareSection } from "@/components/dashboard/ShareSection";
 import { ConnectorsSection } from "@/components/dashboard/ConnectorsSection";
 import { DashboardHome } from "@/components/dashboard/DashboardHome";
+import { MyCategoriesSection } from "@/components/dashboard/MyCategoriesSection";
 import { WelcomeCelebration } from "@/components/dashboard/WelcomeCelebration";
 
 interface Profile {
@@ -127,6 +128,7 @@ type NavSection =
   | "home"
   | "profile"
   | "inbox"
+  | "categories"
   | "votes"
   | "favorites"
   | "connectors"
@@ -411,6 +413,7 @@ const Dashboard = () => {
     { key: "favorites", label: "Favorites", icon: Star },
     { key: "connectors", label: "Connectors", icon: Plug, podcasterOnly: true },
     { key: "contacts", label: "Contacts", icon: Contact, podcasterOnly: true },
+    { key: "categories", label: "My Categories", icon: Trophy, group: "Podcast Awards", podcasterOnly: true },
     { key: "votes", label: "My Votes", icon: Vote, group: "Podcast Awards" },
     { key: "promotion", label: "Promotion", icon: Megaphone, group: "Podcast Awards" },
   ];
@@ -862,7 +865,13 @@ const Dashboard = () => {
                         </Badge>
                       ))}
                     </div>
-                    <p className="text-xs text-slate-400">To change categories, contact us.</p>
+                    <button
+                      type="button"
+                      onClick={() => setActiveSection("categories")}
+                      className="text-xs text-amber-600 hover:underline"
+                    >
+                      Manage in My Categories →
+                    </button>
                   </div>
                 )}
 
@@ -935,6 +944,19 @@ const Dashboard = () => {
           )}
 
           {/* ═══ My Votes ═══ */}
+          {/* ═══ My Categories ═══ */}
+          {activeSection === "categories" && isPodcaster && (
+            <MyCategoriesSection
+              userId={user.id}
+              podcastId={profile.podcast_id}
+              podcastName={profile.podcast_name || linkedPodcast?.title || ""}
+              podcasterName={profile.full_name || ""}
+              selectedCategories={profile.selected_categories || []}
+              onSaved={(ids) => setProfile({ ...profile, selected_categories: ids })}
+              onGoToProfile={() => setActiveSection("profile")}
+            />
+          )}
+
           {activeSection === "votes" && (
             <Card>
               <CardHeader>

@@ -215,6 +215,7 @@ export const AwardsManager = () => {
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [programTab, setProgramTab] = useState<"categories" | "results" | "tickets">("categories");
   const [catView, setCatView] = useState<"grid" | "list">("grid");
+  const [nomineesDialogCat, setNomineesDialogCat] = useState<{ id: string; name: string } | null>(null);
   const [catSearch, setCatSearch] = useState("");
   const catMatches = (c: { name: string; description: string | null }) => {
     const q = catSearch.trim().toLowerCase();
@@ -306,6 +307,19 @@ export const AwardsManager = () => {
   const categorySlugs = useMemo(() => categories.map((c) => c.slug), [categories]);
   const categoryIds = useMemo(() => categories.map((c) => c.id), [categories]);
   const programYear = selectedProgram?.year;
+
+  const nomineesDialogQuery = useQuery({
+    queryKey: ["category-nominees-admin", nomineesDialogCat?.id],
+    enabled: !!nomineesDialogCat,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("nominations")
+        .select("id, podcast_name, podcaster_name, created_at")
+        .eq("category_id", nomineesDialogCat!.id)
+        .order("created_at", { ascending: true });
+      return data || [];
+    },
+  });
 
   const { data: voteAgg } = useQuery({
     queryKey: [
@@ -1183,7 +1197,10 @@ export const AwardsManager = () => {
                           <div key={cat.id} className="flex items-center gap-3 px-4 py-3">
                             <span className="text-xl shrink-0" aria-hidden>{categoryEmoji(cat.slug)}</span>
                             <p className="min-w-0 flex-1 truncate font-semibold text-slate-900">{cat.name}</p>
-                            <Badge className="rounded-md bg-blue-500/15 px-2.5 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20 shrink-0">
+                            <Badge
+                              onClick={() => setNomineesDialogCat({ id: cat.id, name: cat.name })}
+                              className="cursor-pointer rounded-md bg-blue-500/15 px-2.5 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20 hover:bg-blue-500/25 shrink-0"
+                            >
                               {nomCount} nominees
                             </Badge>
                             <Badge
@@ -1276,7 +1293,10 @@ export const AwardsManager = () => {
                                 </DropdownMenu>
                               </div>
                               <div className="mt-4 flex flex-wrap gap-2">
-                                <Badge className="rounded-md bg-blue-500/15 px-2.5 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20 dark:text-blue-300">
+                                <Badge
+                                  onClick={() => setNomineesDialogCat({ id: cat.id, name: cat.name })}
+                                  className="cursor-pointer rounded-md bg-blue-500/15 px-2.5 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20 hover:bg-blue-500/25 dark:text-blue-300"
+                                >
                                   {nomCount} nominees
                                 </Badge>
                                 <Badge
@@ -1411,6 +1431,36 @@ export const AwardsManager = () => {
           )}
         </main>
       </div>
+
+      {/* Category nominees dialog */}
+      <Dialog open={!!nomineesDialogCat} onOpenChange={(open) => !open && setNomineesDialogCat(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Nominees — {nomineesDialogCat?.name}</DialogTitle>
+          </DialogHeader>
+          {nomineesDialogQuery.isLoading ? (
+            <p className="py-6 text-center text-sm text-slate-500">Loading...</p>
+          ) : !nomineesDialogQuery.data?.length ? (
+            <p className="py-6 text-center text-sm text-slate-500">
+              No nominees yet. Podcasters enter via "My Categories" in their dashboard.
+            </p>
+          ) : (
+            <div className="divide-y divide-slate-100 max-h-[50vh] overflow-y-auto">
+              {nomineesDialogQuery.data.map((n) => (
+                <div key={n.id} className="flex items-center justify-between gap-3 py-2.5">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-slate-900">{n.podcast_name}</p>
+                    <p className="truncate text-xs text-slate-500">{n.podcaster_name}</p>
+                  </div>
+                  <span className="shrink-0 text-xs text-slate-400">
+                    {new Date(n.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* New program dialog */}
       <Dialog open={programDialogOpen} onOpenChange={setProgramDialogOpen}>
