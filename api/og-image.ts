@@ -3,7 +3,7 @@ import { ImageResponse } from "@vercel/og";
 /**
  * VPA-branded social share card for voting links.
  * /api/og-image?show=...&category=...&sponsor=...
- * Built with satori object syntax (no JSX) so it compiles as plain ESM.
+ * Built with satori object syntax (no JSX) for broad runtime compatibility.
  */
 
 type El = { type: string; props: Record<string, unknown> };
