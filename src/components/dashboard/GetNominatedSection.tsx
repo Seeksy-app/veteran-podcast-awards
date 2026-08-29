@@ -274,7 +274,11 @@ export const GetNominatedSection = ({ userId, profile, podcast }: Props) => {
           )}
 
           {shareNominationId && podcast && profile.full_name && (
-            <NomineeBadgeCard podcastTitle={podcast.title} podcasterName={profile.full_name} />
+            <NomineeBadgeCard
+              podcastTitle={podcast.title}
+              podcasterName={profile.full_name}
+              categoryIds={(existingQuery.data ?? []).map((n) => n.category_id)}
+            />
           )}
         </CardContent>
       </Card>

@@ -641,8 +641,6 @@ const Dashboard = () => {
             </div>
           )}
 
-          <GetNominatedSection userId={user.id} profile={profile} podcast={linkedPodcast} />
-
           {/* ═══ Home / Overview ═══ */}
           {activeSection === "home" && (
             <DashboardHome
@@ -1102,14 +1100,19 @@ const Dashboard = () => {
 
           {/* ═══ Promotion ═══ */}
           {activeSection === "promotion" && (
-            <ShareSection
-              profile={profile}
-              linkedPodcast={linkedPodcast}
-              copied={copied}
-              generateVotingLink={generateVotingLink}
-              copyToClipboard={copyToClipboard}
-              isPodcaster={isPodcaster}
-            />
+            <div className="space-y-6">
+              <ShareSection
+                profile={profile}
+                linkedPodcast={linkedPodcast}
+                copied={copied}
+                generateVotingLink={generateVotingLink}
+                copyToClipboard={copyToClipboard}
+                isPodcaster={isPodcaster}
+              />
+              {isPodcaster && (
+                <GetNominatedSection userId={user.id} profile={profile} podcast={linkedPodcast} />
+              )}
+            </div>
           )}
 
           {/* ═══ Settings ═══ */}
