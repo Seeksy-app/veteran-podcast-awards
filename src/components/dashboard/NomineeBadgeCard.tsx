@@ -96,7 +96,7 @@ export const NomineeBadgeCard = ({ podcastTitle, podcasterName, categoryIds = []
               <p className="text-sm text-neutral-400">Hosted by {podcasterName}</p>
               <div className="flex items-center justify-center gap-3 pt-1">
                 <span className="h-px w-10 bg-[#d3a747]/50" />
-                <p className="text-[10px] uppercase tracking-[0.25em] text-[#d3a747]">Vote Nov 5 – 11</p>
+                <p className="text-[10px] uppercase tracking-[0.25em] text-[#d3a747]">Voting Opens Oct 5</p>
                 <span className="h-px w-10 bg-[#d3a747]/50" />
               </div>
             </div>
