@@ -86,6 +86,12 @@ export const SponsorForm = ({ sponsor, onSubmit, onCancel, isLoading }: SponsorF
   const isBranch = (slug: string) => BRANCH_RE.test(slug);
   const regularCats = (awardCategories || []).filter((c) => !isBranch(c.slug));
   const branchCats = (awardCategories || []).filter((c) => isBranch(c.slug));
+
+  // The chosen package determines what can be sponsored:
+  // "…category…" packages unlock award categories; "…branch…"/"…best of…" unlock branch categories.
+  const pkgName = (packages?.find((p) => p.id === tierId)?.name || "").toLowerCase();
+  const allowsRegular = pkgName.includes("category");
+  const allowsBranch = pkgName.includes("branch") || pkgName.includes("best of");
   const takenByOther = (catId: string) =>
     (claims || []).some((c) => c.category_id === catId && c.sponsor_id !== sponsor?.id);
   const selectedRegular = selectedCategoryIds.filter((id) => regularCats.some((c) => c.id === id));
@@ -196,7 +202,24 @@ export const SponsorForm = ({ sponsor, onSubmit, onCancel, isLoading }: SponsorF
       {(packages?.length ?? 0) > 0 && (
         <div className="space-y-2">
           <Label htmlFor="package">Sponsorship Package</Label>
-          <Select value={tierId || "none"} onValueChange={(v) => setTierId(v === "none" ? "" : v)}>
+          <Select
+            value={tierId || "none"}
+            onValueChange={(v) => {
+              const newId = v === "none" ? "" : v;
+              setTierId(newId);
+              // Drop selections the new package doesn't allow
+              const name = (packages?.find((p) => p.id === newId)?.name || "").toLowerCase();
+              const reg = name.includes("category");
+              const br = name.includes("branch") || name.includes("best of");
+              setSelectedCategoryIds((prev) =>
+                prev.filter((id) => {
+                  const cat = (awardCategories || []).find((c) => c.id === id);
+                  if (!cat) return false;
+                  return isBranch(cat.slug) ? br : reg;
+                })
+              );
+            }}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Select a package..." />
             </SelectTrigger>
@@ -214,15 +237,16 @@ export const SponsorForm = ({ sponsor, onSubmit, onCancel, isLoading }: SponsorF
         </div>
       )}
 
-      {(awardCategories?.length ?? 0) > 0 && (
+      {(awardCategories?.length ?? 0) > 0 && (allowsRegular || allowsBranch) && (
         <div className="space-y-4 rounded-lg border border-slate-200 p-4">
           <div>
-            <Label>Sponsored Award Categories</Label>
+            <Label>{allowsBranch && !allowsRegular ? "Sponsored Branch Category" : "Sponsored Award Categories"}</Label>
             <p className="text-xs text-slate-400 mt-0.5">
-              Up to 5 categories + 1 branch. Each category is exclusive — taken ones are locked.
-              "Presented by" appears on the category page and every nominee's voting page and share card.
+              Each category is exclusive — taken ones are locked. "Presented by" appears on the
+              category page and every nominee's voting page and share card.
             </p>
           </div>
+          {allowsRegular && (
           <div>
             <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">
               Categories ({selectedRegular.length}/5)
@@ -252,7 +276,8 @@ export const SponsorForm = ({ sponsor, onSubmit, onCancel, isLoading }: SponsorF
               })}
             </div>
           </div>
-          {branchCats.length > 0 && (
+          )}
+          {allowsBranch && branchCats.length > 0 && (
             <div>
               <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">
                 Branch Categories ({selectedBranch.length}/1)
