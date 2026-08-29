@@ -1,7 +1,5 @@
 import { ImageResponse } from "@vercel/og";
 
-export const config = { runtime: "edge" };
-
 /**
  * VPA-branded social share card for voting links.
  * /api/og-image?show=...&category=...&sponsor=...
