@@ -142,8 +142,16 @@ const VotePage = () => {
 
       const { data: podcast } = await supabase
         .from("podcasts")
-        .select("title, image_url, description, author")
+        .select("title, image_url, description, author, episodes")
         .eq("id", (anchor as NomRow).podcast_id)
+        .maybeSingle();
+
+      // Public podcaster profile (the "LinkedIn for podcasters" page), if published
+      const { data: ownerProfile } = await supabase
+        .from("profiles")
+        .select("username_slug, is_public")
+        .eq("id", (anchor as NomRow).user_id)
+        .eq("is_public", true)
         .maybeSingle();
 
       return {
@@ -151,6 +159,7 @@ const VotePage = () => {
         anchor: anchor as NomRow,
         nominations: rows,
         podcast,
+        ownerProfile,
       };
     },
   });
@@ -481,6 +490,36 @@ const VotePage = () => {
             );
           })}
         </div>
+
+        {/* Featured episode — give voters a taste of the show */}
+        {(() => {
+          const eps = Array.isArray(data.podcast?.episodes)
+            ? (data.podcast!.episodes as unknown as { title?: string; enclosureUrl?: string; pubDate?: string }[])
+            : [];
+          const ep = eps.find((e) => e.enclosureUrl);
+          if (!ep) return null;
+          return (
+            <Card className="mb-8 border-primary/20">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">🎧 Listen before you vote</CardTitle>
+                <CardDescription className="truncate">{ep.title || "Latest episode"}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <audio controls preload="none" className="w-full" src={ep.enclosureUrl} />
+              </CardContent>
+            </Card>
+          );
+        })()}
+
+        {/* Full podcaster profile */}
+        {data.ownerProfile?.username_slug && (
+          <Button variant="gold" className="w-full min-h-12 mb-3" asChild>
+            <Link to={`/podcaster/${data.ownerProfile.username_slug}`}>
+              Meet {displayName} — full podcaster profile
+              <ChevronRight className="w-4 h-4 ml-1" />
+            </Link>
+          </Button>
+        )}
 
         <Button
           variant="outline"

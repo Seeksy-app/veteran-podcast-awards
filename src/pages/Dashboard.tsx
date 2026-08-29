@@ -49,6 +49,7 @@ import { ShareSection } from "@/components/dashboard/ShareSection";
 import { ConnectorsSection } from "@/components/dashboard/ConnectorsSection";
 import { DashboardHome } from "@/components/dashboard/DashboardHome";
 import { MyCategoriesSection } from "@/components/dashboard/MyCategoriesSection";
+import { MyResultsSection } from "@/components/dashboard/MyResultsSection";
 import { WelcomeCelebration } from "@/components/dashboard/WelcomeCelebration";
 
 interface Profile {
@@ -414,7 +415,7 @@ const Dashboard = () => {
     { key: "connectors", label: "Connectors", icon: Plug, podcasterOnly: true },
     { key: "contacts", label: "Contacts", icon: Contact, podcasterOnly: true },
     { key: "categories", label: "My Categories", icon: Trophy, group: "Podcast Awards", podcasterOnly: true },
-    { key: "votes", label: "My Votes", icon: Vote, group: "Podcast Awards" },
+    { key: "votes", label: isPodcaster ? "My Results" : "My Votes", icon: Vote, group: "Podcast Awards" },
     { key: "promotion", label: "Promotion", icon: Megaphone, group: "Podcast Awards" },
   ];
 
@@ -956,7 +957,17 @@ const Dashboard = () => {
             />
           )}
 
-          {activeSection === "votes" && (
+          {/* Podcasters see votes RECEIVED; fans see their voting history */}
+          {activeSection === "votes" && isPodcaster && (
+            <MyResultsSection
+              userId={user.id}
+              podcastId={profile.podcast_id}
+              onGoToCategories={() => setActiveSection("categories")}
+              onGoToPromotion={() => setActiveSection("promotion")}
+            />
+          )}
+
+          {activeSection === "votes" && !isPodcaster && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
