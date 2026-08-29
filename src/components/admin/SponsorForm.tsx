@@ -139,7 +139,11 @@ export const SponsorForm = ({ sponsor, onSubmit, onCancel, isLoading }: SponsorF
       website_url: websiteUrl || undefined,
       tier,
       tier_id: tierId || null,
-      category_ids: selectedCategoryIds,
+      // Only persist claims the chosen package actually allows
+      category_ids: selectedCategoryIds.filter((id) => {
+        const cat = (awardCategories || []).find((c) => c.id === id);
+        return cat ? (isBranch(cat.slug) ? allowsBranch : allowsRegular) : false;
+      }),
       display_order: displayOrder,
       is_active: isActive,
     });
