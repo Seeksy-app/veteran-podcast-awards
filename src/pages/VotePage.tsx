@@ -1,7 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Header } from "@/components/layout/Header";
+import logo from "@/assets/vpa-logo.png";
+
+/** Distraction-free header for shared voting pages: just the VPA mark, no nav or login. */
+const VoteHeader = () => (
+  <header className="absolute top-0 inset-x-0 z-40 px-5 sm:px-8 py-4">
+    <Link to="/" className="inline-flex items-center gap-2.5">
+      <img src={logo} alt="Veteran Podcast Awards" className="h-10 w-10" />
+      <span className="font-serif text-lg font-bold text-primary">VPA 2026</span>
+    </Link>
+  </header>
+);
 import { Footer } from "@/components/layout/Footer";
 import { SEO } from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";
@@ -315,7 +325,7 @@ const VotePage = () => {
     }
     return (
       <div className="min-h-screen bg-background">
-        <Header />
+        <VoteHeader />
         <main className="container mx-auto px-4 pt-28 pb-16 text-center">
           <h1 className="font-serif text-2xl font-bold mb-2">Voting page not found</h1>
           <p className="text-muted-foreground mb-6">
@@ -341,7 +351,7 @@ const VotePage = () => {
   if (landingQuery.data?.kind === "not_found") {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
+        <VoteHeader />
         <main className="container mx-auto px-4 pt-28 pb-16 text-center">
           <h1 className="font-serif text-2xl font-bold mb-2">Nomination not found</h1>
           <Button asChild className="mt-4" variant="goldOutline">
@@ -368,7 +378,7 @@ const VotePage = () => {
         description={`Support ${displayName} on ${showName} in ${progMeta.name}.`}
         canonicalUrl={`/vote/${nominationId}`}
       />
-      <Header />
+      <VoteHeader />
       <main className="container mx-auto px-4 pt-24 pb-16 max-w-6xl">
         <div className="mb-8 rounded-2xl border border-border/80 bg-card p-5 shadow-sm">
           <div className="flex flex-col items-center gap-3 text-center sm:flex-row sm:text-left">
