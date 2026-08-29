@@ -40,7 +40,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Download, MoreHorizontal, Pencil, Plus, Sparkles, Trash2, Vote } from "lucide-react";
+import { Download, LayoutGrid, List, MoreHorizontal, Pencil, Plus, Search, Sparkles, Trash2, Vote } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -214,6 +214,13 @@ export const AwardsManager = () => {
   const [programDialogOpen, setProgramDialogOpen] = useState(false);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [programTab, setProgramTab] = useState<"categories" | "results" | "tickets">("categories");
+  const [catView, setCatView] = useState<"grid" | "list">("grid");
+  const [catSearch, setCatSearch] = useState("");
+  const catMatches = (c: { name: string; description: string | null }) => {
+    const q = catSearch.trim().toLowerCase();
+    if (!q) return true;
+    return c.name.toLowerCase().includes(q) || (c.description || "").toLowerCase().includes(q);
+  };
   const [leaderboardProgramId, setLeaderboardProgramId] = useState<string | null>(null);
   const [leaderboardCategoryId, setLeaderboardCategoryId] = useState<string | null>(null);
 
@@ -1119,6 +1126,43 @@ export const AwardsManager = () => {
                     </Button>
                   }
                 />
+
+                {/* Search + view toggle */}
+                <div className="flex items-center gap-2">
+                  <div className="relative flex-1 max-w-sm">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <Input
+                      placeholder="Search categories..."
+                      value={catSearch}
+                      onChange={(e) => setCatSearch(e.target.value)}
+                      className="pl-9 h-9"
+                    />
+                  </div>
+                  <div className="flex rounded-lg border border-slate-200 overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => setCatView("grid")}
+                      className={cn(
+                        "px-3 py-2 transition-colors",
+                        catView === "grid" ? "bg-[#B8860B] text-white" : "bg-white text-slate-500 hover:bg-slate-50"
+                      )}
+                      title="Block view"
+                    >
+                      <LayoutGrid className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCatView("list")}
+                      className={cn(
+                        "px-3 py-2 transition-colors",
+                        catView === "list" ? "bg-[#B8860B] text-white" : "bg-white text-slate-500 hover:bg-slate-50"
+                      )}
+                      title="List view"
+                    >
+                      <List className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
                 <div className="pt-2">
                   {loadingCategories ? (
                     <p className="text-slate-500">Loading categories…</p>
@@ -1130,9 +1174,55 @@ export const AwardsManager = () => {
                         Click <span className="font-medium text-[#B8860B]">Add Category</span> to get started.
                       </p>
                     </Card>
+                  ) : catView === "list" ? (
+                    <div className="divide-y divide-slate-100 rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+                      {categories.filter(catMatches).map((cat) => {
+                        const totalVotes = voteAgg?.votes[cat.slug] ?? 0;
+                        const nomCount = voteAgg?.nominations[cat.id] ?? 0;
+                        return (
+                          <div key={cat.id} className="flex items-center gap-3 px-4 py-3">
+                            <span className="text-xl shrink-0" aria-hidden>{categoryEmoji(cat.slug)}</span>
+                            <p className="min-w-0 flex-1 truncate font-semibold text-slate-900">{cat.name}</p>
+                            <Badge className="rounded-md bg-blue-500/15 px-2.5 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20 shrink-0">
+                              {nomCount} nominees
+                            </Badge>
+                            <Badge
+                              className="rounded-md px-2.5 py-1 text-xs font-medium text-amber-900 ring-1 ring-inset shrink-0"
+                              style={{ backgroundColor: `${GOLD}22`, borderColor: `${GOLD}44` }}
+                            >
+                              {totalVotes} votes
+                            </Badge>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 shrink-0"
+                              aria-label="Edit category"
+                              onClick={() => {
+                                setEditCategoryTarget(cat);
+                                setEditCategoryDraft({ name: cat.name, description: cat.description ?? "" });
+                              }}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 shrink-0 text-destructive hover:text-destructive"
+                              aria-label="Delete category"
+                              onClick={() => setDeleteCategoryTarget(cat)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        );
+                      })}
+                      {categories.filter(catMatches).length === 0 && (
+                        <p className="px-4 py-6 text-sm text-slate-500">No categories match "{catSearch}".</p>
+                      )}
+                    </div>
                   ) : (
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                      {categories.map((cat) => {
+                      {categories.filter(catMatches).map((cat) => {
                         const totalVotes = voteAgg?.votes[cat.slug] ?? 0;
                         const nomCount = voteAgg?.nominations[cat.id] ?? 0;
                         return (
