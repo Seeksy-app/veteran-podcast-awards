@@ -369,7 +369,7 @@ const VotePage = () => {
         canonicalUrl={`/vote/${nominationId}`}
       />
       <Header />
-      <main className="container mx-auto px-4 pt-24 pb-16 max-w-lg md:max-w-2xl">
+      <main className="container mx-auto px-4 pt-24 pb-16 max-w-6xl">
         <div className="mb-8 rounded-2xl border border-border/80 bg-card p-5 shadow-sm">
           <div className="flex flex-col items-center gap-3 text-center sm:flex-row sm:text-left">
             {progMeta.logo_url ? (
@@ -404,7 +404,10 @@ const VotePage = () => {
 
         <PresentedBy categoryId={data.anchor.category_id} className="mb-6" />
 
-        <Card className="overflow-hidden border-primary/20 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-8 items-start">
+        {/* Left: identity, episode, profile */}
+        <div className="lg:sticky lg:top-24 space-y-6">
+        <Card className="overflow-hidden border-primary/20">
           <CardHeader className="text-center space-y-4 pb-2">
             <Avatar className="w-24 h-24 mx-auto border-4 border-primary/30">
               <AvatarImage src={img || undefined} alt={showName} />
@@ -440,7 +443,38 @@ const VotePage = () => {
           </CardContent>
         </Card>
 
-        <div className="space-y-4 mb-8">
+        {/* Featured episode — give voters a taste of the show */}
+        {(() => {
+          const eps = Array.isArray(data.podcast?.episodes)
+            ? (data.podcast!.episodes as unknown as { title?: string; enclosureUrl?: string; pubDate?: string }[])
+            : [];
+          const ep = eps.find((e) => e.enclosureUrl);
+          if (!ep) return null;
+          return (
+            <Card className="border-primary/20">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">🎧 Listen before you vote</CardTitle>
+                <CardDescription className="truncate">{ep.title || "Latest episode"}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <audio controls preload="none" className="w-full" src={ep.enclosureUrl} />
+              </CardContent>
+            </Card>
+          );
+        })()}
+
+        {data.ownerProfile?.username_slug && (
+          <Button variant="gold" className="w-full min-h-12" asChild>
+            <Link to={`/podcaster/${data.ownerProfile.username_slug}`}>
+              Meet {displayName} — full profile
+              <ChevronRight className="w-4 h-4 ml-1" />
+            </Link>
+          </Button>
+        )}
+        </div>
+
+        {/* Right: category ballots */}
+        <div className="space-y-4">
           <h2 className="font-serif text-lg font-semibold flex items-center gap-2">
             <Trophy className="w-5 h-5 text-primary" />
             Nominated categories
@@ -489,37 +523,6 @@ const VotePage = () => {
               </Card>
             );
           })}
-        </div>
-
-        {/* Featured episode — give voters a taste of the show */}
-        {(() => {
-          const eps = Array.isArray(data.podcast?.episodes)
-            ? (data.podcast!.episodes as unknown as { title?: string; enclosureUrl?: string; pubDate?: string }[])
-            : [];
-          const ep = eps.find((e) => e.enclosureUrl);
-          if (!ep) return null;
-          return (
-            <Card className="mb-8 border-primary/20">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">🎧 Listen before you vote</CardTitle>
-                <CardDescription className="truncate">{ep.title || "Latest episode"}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <audio controls preload="none" className="w-full" src={ep.enclosureUrl} />
-              </CardContent>
-            </Card>
-          );
-        })()}
-
-        {/* Full podcaster profile */}
-        {data.ownerProfile?.username_slug && (
-          <Button variant="gold" className="w-full min-h-12 mb-3" asChild>
-            <Link to={`/podcaster/${data.ownerProfile.username_slug}`}>
-              Meet {displayName} — full podcaster profile
-              <ChevronRight className="w-4 h-4 ml-1" />
-            </Link>
-          </Button>
-        )}
 
         <Button
           variant="outline"
@@ -532,6 +535,8 @@ const VotePage = () => {
             <ChevronRight className="w-4 h-4 ml-1" />
           </Link>
         </Button>
+        </div>
+        </div>
       </main>
       <Footer />
     </div>
