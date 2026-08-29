@@ -1,16 +1,23 @@
+import { ImageResponse } from "@vercel/og";
+
+export const config = { runtime: "edge" };
+
 /**
  * VPA-branded social share card for voting links.
  * /api/og-image?show=...&category=...&sponsor=...
- * CommonJS on purpose: @vercel/og's node build only loads cleanly via require().
+ * Satori object syntax (no JSX).
  */
-const { ImageResponse } = require("@vercel/og");
+type El = { type: string; props: Record<string, unknown> };
+const el = (type: string, style: Record<string, unknown>, children?: unknown): El => ({
+  type,
+  props: { style, children },
+});
 
-const el = (type, style, children) => ({ type, props: { style, children } });
-
-module.exports = async (req, res) => {
-  const show = String(req.query.show || "Veteran Podcast Awards").slice(0, 80);
-  const category = String(req.query.category || "").slice(0, 60);
-  const sponsor = String(req.query.sponsor || "").slice(0, 60);
+export default function handler(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const show = (searchParams.get("show") || "Veteran Podcast Awards").slice(0, 80);
+  const category = (searchParams.get("category") || "").slice(0, 60);
+  const sponsor = (searchParams.get("sponsor") || "").slice(0, 60);
 
   const tree = el(
     "div",
@@ -75,13 +82,5 @@ module.exports = async (req, res) => {
     ]
   );
 
-  try {
-    const image = new ImageResponse(tree, { width: 1200, height: 630 });
-    const buf = Buffer.from(await image.arrayBuffer());
-    res.setHeader("Content-Type", "image/png");
-    res.setHeader("Cache-Control", "public, s-maxage=86400, stale-while-revalidate=604800");
-    res.status(200).send(buf);
-  } catch (e) {
-    res.status(500).send(`og-image failed: ${e && e.message}`);
-  }
-};
+  return new ImageResponse(tree as never, { width: 1200, height: 630 });
+}
