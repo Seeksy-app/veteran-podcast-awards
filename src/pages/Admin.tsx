@@ -62,7 +62,7 @@ const MORE_TAB_VALUES = new Set([
 ]);
 
 const AdminPage = () => {
-  const { user, loading, isAdmin, signOut } = useAuth();
+  const { user, loading, isAdmin, isSuperAdmin, signOut } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('users');
   const { setTheme } = useTheme();
@@ -213,25 +213,29 @@ const AdminPage = () => {
                   <Layers className="w-4 h-4" />
                   Tech Stack
                 </DropdownMenuItem>
-                <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => setActiveTab('investor-access')}>
-                  <KeyRound className="w-4 h-4" />
-                  Investors
-                </DropdownMenuItem>
-                <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => setActiveTab('investor-videos')}>
-                  <Video className="w-4 h-4" />
-                  Videos
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="gap-2 cursor-pointer"
-                  onClick={() => setActiveTab('investor-engagement')}
-                >
-                  <Activity className="w-4 h-4" />
-                  Investor Engagement
-                </DropdownMenuItem>
-                <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => setActiveTab('deck-engagement')}>
-                  <FileText className="w-4 h-4" />
-                  Deck Engagement
-                </DropdownMenuItem>
+                {isSuperAdmin && (
+                  <>
+                    <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => setActiveTab('investor-access')}>
+                      <KeyRound className="w-4 h-4" />
+                      Investors
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => setActiveTab('investor-videos')}>
+                      <Video className="w-4 h-4" />
+                      Videos
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="gap-2 cursor-pointer"
+                      onClick={() => setActiveTab('investor-engagement')}
+                    >
+                      <Activity className="w-4 h-4" />
+                      Investor Engagement
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => setActiveTab('deck-engagement')}>
+                      <FileText className="w-4 h-4" />
+                      Deck Engagement
+                    </DropdownMenuItem>
+                  </>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -277,22 +281,26 @@ const AdminPage = () => {
             <SecurityPanel />
           </TabsContent>
 
-          <TabsContent value="investor-access" className="space-y-6">
-            <ShareLinkManager />
-            <InvestorAccessManager />
-          </TabsContent>
+          {isSuperAdmin && (
+            <>
+              <TabsContent value="investor-access" className="space-y-6">
+                <ShareLinkManager />
+                <InvestorAccessManager />
+              </TabsContent>
 
-          <TabsContent value="investor-videos">
-            <InvestorVideoManager />
-          </TabsContent>
+              <TabsContent value="investor-videos">
+                <InvestorVideoManager />
+              </TabsContent>
 
-          <TabsContent value="investor-engagement">
-            <InvestorEngagementPanel />
-          </TabsContent>
+              <TabsContent value="investor-engagement">
+                <InvestorEngagementPanel />
+              </TabsContent>
 
-          <TabsContent value="deck-engagement">
-            <DeckEngagementPanel />
-          </TabsContent>
+              <TabsContent value="deck-engagement">
+                <DeckEngagementPanel />
+              </TabsContent>
+            </>
+          )}
         </Tabs>
       </main>
     </div>

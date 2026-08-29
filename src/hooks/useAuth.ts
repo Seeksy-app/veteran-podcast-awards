@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
 
-type AppRole = 'admin' | 'moderator' | 'user';
+type AppRole = 'super_admin' | 'admin' | 'moderator' | 'user';
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -56,7 +56,7 @@ export const useAuth = () => {
       } else {
         const userRoles = data?.map((roleRecord) => roleRecord.role as AppRole) || [];
         setRoles(userRoles);
-        setIsAdmin(userRoles.includes('admin'));
+        setIsAdmin(userRoles.includes('admin') || userRoles.includes('super_admin'));
       }
     } catch (err) {
       console.error('Error checking roles:', err);
@@ -118,6 +118,7 @@ export const useAuth = () => {
     session,
     loading,
     isAdmin,
+    isSuperAdmin: roles.includes('super_admin'),
     roles,
     hasRole,
     signIn,
