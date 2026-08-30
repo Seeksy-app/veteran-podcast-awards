@@ -201,9 +201,9 @@ export const UserManager = () => {
 
   const getUserTypeBadge = (type: string | null) => {
     switch (type) {
-      case "podcaster": return <Badge className="bg-amber-100 text-amber-600">Podcaster</Badge>;
-      case "voter": return <Badge className="bg-blue-500/20 text-blue-500">Voter</Badge>;
-      case "fan": return <Badge className="bg-pink-500/20 text-pink-500">Fan</Badge>;
+      case "podcaster": return <Badge className="bg-amber-600 text-white hover:bg-amber-600">Podcaster</Badge>;
+      case "voter": return <Badge className="bg-blue-600 text-white hover:bg-blue-600">Voter</Badge>;
+      case "fan": return <Badge className="bg-pink-600 text-white hover:bg-pink-600">Fan</Badge>;
       default: return <Badge variant="secondary">Unknown</Badge>;
     }
   };
@@ -211,8 +211,9 @@ export const UserManager = () => {
   const getRoleBadge = (userId: string) => {
     const role = roles.get(userId);
     switch (role) {
-      case "admin": return <Badge className="bg-red-500/20 text-red-500">Admin</Badge>;
-      case "moderator": return <Badge className="bg-orange-500/20 text-orange-500">Moderator</Badge>;
+      case "super_admin": return <Badge className="bg-purple-700 text-white hover:bg-purple-700">Super Admin</Badge>;
+      case "admin": return <Badge className="bg-red-600 text-white hover:bg-red-600">Admin</Badge>;
+      case "moderator": return <Badge className="bg-orange-600 text-white hover:bg-orange-600">Moderator</Badge>;
       default: return null;
     }
   };

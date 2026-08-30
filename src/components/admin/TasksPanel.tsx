@@ -72,24 +72,24 @@ export const TasksPanel = () => {
     enabled: !!user,
   });
 
-  // Admin/support staff (non-podcasters) tasks can be assigned to
+  // Admin/support staff tasks can be assigned to (by role, regardless of
+  // their podcaster/voter/fan account type — e.g. Riccoh is an admin but
+  // signed up as a Podcaster)
   const { data: assigneeOptions } = useQuery({
     queryKey: ["admin-tasks-assignee-options"],
     queryFn: async () => {
       const { data: roles } = await supabase
         .from("user_roles")
         .select("user_id, role")
-        .in("role", ["admin", "moderator"]);
+        .in("role", ["admin", "moderator", "super_admin"] as any);
       const staffIds = [...new Set((roles || []).map((r) => r.user_id))];
       if (staffIds.length === 0) return [] as string[];
       const { data: profiles } = await supabase
         .from("profiles")
-        .select("id, full_name, user_type")
+        .select("id, full_name")
         .in("id", staffIds);
       return [...new Set(
-        (profiles || [])
-          .filter((p) => p.user_type !== "podcaster" && p.full_name)
-          .map((p) => p.full_name as string)
+        (profiles || []).filter((p) => p.full_name).map((p) => p.full_name as string)
       )].sort();
     },
   });
