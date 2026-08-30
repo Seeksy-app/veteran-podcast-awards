@@ -16,13 +16,15 @@ CREATE TABLE IF NOT EXISTS public.admin_tasks (
 ALTER TABLE public.admin_tasks ENABLE ROW LEVEL SECURITY;
 
 -- Admins and super admins only
+DROP POLICY IF EXISTS "Admins manage tasks" ON public.admin_tasks;
 CREATE POLICY "Admins manage tasks" ON public.admin_tasks
   FOR ALL
   USING (EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role IN ('admin', 'super_admin')))
   WITH CHECK (EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role IN ('admin', 'super_admin')));
 
--- Seed: runway to Oct 5 voting and Nov 11 ceremony
-INSERT INTO public.admin_tasks (title, description, status, priority, assignee, due_date, area) VALUES
+-- Seed: runway to Oct 5 voting and Nov 11 ceremony (only if table is empty, so this is safe to re-run)
+INSERT INTO public.admin_tasks (title, description, status, priority, assignee, due_date, area)
+SELECT * FROM (VALUES
   ('Finalize award categories & judges panel', 'Lock category list and confirm judging panel commitments.', 'todo', 'P1', 'Andrew', '2026-09-08', 'Awards'),
   ('LinkedIn: swap to VPA-branded app', 'Create VPA LinkedIn app tied to the company page; update Supabase provider credentials.', 'todo', 'P2', 'Andrew', '2026-09-05', 'Auth'),
   ('Google OAuth consent approval', 'Finish Google consent screen review; re-add Google sign-in button.', 'todo', 'P2', 'Andrew', '2026-09-05', 'Auth'),
@@ -42,4 +44,6 @@ INSERT INTO public.admin_tasks (title, description, status, priority, assignee, 
   ('Ceremony livestream tech check', 'Final stream test: audio, overlays, backup encoder.', 'todo', 'P0', NULL, '2026-11-10', 'Event'),
   ('Awards Ceremony — Veterans Day', 'Showtime. 6 PM ET live worldwide.', 'todo', 'P0', NULL, '2026-11-11', 'Event'),
   ('Post-show winner announcements', 'Winner emails, site updates, press outreach.', 'todo', 'P1', NULL, '2026-11-12', 'Marketing'),
-  ('Sponsor deliverables recap', 'Wrap-up report to sponsors: reach, mentions, media.', 'todo', 'P2', NULL, '2026-11-18', 'Sponsors');
+  ('Sponsor deliverables recap', 'Wrap-up report to sponsors: reach, mentions, media.', 'todo', 'P2', NULL, '2026-11-18', 'Sponsors')
+) AS seed(title, description, status, priority, assignee, due_date, area)
+WHERE NOT EXISTS (SELECT 1 FROM public.admin_tasks);
