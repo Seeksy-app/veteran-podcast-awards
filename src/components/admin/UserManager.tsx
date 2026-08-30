@@ -22,6 +22,16 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -30,13 +40,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  Users, 
-  Search, 
-  MoreHorizontal, 
-  Eye, 
-  Shield, 
-  ShieldCheck, 
+import {
+  Users,
+  Search,
+  MoreHorizontal,
+  Eye,
+  Shield,
+  ShieldCheck,
   ShieldX,
   Mic,
   Vote,
@@ -44,6 +54,7 @@ import {
   Mail,
   Calendar,
   RefreshCw,
+  Trash2,
 } from "lucide-react";
 
 interface UserProfile {
@@ -77,6 +88,7 @@ export const UserManager = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
+  const [userToDelete, setUserToDelete] = useState<UserProfile | null>(null);
   const [stats, setStats] = useState<UserStats>({ total: 0, podcasters: 0, voters: 0, fans: 0, admins: 0 });
 
   useEffect(() => {
@@ -175,6 +187,21 @@ export const UserManager = () => {
     newRoles.delete(userId);
     setRoles(newRoles);
     toast({ title: "Role removed", description: "User role has been removed" });
+  };
+
+  const handleDeleteUser = async (user: UserProfile) => {
+    await supabase.from("user_roles").delete().eq("user_id", user.id);
+    const { error } = await supabase.from("profiles").delete().eq("id", user.id);
+    if (error) {
+      toast({ title: "Error deleting user", description: error.message, variant: "destructive" });
+      return;
+    }
+    setUsers((prev) => prev.filter((u) => u.id !== user.id));
+    const newRoles = new Map(roles);
+    newRoles.delete(user.id);
+    setRoles(newRoles);
+    setUserToDelete(null);
+    toast({ title: "User deleted", description: `${user.full_name || user.email} has been removed.` });
   };
 
   const filteredUsers = users.filter((user) => {
@@ -386,6 +413,14 @@ export const UserManager = () => {
                                 Remove Role
                               </DropdownMenuItem>
                             )}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              className="text-red-600 focus:text-red-600"
+                              onClick={() => setUserToDelete(user)}
+                            >
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Delete User
+                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
@@ -397,6 +432,26 @@ export const UserManager = () => {
           )}
         </CardContent>
       </Card>
+
+      <AlertDialog open={!!userToDelete} onOpenChange={() => setUserToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete user?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove <strong>{userToDelete?.full_name || userToDelete?.email}</strong> and all their profile data. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              onClick={() => userToDelete && handleDeleteUser(userToDelete)}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* User Details Dialog */}
       <Dialog open={!!selectedUser} onOpenChange={() => setSelectedUser(null)}>

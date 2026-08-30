@@ -18,6 +18,7 @@ import { DeckEngagementPanel } from '@/components/admin/DeckEngagementPanel';
 import { AwardsManager } from '@/components/admin/AwardsManager';
 import { EmailMarketingPanel } from '@/components/admin/EmailMarketingPanel';
 import { TasksPanel } from '@/components/admin/TasksPanel';
+import { FinancialsPanel } from '@/components/admin/FinancialsPanel';
 import { HelpDeskPanel } from '@/components/admin/HelpDeskPanel';
 import { Button } from '@/components/ui/button';
 import {
@@ -50,14 +51,12 @@ import {
   ChevronDown,
   Megaphone,
   LifeBuoy,
+  DollarSign,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import logo from '@/assets/vpa-logo.png';
 
 const MORE_TAB_VALUES = new Set([
-  'help-desk',
-  'security',
-  'tech-stack',
   'investor-access',
   'investor-videos',
   'investor-engagement',
@@ -189,62 +188,61 @@ const AdminPage = () => {
                 <Mail className="w-4 h-4" />
                 <span className="hidden sm:inline">Contacts</span>
               </TabsTrigger>
+              <TabsTrigger value="financials" className="gap-2">
+                <DollarSign className="w-4 h-4" />
+                <span className="hidden sm:inline">Financials</span>
+              </TabsTrigger>
+              <TabsTrigger value="help-desk" className="gap-2">
+                <LifeBuoy className="w-4 h-4" />
+                <span className="hidden sm:inline">Help</span>
+              </TabsTrigger>
+              <TabsTrigger value="security" className="gap-2">
+                <ShieldCheck className="w-4 h-4" />
+                <span className="hidden sm:inline">Security</span>
+              </TabsTrigger>
+              <TabsTrigger value="tech-stack" className="gap-2">
+                <Layers className="w-4 h-4" />
+                <span className="hidden sm:inline">Tech</span>
+              </TabsTrigger>
             </TabsList>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  type="button"
-                  className={cn(
-                    'inline-flex h-10 shrink-0 items-center justify-center gap-1 rounded-md px-3 py-1.5 text-sm font-medium ring-offset-white transition-all',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2',
-                    MORE_TAB_VALUES.has(activeTab)
-                      ? 'bg-white text-slate-900 shadow-sm'
-                      : 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-900',
-                  )}
-                >
-                  <span className="hidden sm:inline">More</span>
-                  <span className="sm:hidden">⋯</span>
-                  <ChevronDown className="h-4 w-4 opacity-70" aria-hidden />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => setActiveTab('help-desk')}>
-                  <LifeBuoy className="w-4 h-4" />
-                  Help Desk
-                </DropdownMenuItem>
-                <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => setActiveTab('security')}>
-                  <ShieldCheck className="w-4 h-4" />
-                  Security
-                </DropdownMenuItem>
-                <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => setActiveTab('tech-stack')}>
-                  <Layers className="w-4 h-4" />
-                  Tech Stack
-                </DropdownMenuItem>
-                {isSuperAdmin && (
-                  <>
-                    <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => setActiveTab('investor-access')}>
-                      <KeyRound className="w-4 h-4" />
-                      Investors
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => setActiveTab('investor-videos')}>
-                      <Video className="w-4 h-4" />
-                      Videos
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="gap-2 cursor-pointer"
-                      onClick={() => setActiveTab('investor-engagement')}
-                    >
-                      <Activity className="w-4 h-4" />
-                      Investor Engagement
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => setActiveTab('deck-engagement')}>
-                      <FileText className="w-4 h-4" />
-                      Deck Engagement
-                    </DropdownMenuItem>
-                  </>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {isSuperAdmin && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className={cn(
+                      'inline-flex h-10 shrink-0 items-center justify-center gap-1 rounded-md px-3 py-1.5 text-sm font-medium ring-offset-white transition-all',
+                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2',
+                      MORE_TAB_VALUES.has(activeTab)
+                        ? 'bg-white text-slate-900 shadow-sm'
+                        : 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-900',
+                    )}
+                  >
+                    <span className="hidden sm:inline">More</span>
+                    <span className="sm:hidden">⋯</span>
+                    <ChevronDown className="h-4 w-4 opacity-70" aria-hidden />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => setActiveTab('investor-access')}>
+                    <KeyRound className="w-4 h-4" />
+                    Investors
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => setActiveTab('investor-videos')}>
+                    <Video className="w-4 h-4" />
+                    Videos
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => setActiveTab('investor-engagement')}>
+                    <Activity className="w-4 h-4" />
+                    Investor Engagement
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => setActiveTab('deck-engagement')}>
+                    <FileText className="w-4 h-4" />
+                    Deck Engagement
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
 
           <TabsContent value="users">
@@ -265,6 +263,10 @@ const AdminPage = () => {
 
           <TabsContent value="tasks">
             <TasksPanel />
+          </TabsContent>
+
+          <TabsContent value="financials">
+            <FinancialsPanel />
           </TabsContent>
 
           <TabsContent value="sponsors">

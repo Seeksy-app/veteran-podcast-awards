@@ -24,10 +24,16 @@ interface AdminTask {
 }
 
 const SECTIONS = [
-  { key: "todo", label: "To Do", accent: "border-l-red-400", dot: "bg-red-400" },
-  { key: "in_progress", label: "In Progress", accent: "border-l-amber-400", dot: "bg-amber-400" },
-  { key: "completed", label: "Completed", accent: "border-l-emerald-400", dot: "bg-emerald-400" },
+  { key: "todo",        label: "To Do",       accent: "border-l-red-400",     dot: "bg-red-400",     textColor: "text-red-500"     },
+  { key: "in_progress", label: "In Progress", accent: "border-l-amber-400",   dot: "bg-amber-400",   textColor: "text-amber-600"   },
+  { key: "completed",   label: "Completed",   accent: "border-l-emerald-400", dot: "bg-emerald-400", textColor: "text-emerald-600" },
 ] as const;
+
+const STATUS_STYLES: Record<AdminTask["status"], { bg: string; text: string; label: string }> = {
+  todo:        { bg: "bg-gray-200",    text: "text-gray-600", label: "To Do"       },
+  in_progress: { bg: "bg-amber-400",   text: "text-white",    label: "In Progress" },
+  completed:   { bg: "bg-emerald-500", text: "text-white",    label: "Completed"   },
+};
 
 const PRIORITY_STYLES: Record<AdminTask["priority"], string> = {
   P0: "bg-red-100 text-red-700 border-red-200",
@@ -49,7 +55,6 @@ const emptyDraft = {
   link: "",
 };
 
-// admin_tasks isn't in the generated types yet — cast around it
 const tasksTable = () => (supabase as any).from("admin_tasks");
 
 export const TasksPanel = () => {
@@ -62,7 +67,6 @@ export const TasksPanel = () => {
   const [assigneeFilter, setAssigneeFilter] = useState<string>("all");
   const [areaFilter, setAreaFilter] = useState<string>("all");
 
-  // Logged-in admin's display name, for the "My Tasks" view
   const { data: myProfile } = useQuery({
     queryKey: ["admin-tasks-me", user?.id],
     queryFn: async () => {
@@ -72,9 +76,6 @@ export const TasksPanel = () => {
     enabled: !!user,
   });
 
-  // Admin/support staff tasks can be assigned to (by role, regardless of
-  // their podcaster/voter/fan account type — e.g. Riccoh is an admin but
-  // signed up as a Podcaster)
   const { data: assigneeOptions } = useQuery({
     queryKey: ["admin-tasks-assignee-options"],
     queryFn: async () => {
@@ -187,9 +188,15 @@ export const TasksPanel = () => {
 
   const isMine = (t: AdminTask) => {
     if (!t.assignee) return false;
-    const me = (myProfile?.full_name || "").toLowerCase();
-    const a = t.assignee.toLowerCase();
-    return me.length > 0 && (me.includes(a) || a.includes(me.split(" ")[0]));
+    const a = t.assignee.toLowerCase().trim();
+    const fullName = (myProfile?.full_name || "").toLowerCase().trim();
+    const firstName = fullName.split(" ")[0];
+    const emailLocal = (user?.email || "").split("@")[0].toLowerCase().trim();
+    if (!fullName && !emailLocal) return false;
+    return (
+      (fullName.length > 0 && (a === fullName || a === firstName || fullName.includes(a) || a.includes(firstName))) ||
+      (emailLocal.length > 0 && (a === emailLocal || a.includes(emailLocal) || emailLocal.includes(a)))
+    );
   };
 
   const assignees = useMemo(
@@ -230,14 +237,15 @@ export const TasksPanel = () => {
     return "text-slate-500";
   };
 
+  const COL = "36px 1fr 148px 128px 132px 56px";
+
   if (error) {
+    const msg = (error as any)?.message || String(error);
     return (
-      <div className="text-center py-12 bg-white border border-slate-200 rounded-lg">
+      <div className="py-12 bg-white border border-slate-200 rounded-lg px-8">
         <ClipboardList className="w-10 h-10 text-slate-400 mx-auto mb-3" />
-        <p className="text-slate-600 font-medium">Tasks table not found</p>
-        <p className="text-sm text-slate-400 mt-1 max-w-md mx-auto">
-          Run the <code>admin_tasks</code> migration in the Supabase SQL editor to enable project management.
-        </p>
+        <p className="text-slate-600 font-medium text-center">Tasks failed to load</p>
+        <pre className="mt-3 text-xs text-red-600 bg-red-50 border border-red-100 rounded p-3 overflow-x-auto whitespace-pre-wrap">{msg}</pre>
       </div>
     );
   }
@@ -257,7 +265,7 @@ export const TasksPanel = () => {
         </Button>
       </div>
 
-      {/* View filters */}
+      {/* Filters */}
       <div className="flex flex-wrap items-center gap-2">
         {(
           [
@@ -313,11 +321,7 @@ export const TasksPanel = () => {
         </select>
         {(viewStatus !== "all" || assigneeFilter !== "all" || areaFilter !== "all") && (
           <button
-            onClick={() => {
-              setViewStatus("all");
-              setAssigneeFilter("all");
-              setAreaFilter("all");
-            }}
+            onClick={() => { setViewStatus("all"); setAssigneeFilter("all"); setAreaFilter("all"); }}
             className="text-sm text-slate-400 hover:text-slate-600 underline"
           >
             Clear
@@ -325,103 +329,147 @@ export const TasksPanel = () => {
         )}
       </div>
 
+      {/* Monday-style table */}
       {isLoading ? (
-        <div className="text-center py-8 text-slate-500">Loading tasks...</div>
+        <div className="text-center py-8 text-slate-500">Loading tasks…</div>
       ) : (
-        visibleSections.map((section) => (
-          <div key={section.key} className={`bg-white border border-slate-200 border-l-4 ${section.accent} rounded-lg`}>
-            <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100">
-              <span className={`w-2 h-2 rounded-full ${section.dot}`} />
-              <h3 className="font-semibold text-slate-900">{section.label}</h3>
-              <span className="text-xs text-slate-400">({grouped[section.key].length})</span>
-            </div>
-            {grouped[section.key].length === 0 ? (
-              <p className="px-4 py-5 text-sm text-slate-400">Nothing here.</p>
-            ) : (
-              <div className="divide-y divide-slate-100">
-                {grouped[section.key].map((t) => (
-                  <div key={t.id} className="flex items-center gap-3 px-4 py-3 group">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className={`font-medium ${t.status === "completed" ? "text-slate-400 line-through" : "text-slate-900"}`}>
+        <div className="rounded-lg border border-slate-200 overflow-hidden bg-white">
+          {/* Column header */}
+          <div
+            className="grid border-b border-slate-200 bg-slate-50 text-[10px] font-bold uppercase tracking-widest text-slate-400 select-none"
+            style={{ gridTemplateColumns: COL }}
+          >
+            <div className="h-9" />
+            <div className="h-9 flex items-center px-3 border-l border-slate-200">Task</div>
+            <div className="h-9 flex items-center px-3 border-l border-slate-200">Assignee</div>
+            <div className="h-9 flex items-center px-3 border-l border-slate-200">Due Date</div>
+            <div className="h-9 flex items-center px-3 border-l border-slate-200">Status</div>
+            <div className="h-9 border-l border-slate-200" />
+          </div>
+
+          {visibleSections.map((section) => {
+            const items = grouped[section.key];
+            return (
+              <div key={section.key}>
+                {/* Group header */}
+                <div className={`flex items-center gap-2 px-4 py-2 bg-white border-b border-slate-100 border-l-4 ${section.accent}`}>
+                  <span className={`text-sm font-bold ${section.textColor}`}>{section.label}</span>
+                  <span className="text-xs text-slate-400 font-normal">({items.length})</span>
+                </div>
+
+                {/* Rows */}
+                {items.map((t) => (
+                  <div
+                    key={t.id}
+                    className="grid items-center border-b border-slate-100 group hover:bg-slate-50 min-h-[44px]"
+                    style={{ gridTemplateColumns: COL }}
+                  >
+                    <div className="flex items-center justify-center">
+                      <input
+                        type="checkbox"
+                        checked={t.status === "completed"}
+                        onChange={() =>
+                          updateStatus.mutate({ id: t.id, status: t.status === "completed" ? "todo" : "completed" })
+                        }
+                        className="w-3.5 h-3.5 rounded cursor-pointer accent-emerald-500"
+                      />
+                    </div>
+
+                    <div className="px-3 py-2 border-l border-slate-100 min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className={`text-sm font-medium ${t.status === "completed" ? "line-through text-slate-400" : "text-slate-900"}`}>
                           {t.title}
                         </span>
-                        <span className={`text-[11px] font-semibold border px-1.5 py-0.5 rounded ${PRIORITY_STYLES[t.priority]}`}>
+                        <span className={`text-[10px] font-bold border px-1.5 py-0.5 rounded ${PRIORITY_STYLES[t.priority]}`}>
                           {t.priority}
                         </span>
                         {t.area && (
-                          <span className="text-[11px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">{t.area}</span>
+                          <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">{t.area}</span>
                         )}
                         {t.link && (
-                          <a href={t.link} target="_blank" rel="noopener noreferrer" className="text-amber-600 hover:text-amber-700">
-                            <ExternalLink className="w-3.5 h-3.5" />
+                          <a href={t.link} target="_blank" rel="noopener noreferrer" className="text-amber-500 hover:text-amber-600">
+                            <ExternalLink className="w-3 h-3" />
                           </a>
                         )}
                       </div>
                       {t.description && (
-                        <p className="text-xs text-slate-500 mt-0.5 line-clamp-2 max-w-2xl">{t.description}</p>
+                        <p className="text-xs text-slate-400 mt-0.5 line-clamp-1 max-w-lg">{t.description}</p>
                       )}
                     </div>
-                    <select
-                      value={t.assignee || ""}
-                      onChange={(e) => updateField.mutate({ id: t.id, field: "assignee", value: e.target.value || null })}
-                      title="Assignee"
-                      className="text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-full px-2.5 py-1 whitespace-nowrap shrink-0 w-28 focus:outline-none focus:ring-1 focus:ring-amber-400 focus:bg-white"
-                    >
-                      <option value="">Unassigned</option>
-                      {[...new Set([t.assignee, ...(assigneeOptions || [])].filter(Boolean) as string[])]
-                        .sort()
-                        .map((name) => (
+
+                    <div className="px-2 border-l border-slate-100">
+                      <select
+                        value={t.assignee || ""}
+                        onChange={(e) => updateField.mutate({ id: t.id, field: "assignee", value: e.target.value || null })}
+                        className="w-full text-xs text-slate-700 bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-amber-400 rounded-sm cursor-pointer py-1"
+                      >
+                        <option value="">Unassigned</option>
+                        {[...new Set([t.assignee, ...(assigneeOptions || [])].filter(Boolean) as string[])].sort().map((name) => (
                           <option key={name} value={name}>{name}</option>
                         ))}
-                    </select>
-                    <input
-                      type="date"
-                      value={t.due_date || ""}
-                      onChange={(e) => updateField.mutate({ id: t.id, field: "due_date", value: e.target.value || null })}
-                      title="Due date"
-                      className={`text-xs border border-slate-200 rounded-md px-1.5 py-1 shrink-0 w-[7.5rem] bg-white focus:outline-none focus:ring-1 focus:ring-amber-400 ${dueColorClass(t)}`}
-                    />
-                    <select
-                      value={t.status}
-                      onChange={(e) => updateStatus.mutate({ id: t.id, status: e.target.value as AdminTask["status"] })}
-                      className="text-xs border border-slate-200 rounded-md px-2 py-1.5 bg-white text-slate-600 shrink-0"
-                    >
-                      <option value="todo">To Do</option>
-                      <option value="in_progress">In Progress</option>
-                      <option value="completed">Completed</option>
-                    </select>
-                    <button
-                      onClick={() => openEdit(t)}
-                      className="text-slate-400 hover:text-amber-600 shrink-0"
-                      title="Edit task (assignee, due date, details)"
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => deleteTask.mutate(t.id)}
-                      className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
-                      title="Delete task"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                      </select>
+                    </div>
+
+                    <div className="px-2 border-l border-slate-100">
+                      <input
+                        type="date"
+                        value={t.due_date || ""}
+                        onChange={(e) => updateField.mutate({ id: t.id, field: "due_date", value: e.target.value || null })}
+                        className={`w-full text-xs bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-amber-400 rounded-sm cursor-pointer py-1 ${dueColorClass(t)}`}
+                      />
+                    </div>
+
+                    <div className="px-2 border-l border-slate-100">
+                      <div className="relative">
+                        <div className={`${STATUS_STYLES[t.status].bg} ${STATUS_STYLES[t.status].text} rounded text-[11px] font-bold px-2 py-1 text-center leading-tight pointer-events-none select-none`}>
+                          {STATUS_STYLES[t.status].label}
+                        </div>
+                        <select
+                          value={t.status}
+                          onChange={(e) => updateStatus.mutate({ id: t.id, status: e.target.value as AdminTask["status"] })}
+                          className="absolute inset-0 opacity-0 cursor-pointer w-full"
+                        >
+                          <option value="todo">To Do</option>
+                          <option value="in_progress">In Progress</option>
+                          <option value="completed">Completed</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="border-l border-slate-100 flex items-center gap-0.5 justify-center px-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onClick={() => openEdit(t)} className="p-1 text-slate-400 hover:text-amber-600 rounded" title="Edit">
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button onClick={() => deleteTask.mutate(t.id)} className="p-1 text-slate-300 hover:text-red-500 rounded" title="Delete">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
                 ))}
+
+                {/* + Add item */}
+                <div
+                  onClick={openNew}
+                  className="grid border-b border-slate-100 hover:bg-slate-50 cursor-pointer group/add"
+                  style={{ gridTemplateColumns: COL }}
+                >
+                  <div />
+                  <div className="px-3 py-2 flex items-center gap-1.5 text-slate-400 group-hover/add:text-slate-600 text-sm border-l border-slate-100">
+                    <Plus className="w-3.5 h-3.5" />
+                    Add item
+                  </div>
+                </div>
               </div>
-            )}
-          </div>
-        ))
+            );
+          })}
+        </div>
       )}
 
-      {/* New / Edit Task dialog */}
       <Dialog
         open={isDialogOpen}
         onOpenChange={(open) => {
           setIsDialogOpen(open);
-          if (!open) {
-            setEditingTask(null);
-            setDraft(emptyDraft);
-          }
+          if (!open) { setEditingTask(null); setDraft(emptyDraft); }
         }}
       >
         <DialogContent className="sm:max-w-lg">
@@ -431,29 +479,16 @@ export const TasksPanel = () => {
           <div className="space-y-4">
             <div className="space-y-1.5">
               <Label>Title *</Label>
-              <Input
-                value={draft.title}
-                onChange={(e) => setDraft({ ...draft, title: e.target.value })}
-                placeholder="What needs to be done?"
-              />
+              <Input value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} placeholder="What needs to be done?" />
             </div>
             <div className="space-y-1.5">
               <Label>Description</Label>
-              <Textarea
-                value={draft.description}
-                onChange={(e) => setDraft({ ...draft, description: e.target.value })}
-                placeholder="Add more details..."
-                rows={2}
-              />
+              <Textarea value={draft.description} onChange={(e) => setDraft({ ...draft, description: e.target.value })} placeholder="Add more details..." rows={2} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label>Status</Label>
-                <select
-                  className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
-                  value={draft.status}
-                  onChange={(e) => setDraft({ ...draft, status: e.target.value as AdminTask["status"] })}
-                >
+                <select className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm" value={draft.status} onChange={(e) => setDraft({ ...draft, status: e.target.value as AdminTask["status"] })}>
                   <option value="todo">To Do</option>
                   <option value="in_progress">In Progress</option>
                   <option value="completed">Completed</option>
@@ -461,11 +496,7 @@ export const TasksPanel = () => {
               </div>
               <div className="space-y-1.5">
                 <Label>Priority</Label>
-                <select
-                  className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
-                  value={draft.priority}
-                  onChange={(e) => setDraft({ ...draft, priority: e.target.value as AdminTask["priority"] })}
-                >
+                <select className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm" value={draft.priority} onChange={(e) => setDraft({ ...draft, priority: e.target.value as AdminTask["priority"] })}>
                   <option value="P0">P0 — Critical</option>
                   <option value="P1">P1 — High</option>
                   <option value="P2">P2 — Normal</option>
@@ -476,49 +507,29 @@ export const TasksPanel = () => {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label>Assignee</Label>
-                <select
-                  className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
-                  value={draft.assignee}
-                  onChange={(e) => setDraft({ ...draft, assignee: e.target.value })}
-                >
+                <select className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm" value={draft.assignee} onChange={(e) => setDraft({ ...draft, assignee: e.target.value })}>
                   <option value="">Unassigned</option>
-                  {[...new Set([draft.assignee, ...(assigneeOptions || [])].filter(Boolean))]
-                    .sort()
-                    .map((name) => (
-                      <option key={name} value={name}>{name}</option>
-                    ))}
+                  {[...new Set([draft.assignee, ...(assigneeOptions || [])].filter(Boolean))].sort().map((name) => (
+                    <option key={name} value={name}>{name}</option>
+                  ))}
                 </select>
               </div>
               <div className="space-y-1.5">
                 <Label>Due Date</Label>
-                <Input
-                  type="date"
-                  value={draft.due_date}
-                  onChange={(e) => setDraft({ ...draft, due_date: e.target.value })}
-                />
+                <Input type="date" value={draft.due_date} onChange={(e) => setDraft({ ...draft, due_date: e.target.value })} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label>Area</Label>
-                <select
-                  className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
-                  value={draft.area}
-                  onChange={(e) => setDraft({ ...draft, area: e.target.value })}
-                >
+                <select className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm" value={draft.area} onChange={(e) => setDraft({ ...draft, area: e.target.value })}>
                   <option value="">None</option>
-                  {AREAS.map((a) => (
-                    <option key={a} value={a}>{a}</option>
-                  ))}
+                  {AREAS.map((a) => <option key={a} value={a}>{a}</option>)}
                 </select>
               </div>
               <div className="space-y-1.5">
                 <Label>Link (optional)</Label>
-                <Input
-                  value={draft.link}
-                  onChange={(e) => setDraft({ ...draft, link: e.target.value })}
-                  placeholder="https://..."
-                />
+                <Input value={draft.link} onChange={(e) => setDraft({ ...draft, link: e.target.value })} placeholder="https://..." />
               </div>
             </div>
             <div className="flex justify-end gap-2 pt-2">
