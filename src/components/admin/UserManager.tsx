@@ -44,7 +44,6 @@ import {
   Mail,
   Calendar,
   RefreshCw,
-  UserCog
 } from "lucide-react";
 
 interface UserProfile {
@@ -79,7 +78,6 @@ export const UserManager = () => {
   const [filterType, setFilterType] = useState<string>("all");
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [stats, setStats] = useState<UserStats>({ total: 0, podcasters: 0, voters: 0, fans: 0, admins: 0 });
-  const [previewRole, setPreviewRole] = useState<string | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -251,69 +249,6 @@ export const UserManager = () => {
           </Card>
         ))}
       </div>
-
-      {/* Role Preview Card */}
-      <Card className="border-primary/50">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <UserCog className="w-5 h-5" />
-            Role Experience Preview
-          </CardTitle>
-          <CardDescription>
-            Preview what different user roles see in their dashboard
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-3">
-            <Button
-              variant={previewRole === "podcaster" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setPreviewRole(previewRole === "podcaster" ? null : "podcaster")}
-            >
-              <Mic className="w-4 h-4 mr-2" />
-              Podcaster View
-            </Button>
-            <Button
-              variant={previewRole === "voter" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setPreviewRole(previewRole === "voter" ? null : "voter")}
-            >
-              <Vote className="w-4 h-4 mr-2" />
-              Voter View
-            </Button>
-            <Button
-              variant={previewRole === "fan" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setPreviewRole(previewRole === "fan" ? null : "fan")}
-            >
-              <Heart className="w-4 h-4 mr-2" />
-              Fan View
-            </Button>
-            {previewRole && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setPreviewRole(null)}
-              >
-                Exit Preview
-              </Button>
-            )}
-          </div>
-          {previewRole && (
-            <div className="mt-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
-              <p className="text-sm text-slate-500 mb-2">
-                Previewing: <strong className="text-slate-900 capitalize">{previewRole}</strong> Dashboard
-              </p>
-              <Button variant="gold" size="sm" asChild>
-                <a href={`/dashboard?preview=${previewRole}`} target="_blank" rel="noopener noreferrer">
-                  <Eye className="w-4 h-4 mr-2" />
-                  Open in New Tab
-                </a>
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
       {/* User Management Table */}
       <Card>

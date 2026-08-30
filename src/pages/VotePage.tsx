@@ -27,6 +27,7 @@ import {
   rankAmongNominees,
 } from "@/lib/awards";
 import { toast } from "sonner";
+import { promptShareContact } from "@/lib/shareContact";
 import { ChevronRight, Loader2, Share2, Trophy } from "lucide-react";
 
 type NomRow = {
@@ -300,6 +301,9 @@ const VotePage = () => {
         return;
       }
       toast.success("Your vote has been cast!");
+      if (user) {
+        promptShareContact({ user, podcastId: n.podcast_id, podcastName: n.podcast_name, source: "vote" });
+      }
       const r = await rankAmongNominees(n.podcast_id, n.category_id, slug, pid);
       setJustVoted((prev) => ({
         ...prev,

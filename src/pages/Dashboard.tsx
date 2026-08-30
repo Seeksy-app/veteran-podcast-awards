@@ -123,6 +123,7 @@ interface FollowerContact {
   email: string;
   name: string;
   created_at: string;
+  sources: string[];
 }
 
 type NavSection =
@@ -170,7 +171,6 @@ const Dashboard = () => {
       fetchMessages();
       fetchFavorites();
       fetchCategoryNames();
-      fetchContacts();
     }
   }, [user]);
 
@@ -194,6 +194,7 @@ const Dashboard = () => {
     if (!profile?.podcast_id) {
       setLinkedPodcast(null);
       setFollowerCount(0);
+      setContacts([]);
       if (profile?.podcast_rss && !rssUrl) setRssUrl(profile.podcast_rss);
       return;
     }
@@ -212,6 +213,7 @@ const Dashboard = () => {
         .select("*", { count: "exact", head: true })
         .eq("podcast_id", profile.podcast_id!);
       setFollowerCount(count || 0);
+      fetchContacts(profile.podcast_id!);
     })();
   }, [profile?.podcast_id]);
 
@@ -272,15 +274,14 @@ const Dashboard = () => {
     }
   };
 
-  const fetchContacts = async () => {
-    if (!user) return;
+  const fetchContacts = async (podcastId: string) => {
     const { data } = await supabase
-      .from("podcast_contacts" as any)
-      .select("id, email, name, created_at")
-      .eq("source" as any, "Follower Share")
+      .from("podcast_supporter_contacts" as any)
+      .select("id, email, name, created_at, sources")
+      .eq("podcast_id", podcastId)
       .order("created_at", { ascending: false })
       .limit(100);
-    if (data) setContacts(data as FollowerContact[]);
+    if (data) setContacts(data as unknown as FollowerContact[]);
   };
 
   const fetchCategoryNames = async () => {
@@ -373,7 +374,7 @@ const Dashboard = () => {
   };
 
   const getUserTypeLabel = () => {
-    switch (previewRole ?? profile?.user_type) {
+    switch (profile?.user_type) {
       case "podcaster": return "Podcaster";
       case "voter": return "Verified Voter";
       case "fan": return "Fan";
@@ -382,7 +383,7 @@ const Dashboard = () => {
   };
 
   const getUserTypeColor = () => {
-    switch (previewRole ?? profile?.user_type) {
+    switch (profile?.user_type) {
       case "podcaster": return "bg-slate-600 text-slate-200";
       case "voter": return "bg-blue-500 text-white";
       case "fan": return "bg-slate-200 text-slate-700";
@@ -401,13 +402,7 @@ const Dashboard = () => {
 
   const unreadCount = messages.filter((m) => !m.is_read).length;
 
-  // Admin-only role preview: /dashboard?preview=podcaster|voter|fan
-  const previewParam = searchParams.get("preview");
-  const previewRole =
-    isAdmin && (previewParam === "podcaster" || previewParam === "voter" || previewParam === "fan")
-      ? previewParam
-      : null;
-  const isPodcaster = previewRole ? previewRole === "podcaster" : profile?.user_type === "podcaster";
+  const isPodcaster = profile?.user_type === "podcaster";
 
   type NavItem = { key: NavSection; label: string; icon: typeof User; badge?: number; podcasterOnly?: boolean; group?: string };
   const navItems: NavItem[] = [
@@ -446,19 +441,10 @@ const Dashboard = () => {
     if (type === "podcaster") navigate("/onboarding");
   };
 
-  const needsRolePick = profile.user_type_confirmed === false && !previewRole;
+  const needsRolePick = profile.user_type_confirmed === false;
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
-      {/* Admin role-preview banner */}
-      {previewRole && (
-        <div className="fixed top-0 inset-x-0 z-[90] bg-purple-600 text-white text-sm text-center py-1.5 flex items-center justify-center gap-3">
-          <span>
-            Previewing the <strong className="capitalize">{previewParam}</strong> dashboard view
-          </span>
-          <a href="/dashboard" className="underline font-medium hover:opacity-80">Exit preview</a>
-        </div>
-      )}
       {/* ─── One-time role prompt for OAuth signups ─── */}
       {needsRolePick && (
         <div className="fixed inset-0 z-[100] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
@@ -1002,7 +988,7 @@ const Dashboard = () => {
                   Follower Contacts
                 </CardTitle>
                 <CardDescription>
-                  Followers who shared their email address with you
+                  Supporters who opted in to share their name and email when they followed or voted for you
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -1011,8 +997,8 @@ const Dashboard = () => {
                     <Users className="w-12 h-12 text-slate-300 mx-auto mb-4" />
                     <h3 className="font-semibold text-slate-900 mb-2">No Contacts Yet</h3>
                     <p className="text-slate-500 text-sm max-w-md mx-auto">
-                      When someone follows your podcast, they'll be prompted to share their email.
-                      Contacts who opt in will appear here.
+                      When someone follows or votes for your podcast, they're prompted to share their
+                      contact info with you. Supporters who opt in will appear here.
                     </p>
                   </div>
                 ) : (
@@ -1025,6 +1011,14 @@ const Dashboard = () => {
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-slate-900 truncate">{c.name}</p>
                           <p className="text-xs text-slate-500 truncate">{c.email}</p>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {c.sources?.includes("follow") && (
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">Follower</span>
+                          )}
+                          {c.sources?.includes("vote") && (
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">Voter</span>
+                          )}
                         </div>
                         <span className="text-xs text-slate-400">{new Date(c.created_at).toLocaleDateString()}</span>
                       </div>

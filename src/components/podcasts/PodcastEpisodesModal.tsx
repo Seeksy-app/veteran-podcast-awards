@@ -6,6 +6,7 @@ import { Play, Pause, ExternalLink, Clock, Calendar, Heart } from "lucide-react"
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { promptShareContact } from "@/lib/shareContact";
 import { useNavigate } from "react-router-dom";
 import type { Podcast, Episode } from "@/hooks/usePodcasts";
 
@@ -85,6 +86,7 @@ export const PodcastEpisodesModal = ({ podcast, open, onOpenChange }: PodcastEpi
         });
         setIsFavorite(true);
         toast.success("Added to favorites!");
+        promptShareContact({ user, podcastId: podcast.id, podcastName: podcast.title, source: "follow" });
       }
     } catch (error) {
       toast.error("Failed to update favorites");
