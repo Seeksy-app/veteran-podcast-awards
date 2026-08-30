@@ -142,6 +142,15 @@ export const TasksPanel = () => {
     onError: (e: Error) => toast.error(`Update failed: ${e.message}`),
   });
 
+  const updateField = useMutation({
+    mutationFn: async ({ id, field, value }: { id: string; field: "assignee" | "due_date"; value: string | null }) => {
+      const { error } = await tasksTable().update({ [field]: value, updated_at: new Date().toISOString() }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: invalidate,
+    onError: (e: Error) => toast.error(`Update failed: ${e.message}`),
+  });
+
   const deleteTask = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await tasksTable().delete().eq("id", id);
@@ -189,16 +198,14 @@ export const TasksPanel = () => {
 
   const visibleSections = viewStatus === "all" ? SECTIONS : SECTIONS.filter((s) => s.key === viewStatus);
 
-  const dueLabel = (t: AdminTask) => {
-    if (!t.due_date) return null;
+  const dueColorClass = (t: AdminTask) => {
+    if (!t.due_date || t.status === "completed") return "text-slate-400";
     const due = new Date(t.due_date + "T12:00:00");
     const days = Math.ceil((due.getTime() - Date.now()) / 86400000);
-    const text = due.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-    if (t.status === "completed") return <span className="text-slate-400">{text}</span>;
-    if (days < 0) return <span className="text-red-600 font-semibold">{text} · overdue</span>;
-    if (days <= 7) return <span className="text-red-500 font-medium">{text}</span>;
-    if (days <= 21) return <span className="text-amber-600">{text}</span>;
-    return <span className="text-slate-500">{text}</span>;
+    if (days < 0) return "text-red-600 font-semibold";
+    if (days <= 7) return "text-red-500 font-medium";
+    if (days <= 21) return "text-amber-600";
+    return "text-slate-500";
   };
 
   if (error) {
@@ -333,12 +340,27 @@ export const TasksPanel = () => {
                         <p className="text-xs text-slate-500 mt-0.5 truncate">{t.description}</p>
                       )}
                     </div>
-                    {t.assignee && (
-                      <span className="text-xs text-slate-500 bg-slate-50 border border-slate-200 rounded-full px-2.5 py-1 whitespace-nowrap shrink-0">
-                        {t.assignee}
-                      </span>
-                    )}
-                    <span className="text-xs whitespace-nowrap shrink-0 w-24 text-right">{dueLabel(t)}</span>
+                    <input
+                      key={`assignee-${t.id}-${t.assignee || ""}`}
+                      type="text"
+                      defaultValue={t.assignee || ""}
+                      onBlur={(e) => {
+                        const value = e.target.value.trim() || null;
+                        if (value !== (t.assignee || null)) {
+                          updateField.mutate({ id: t.id, field: "assignee", value });
+                        }
+                      }}
+                      placeholder="Unassigned"
+                      title="Assignee"
+                      className="text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-full px-2.5 py-1 whitespace-nowrap shrink-0 w-28 text-center placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-amber-400 focus:bg-white"
+                    />
+                    <input
+                      type="date"
+                      value={t.due_date || ""}
+                      onChange={(e) => updateField.mutate({ id: t.id, field: "due_date", value: e.target.value || null })}
+                      title="Due date"
+                      className={`text-xs border border-slate-200 rounded-md px-1.5 py-1 shrink-0 w-[7.5rem] bg-white focus:outline-none focus:ring-1 focus:ring-amber-400 ${dueColorClass(t)}`}
+                    />
                     <select
                       value={t.status}
                       onChange={(e) => updateStatus.mutate({ id: t.id, status: e.target.value as AdminTask["status"] })}
