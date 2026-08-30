@@ -373,7 +373,7 @@ const Dashboard = () => {
   };
 
   const getUserTypeLabel = () => {
-    switch (profile?.user_type) {
+    switch (previewRole ?? profile?.user_type) {
       case "podcaster": return "Podcaster";
       case "voter": return "Verified Voter";
       case "fan": return "Fan";
@@ -382,7 +382,7 @@ const Dashboard = () => {
   };
 
   const getUserTypeColor = () => {
-    switch (profile?.user_type) {
+    switch (previewRole ?? profile?.user_type) {
       case "podcaster": return "bg-slate-600 text-slate-200";
       case "voter": return "bg-blue-500 text-white";
       case "fan": return "bg-slate-200 text-slate-700";
@@ -403,7 +403,10 @@ const Dashboard = () => {
 
   // Admin-only role preview: /dashboard?preview=podcaster|voter|fan
   const previewParam = searchParams.get("preview");
-  const previewRole = isAdmin && previewParam ? (previewParam === "podcaster" ? "podcaster" : "fan") : null;
+  const previewRole =
+    isAdmin && (previewParam === "podcaster" || previewParam === "voter" || previewParam === "fan")
+      ? previewParam
+      : null;
   const isPodcaster = previewRole ? previewRole === "podcaster" : profile?.user_type === "podcaster";
 
   type NavItem = { key: NavSection; label: string; icon: typeof User; badge?: number; podcasterOnly?: boolean; group?: string };

@@ -18,6 +18,7 @@ import { DeckEngagementPanel } from '@/components/admin/DeckEngagementPanel';
 import { AwardsManager } from '@/components/admin/AwardsManager';
 import { EmailMarketingPanel } from '@/components/admin/EmailMarketingPanel';
 import { TasksPanel } from '@/components/admin/TasksPanel';
+import { HelpDeskPanel } from '@/components/admin/HelpDeskPanel';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -48,11 +49,13 @@ import {
   Trophy,
   ChevronDown,
   Megaphone,
+  LifeBuoy,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import logo from '@/assets/vpa-logo.png';
 
 const MORE_TAB_VALUES = new Set([
+  'help-desk',
   'security',
   'tech-stack',
   'investor-access',
@@ -205,6 +208,10 @@ const AdminPage = () => {
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => setActiveTab('help-desk')}>
+                  <LifeBuoy className="w-4 h-4" />
+                  Help Desk
+                </DropdownMenuItem>
                 <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => setActiveTab('security')}>
                   <ShieldCheck className="w-4 h-4" />
                   Security
@@ -275,6 +282,10 @@ const AdminPage = () => {
 
           <TabsContent value="tech-stack">
             <TechStackPanel />
+          </TabsContent>
+
+          <TabsContent value="help-desk">
+            <HelpDeskPanel />
           </TabsContent>
 
           <TabsContent value="security">
