@@ -24,15 +24,15 @@ interface AdminTask {
 }
 
 const SECTIONS = [
-  { key: "todo",        label: "To Do",       accent: "border-l-red-400",     dot: "bg-red-400",     textColor: "text-red-500"     },
-  { key: "in_progress", label: "In Progress", accent: "border-l-amber-400",   dot: "bg-amber-400",   textColor: "text-amber-600"   },
-  { key: "completed",   label: "Completed",   accent: "border-l-emerald-400", dot: "bg-emerald-400", textColor: "text-emerald-600" },
+  { key: "todo",        label: "To Do",       accent: "border-l-red-400", wash: "bg-red-50/40",  textColor: "text-red-500"      },
+  { key: "in_progress", label: "In Progress", accent: "border-l-gold",    wash: "bg-gold/5",      textColor: "text-gold-dark"    },
+  { key: "completed",   label: "Completed",   accent: "border-l-olive",   wash: "bg-olive/5",     textColor: "text-olive"        },
 ] as const;
 
 const STATUS_STYLES: Record<AdminTask["status"], { bg: string; text: string; label: string }> = {
-  todo:        { bg: "bg-gray-200",    text: "text-gray-600", label: "To Do"       },
-  in_progress: { bg: "bg-amber-400",   text: "text-white",    label: "In Progress" },
-  completed:   { bg: "bg-emerald-500", text: "text-white",    label: "Completed"   },
+  todo:        { bg: "bg-gray-200", text: "text-gray-600", label: "To Do"       },
+  in_progress: { bg: "bg-gold",     text: "text-white",    label: "In Progress" },
+  completed:   { bg: "bg-olive",    text: "text-white",    label: "Completed"   },
 };
 
 const PRIORITY_STYLES: Record<AdminTask["priority"], string> = {
@@ -57,6 +57,11 @@ const emptyDraft = {
 
 const tasksTable = () => (supabase as any).from("admin_tasks");
 
+type ResizableCol = "task" | "assignee" | "due" | "status";
+const DEFAULT_COL_WIDTHS: Record<ResizableCol, number> = { task: 420, assignee: 140, due: 128, status: 132 };
+const MIN_COL_WIDTHS: Record<ResizableCol, number> = { task: 220, assignee: 90, due: 100, status: 100 };
+const MAX_COL_WIDTHS: Record<ResizableCol, number> = { task: 900, assignee: 260, due: 190, status: 220 };
+
 export const TasksPanel = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -66,6 +71,30 @@ export const TasksPanel = () => {
   const [viewStatus, setViewStatus] = useState<"all" | AdminTask["status"]>("all");
   const [assigneeFilter, setAssigneeFilter] = useState<string>("all");
   const [areaFilter, setAreaFilter] = useState<string>("all");
+  const [colWidths, setColWidths] = useState<Record<ResizableCol, number>>(DEFAULT_COL_WIDTHS);
+
+  const startColumnResize = (col: ResizableCol) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startWidth = colWidths[col];
+    document.body.style.userSelect = "none";
+    document.body.style.cursor = "col-resize";
+    const onMove = (ev: MouseEvent) => {
+      const next = Math.min(
+        MAX_COL_WIDTHS[col],
+        Math.max(MIN_COL_WIDTHS[col], startWidth + (ev.clientX - startX))
+      );
+      setColWidths((w) => ({ ...w, [col]: next }));
+    };
+    const onUp = () => {
+      document.body.style.userSelect = "";
+      document.body.style.cursor = "";
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+    };
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
+  };
 
   const { data: myProfile } = useQuery({
     queryKey: ["admin-tasks-me", user?.id],
@@ -233,11 +262,18 @@ export const TasksPanel = () => {
     const days = Math.ceil((due.getTime() - Date.now()) / 86400000);
     if (days < 0) return "text-red-600 font-semibold";
     if (days <= 7) return "text-red-500 font-medium";
-    if (days <= 21) return "text-amber-600";
+    if (days <= 21) return "text-gold-dark";
     return "text-slate-500";
   };
 
-  const COL = "36px 1fr 148px 128px 132px 56px";
+  const COL = `36px ${colWidths.task}px ${colWidths.assignee}px ${colWidths.due}px ${colWidths.status}px 56px`;
+
+  const ResizeHandle = ({ col }: { col: ResizableCol }) => (
+    <div
+      onMouseDown={startColumnResize(col)}
+      className="absolute right-0 top-0 h-full w-1.5 cursor-col-resize hover:bg-gold/50 active:bg-gold z-10"
+    />
+  );
 
   if (error) {
     const msg = (error as any)?.message || String(error);
@@ -280,7 +316,7 @@ export const TasksPanel = () => {
             onClick={() => setViewStatus(v.key)}
             className={`px-3.5 py-1.5 rounded-full text-sm font-medium border transition-colors ${
               viewStatus === v.key
-                ? "bg-slate-900 border-slate-900 text-white"
+                ? "bg-navy border-navy text-white"
                 : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
             }`}
           >
@@ -292,7 +328,7 @@ export const TasksPanel = () => {
           onClick={() => setAssigneeFilter(assigneeFilter === "mine" ? "all" : "mine")}
           className={`px-3.5 py-1.5 rounded-full text-sm font-medium border transition-colors ${
             assigneeFilter === "mine"
-              ? "bg-amber-500 border-amber-500 text-white"
+              ? "bg-gold border-gold text-white"
               : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
           }`}
         >
@@ -333,18 +369,30 @@ export const TasksPanel = () => {
       {isLoading ? (
         <div className="text-center py-8 text-slate-500">Loading tasks…</div>
       ) : (
-        <div className="rounded-lg border border-slate-200 overflow-hidden bg-white">
+        <div className="rounded-xl border border-navy/10 overflow-hidden bg-white shadow-sm">
           {/* Column header */}
           <div
-            className="grid border-b border-slate-200 bg-slate-50 text-[10px] font-bold uppercase tracking-widest text-slate-400 select-none"
+            className="grid border-b border-navy/10 bg-cream/70 text-[10px] font-bold uppercase tracking-widest text-navy/50 select-none"
             style={{ gridTemplateColumns: COL }}
           >
             <div className="h-9" />
-            <div className="h-9 flex items-center px-3 border-l border-slate-200">Task</div>
-            <div className="h-9 flex items-center px-3 border-l border-slate-200">Assignee</div>
-            <div className="h-9 flex items-center px-3 border-l border-slate-200">Due Date</div>
-            <div className="h-9 flex items-center px-3 border-l border-slate-200">Status</div>
-            <div className="h-9 border-l border-slate-200" />
+            <div className="h-9 flex items-center px-3 border-l border-navy/10 relative">
+              Task
+              <ResizeHandle col="task" />
+            </div>
+            <div className="h-9 flex items-center px-3 border-l border-navy/10 relative">
+              Assignee
+              <ResizeHandle col="assignee" />
+            </div>
+            <div className="h-9 flex items-center px-3 border-l border-navy/10 relative">
+              Due Date
+              <ResizeHandle col="due" />
+            </div>
+            <div className="h-9 flex items-center px-3 border-l border-navy/10 relative">
+              Status
+              <ResizeHandle col="status" />
+            </div>
+            <div className="h-9 border-l border-navy/10" />
           </div>
 
           {visibleSections.map((section) => {
@@ -352,7 +400,7 @@ export const TasksPanel = () => {
             return (
               <div key={section.key}>
                 {/* Group header */}
-                <div className={`flex items-center gap-2 px-4 py-2 bg-white border-b border-slate-100 border-l-4 ${section.accent}`}>
+                <div className={`flex items-center gap-2 px-4 py-2 border-b border-navy/5 border-l-4 ${section.accent} ${section.wash}`}>
                   <span className={`text-sm font-bold ${section.textColor}`}>{section.label}</span>
                   <span className="text-xs text-slate-400 font-normal">({items.length})</span>
                 </div>
@@ -371,7 +419,7 @@ export const TasksPanel = () => {
                         onChange={() =>
                           updateStatus.mutate({ id: t.id, status: t.status === "completed" ? "todo" : "completed" })
                         }
-                        className="w-3.5 h-3.5 rounded cursor-pointer accent-emerald-500"
+                        className="w-3.5 h-3.5 rounded cursor-pointer accent-olive"
                       />
                     </div>
 
@@ -387,7 +435,7 @@ export const TasksPanel = () => {
                           <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">{t.area}</span>
                         )}
                         {t.link && (
-                          <a href={t.link} target="_blank" rel="noopener noreferrer" className="text-amber-500 hover:text-amber-600">
+                          <a href={t.link} target="_blank" rel="noopener noreferrer" className="text-gold hover:text-gold-dark">
                             <ExternalLink className="w-3 h-3" />
                           </a>
                         )}
@@ -401,7 +449,7 @@ export const TasksPanel = () => {
                       <select
                         value={t.assignee || ""}
                         onChange={(e) => updateField.mutate({ id: t.id, field: "assignee", value: e.target.value || null })}
-                        className="w-full text-xs text-slate-700 bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-amber-400 rounded-sm cursor-pointer py-1"
+                        className="w-full text-xs text-slate-700 bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-gold rounded-sm cursor-pointer py-1"
                       >
                         <option value="">Unassigned</option>
                         {[...new Set([t.assignee, ...(assigneeOptions || [])].filter(Boolean) as string[])].sort().map((name) => (
@@ -415,7 +463,7 @@ export const TasksPanel = () => {
                         type="date"
                         value={t.due_date || ""}
                         onChange={(e) => updateField.mutate({ id: t.id, field: "due_date", value: e.target.value || null })}
-                        className={`w-full text-xs bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-amber-400 rounded-sm cursor-pointer py-1 ${dueColorClass(t)}`}
+                        className={`w-full text-xs bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-gold rounded-sm cursor-pointer py-1 ${dueColorClass(t)}`}
                       />
                     </div>
 
@@ -437,7 +485,7 @@ export const TasksPanel = () => {
                     </div>
 
                     <div className="border-l border-slate-100 flex items-center gap-0.5 justify-center px-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => openEdit(t)} className="p-1 text-slate-400 hover:text-amber-600 rounded" title="Edit">
+                      <button onClick={() => openEdit(t)} className="p-1 text-slate-400 hover:text-gold-dark rounded" title="Edit">
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
                       <button onClick={() => deleteTask.mutate(t.id)} className="p-1 text-slate-300 hover:text-red-500 rounded" title="Delete">
