@@ -72,6 +72,28 @@ export const TasksPanel = () => {
     enabled: !!user,
   });
 
+  // Admin/support staff (non-podcasters) tasks can be assigned to
+  const { data: assigneeOptions } = useQuery({
+    queryKey: ["admin-tasks-assignee-options"],
+    queryFn: async () => {
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("user_id, role")
+        .in("role", ["admin", "moderator"]);
+      const staffIds = [...new Set((roles || []).map((r) => r.user_id))];
+      if (staffIds.length === 0) return [] as string[];
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, full_name, user_type")
+        .in("id", staffIds);
+      return [...new Set(
+        (profiles || [])
+          .filter((p) => p.user_type !== "podcaster" && p.full_name)
+          .map((p) => p.full_name as string)
+      )].sort();
+    },
+  });
+
   const { data: tasks, isLoading, error } = useQuery({
     queryKey: ["admin-tasks"],
     queryFn: async () => {
@@ -337,23 +359,22 @@ export const TasksPanel = () => {
                         )}
                       </div>
                       {t.description && (
-                        <p className="text-xs text-slate-500 mt-0.5 truncate">{t.description}</p>
+                        <p className="text-xs text-slate-500 mt-0.5 line-clamp-2 max-w-2xl">{t.description}</p>
                       )}
                     </div>
-                    <input
-                      key={`assignee-${t.id}-${t.assignee || ""}`}
-                      type="text"
-                      defaultValue={t.assignee || ""}
-                      onBlur={(e) => {
-                        const value = e.target.value.trim() || null;
-                        if (value !== (t.assignee || null)) {
-                          updateField.mutate({ id: t.id, field: "assignee", value });
-                        }
-                      }}
-                      placeholder="Unassigned"
+                    <select
+                      value={t.assignee || ""}
+                      onChange={(e) => updateField.mutate({ id: t.id, field: "assignee", value: e.target.value || null })}
                       title="Assignee"
-                      className="text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-full px-2.5 py-1 whitespace-nowrap shrink-0 w-28 text-center placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-amber-400 focus:bg-white"
-                    />
+                      className="text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-full px-2.5 py-1 whitespace-nowrap shrink-0 w-28 focus:outline-none focus:ring-1 focus:ring-amber-400 focus:bg-white"
+                    >
+                      <option value="">Unassigned</option>
+                      {[...new Set([t.assignee, ...(assigneeOptions || [])].filter(Boolean) as string[])]
+                        .sort()
+                        .map((name) => (
+                          <option key={name} value={name}>{name}</option>
+                        ))}
+                    </select>
                     <input
                       type="date"
                       value={t.due_date || ""}
@@ -455,11 +476,18 @@ export const TasksPanel = () => {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label>Assignee</Label>
-                <Input
+                <select
+                  className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
                   value={draft.assignee}
                   onChange={(e) => setDraft({ ...draft, assignee: e.target.value })}
-                  placeholder="Name"
-                />
+                >
+                  <option value="">Unassigned</option>
+                  {[...new Set([draft.assignee, ...(assigneeOptions || [])].filter(Boolean))]
+                    .sort()
+                    .map((name) => (
+                      <option key={name} value={name}>{name}</option>
+                    ))}
+                </select>
               </div>
               <div className="space-y-1.5">
                 <Label>Due Date</Label>
