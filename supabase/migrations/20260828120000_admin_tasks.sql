@@ -15,11 +15,11 @@ CREATE TABLE IF NOT EXISTS public.admin_tasks (
 
 ALTER TABLE public.admin_tasks ENABLE ROW LEVEL SECURITY;
 
--- Admins only
+-- Admins and super admins only
 CREATE POLICY "Admins manage tasks" ON public.admin_tasks
   FOR ALL
-  USING (EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'admin'))
-  WITH CHECK (EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'admin'));
+  USING (EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role IN ('admin', 'super_admin')))
+  WITH CHECK (EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role IN ('admin', 'super_admin')));
 
 -- Seed: runway to Oct 5 voting and Nov 11 ceremony
 INSERT INTO public.admin_tasks (title, description, status, priority, assignee, due_date, area) VALUES
