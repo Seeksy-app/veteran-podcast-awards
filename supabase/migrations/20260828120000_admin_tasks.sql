@@ -24,7 +24,7 @@ CREATE POLICY "Admins manage tasks" ON public.admin_tasks
 
 -- Seed: runway to Oct 5 voting and Nov 11 ceremony (only if table is empty, so this is safe to re-run)
 INSERT INTO public.admin_tasks (title, description, status, priority, assignee, due_date, area)
-SELECT * FROM (VALUES
+SELECT title, description, status, priority, assignee, due_date::date, area FROM (VALUES
   ('Finalize award categories & judges panel', 'Lock category list and confirm judging panel commitments.', 'todo', 'P1', 'Andrew', '2026-09-08', 'Awards'),
   ('LinkedIn: swap to VPA-branded app', 'Create VPA LinkedIn app tied to the company page; update Supabase provider credentials.', 'todo', 'P2', 'Andrew', '2026-09-05', 'Auth'),
   ('Google OAuth consent approval', 'Finish Google consent screen review; re-add Google sign-in button.', 'todo', 'P2', 'Andrew', '2026-09-05', 'Auth'),
