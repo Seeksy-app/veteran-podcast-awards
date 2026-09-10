@@ -80,20 +80,6 @@ export const Hero = () => {
             <PreRegistrationForm />
           </div>
 
-          <div className="grid grid-cols-3 gap-8 mt-14 animate-fade-in" style={{ animationDelay: "0.4s" }}>
-            <div className="text-center">
-              <p className="font-serif text-3xl md:text-4xl text-primary font-bold">Oct 5</p>
-              <p className="text-sm text-muted-foreground">Voting Day</p>
-            </div>
-            <div className="text-center">
-              <p className="font-serif text-3xl md:text-4xl text-primary font-bold">LIVE</p>
-              <p className="text-sm text-muted-foreground">Streaming</p>
-            </div>
-            <div className="text-center">
-              <p className="font-serif text-3xl md:text-4xl text-primary font-bold">Nov 11</p>
-              <p className="text-sm text-muted-foreground">Awards Show</p>
-            </div>
-          </div>
         </div>
       </div>
     </section>
