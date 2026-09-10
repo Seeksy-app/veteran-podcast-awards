@@ -62,7 +62,7 @@ export const Hero = () => {
             <div className="inline-flex items-center gap-2 bg-secondary/50 border border-border rounded-full px-5 py-2.5">
               <Award className="w-4 h-4 text-primary" />
               <span className="text-sm font-medium text-muted-foreground">
-                National Military Podcast Day, October 5th
+                24 Hour Podcastathon - Oct 5th, 2026
               </span>
             </div>
             <p className="text-sm text-muted-foreground/70">Live streaming event</p>
