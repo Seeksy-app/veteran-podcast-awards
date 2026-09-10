@@ -1,4 +1,5 @@
-import { Award } from "lucide-react";
+import { ArrowRight, Radio } from "lucide-react";
+import { Link } from "react-router-dom";
 import { PreRegistrationForm } from "./PreRegistrationForm";
 import { useState } from "react";
 
@@ -36,39 +37,50 @@ export const Hero = () => {
 
       <div className="relative z-10 container mx-auto px-4 pt-24 pb-16">
         <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
-          <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl font-bold mb-8 animate-slide-up leading-tight">
+          <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl font-bold mb-6 animate-slide-up leading-tight">
             <span className="text-gold-gradient">Veteran Podcast</span>
             <br />
             <span className="text-foreground">Awards 2026</span>
           </h1>
 
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-12 animate-slide-up leading-relaxed" style={{ animationDelay: "0.1s" }}>
-            Celebrating the impactful voices of veteran podcasters.
-            Register your podcast or sign up to vote.
-          </p>
-
-          <div className="mb-12 animate-slide-up" style={{ animationDelay: "0.2s" }}>
-            <div className="inline-flex flex-col items-center bg-secondary/60 border border-primary/30 rounded-2xl px-10 py-6">
-              <p className="text-xs md:text-sm uppercase tracking-[0.25em] text-muted-foreground mb-2">Awards Show</p>
-              <p className="font-serif text-3xl md:text-5xl font-bold text-gold-gradient">Coming in Q1 2027</p>
+          <div className="mb-8 animate-slide-up" style={{ animationDelay: "0.1s" }}>
+            <div className="inline-flex flex-col items-center bg-secondary/60 border border-primary/30 rounded-2xl px-10 py-5">
+              <p className="text-xs md:text-sm uppercase tracking-[0.25em] text-muted-foreground mb-1.5">Awards Show</p>
+              <p className="font-serif text-3xl md:text-4xl font-bold text-gold-gradient">Coming in Q1 2027</p>
             </div>
           </div>
 
-          <div className="mb-10 w-full max-w-lg animate-slide-up" style={{ animationDelay: "0.3s" }}>
+          <div className="mb-10 w-full animate-slide-up" style={{ animationDelay: "0.2s" }}>
+            <div className="inline-flex items-center gap-2 bg-primary/15 border border-primary/40 rounded-full px-4 py-1.5 mb-4">
+              <Radio className="w-4 h-4 text-primary" />
+              <span className="text-xs md:text-sm font-semibold uppercase tracking-[0.2em] text-primary">
+                Live Streaming Event
+              </span>
+            </div>
+            <h2 className="font-serif text-4xl md:text-6xl lg:text-7xl font-bold text-gold-gradient leading-tight">
+              24 Hour Podcastathon
+            </h2>
+            <p className="font-serif text-2xl md:text-3xl text-foreground mt-2">
+              October 5th, 2026
+            </p>
+            <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto mt-4 leading-relaxed">
+              Twenty-four straight hours of live veteran podcasting on National Military Podcast Day.
+              Back-to-back shows, special guests, and stories from the community, streaming around the clock.
+            </p>
+            <Link
+              to="/podcast-day"
+              className="inline-flex items-center gap-1.5 mt-4 text-sm font-medium text-primary hover:text-gold-light transition-colors"
+            >
+              Learn about National Military Podcast Day
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          <div className="w-full max-w-lg animate-slide-up" style={{ animationDelay: "0.3s" }}>
             <PreRegistrationForm />
           </div>
 
-          <div className="flex flex-col items-center gap-2 animate-fade-in" style={{ animationDelay: "0.4s" }}>
-            <div className="inline-flex items-center gap-2 bg-secondary/50 border border-border rounded-full px-5 py-2.5">
-              <Award className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium text-muted-foreground">
-                24 Hour Podcastathon - Oct 5th, 2026
-              </span>
-            </div>
-            <p className="text-sm text-muted-foreground/70">Live streaming event</p>
-          </div>
-
-          <div className="grid grid-cols-3 gap-8 mt-16 animate-fade-in" style={{ animationDelay: "0.5s" }}>
+          <div className="grid grid-cols-3 gap-8 mt-14 animate-fade-in" style={{ animationDelay: "0.4s" }}>
             <div className="text-center">
               <p className="font-serif text-3xl md:text-4xl text-primary font-bold">Oct 5</p>
               <p className="text-sm text-muted-foreground">Voting Day</p>
