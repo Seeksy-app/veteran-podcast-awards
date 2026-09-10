@@ -1,5 +1,4 @@
 import { Award } from "lucide-react";
-import { CountdownTimer } from "./CountdownTimer";
 import { PreRegistrationForm } from "./PreRegistrationForm";
 import { useState } from "react";
 
@@ -49,7 +48,10 @@ export const Hero = () => {
           </p>
 
           <div className="mb-12 animate-slide-up" style={{ animationDelay: "0.2s" }}>
-            <CountdownTimer targetDate="2026-11-11T18:00:00" />
+            <div className="inline-flex flex-col items-center bg-secondary/60 border border-primary/30 rounded-2xl px-10 py-6">
+              <p className="text-xs md:text-sm uppercase tracking-[0.25em] text-muted-foreground mb-2">Awards Show</p>
+              <p className="font-serif text-3xl md:text-5xl font-bold text-gold-gradient">Coming in Q1 2027</p>
+            </div>
           </div>
 
           <div className="mb-10 w-full max-w-lg animate-slide-up" style={{ animationDelay: "0.3s" }}>
